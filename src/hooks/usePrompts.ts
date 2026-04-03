@@ -40,6 +40,7 @@ export function usePrompts({
   const [isSearching, setIsSearching] = useState(false);
   const [isMoving, setIsMoving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [lastCopiedId, setLastCopiedId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string } | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -308,6 +309,8 @@ export function usePrompts({
     setSearchQuery,
     isMoving,
     setIsMoving,
+    lastCopiedId,
+    setLastCopiedId,
     toast,
     showToast,
     undo,

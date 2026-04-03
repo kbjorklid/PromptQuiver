@@ -66,6 +66,8 @@ export const App = ({
     setSearchQuery,
     isMoving,
     setIsMoving,
+    lastCopiedId,
+    setLastCopiedId,
     toast,
     showToast,
     undo,
@@ -101,6 +103,7 @@ export const App = ({
     if (prompt) {
       try {
         clipboardy.writeSync(prompt.text);
+        setLastCopiedId(prompt.id);
         showToast('Copied to clipboard');
       } catch (e) {
         showToast('Failed to copy to clipboard');
@@ -114,6 +117,7 @@ export const App = ({
     if (prompt) {
       try {
         clipboardy.writeSync(prompt.text);
+        setLastCopiedId(prompt.id);
         showToast('Processed prompt and copied to clipboard');
       } catch (e) {
         showToast('Processed prompt (clipboard error)');
@@ -245,6 +249,7 @@ export const App = ({
           currentList={currentList}
           selectedIndex={selectedIndex}
           isMoving={isMoving}
+          lastCopiedId={lastCopiedId}
           terminalSize={terminalSize}
           initialViewportSize={initialViewportSize}
         />

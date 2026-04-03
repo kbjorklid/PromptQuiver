@@ -7,6 +7,7 @@ interface PromptListProps {
   currentList: Prompt[];
   selectedIndex: number;
   isMoving: boolean;
+  lastCopiedId: string | null;
   terminalSize: { columns: number; rows: number };
   initialViewportSize?: number;
 }
@@ -15,6 +16,7 @@ export const PromptList: React.FC<PromptListProps> = ({
   currentList,
   selectedIndex,
   isMoving,
+  lastCopiedId,
   terminalSize,
   initialViewportSize,
 }) => {
@@ -46,6 +48,7 @@ export const PromptList: React.FC<PromptListProps> = ({
           .slice(0, 2);
         
         const isSelected = actualIndex === selectedIndex;
+        const isLastCopied = prompt.id === lastCopiedId;
         const itemColor = prompt.type === 'note' ? 'cyan' : 'yellow';
         const displayIndex = (actualIndex + 1).toString().padStart(currentList.length.toString().length, ' ');
         
@@ -68,6 +71,7 @@ export const PromptList: React.FC<PromptListProps> = ({
                 <Text color={itemColor}>
                   {isSelected ? (isMoving ? '↕' : '▶') : ' '}
                 </Text>
+                {isLastCopied && <Text color="green"> 📋</Text>}
               </Box>
               <Box flexDirection="column">
                 {displayLines.length === 0 ? (
