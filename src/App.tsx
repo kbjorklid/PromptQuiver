@@ -47,9 +47,18 @@ export const App = ({
 }) => {
   const { exit } = useApp();
   const terminalSize = useTerminalSize();
-  const [data, setData] = useState<PromptStorageData>({ main: [], notes: [], archive: [] });
-  const [history, setHistory] = useState<PromptStorageData[]>([]);
-  const [future, setFuture] = useState<PromptStorageData[]>([]);
+  
+  const [appState, setAppState] = useState<{
+    data: PromptStorageData;
+    history: PromptStorageData[];
+    future: PromptStorageData[];
+  }>({
+    data: { main: [], notes: [], archive: [] },
+    history: [],
+    future: [],
+  });
+  const { data, history, future } = appState;
+
   const [activeTab, setActiveTab] = useState<Tab>('main');
   const [selectedIndices, setSelectedIndices] = useState<Record<Tab, number>>({ main: 0, notes: 0, archive: 0 });
   const [isLoading, setIsLoading] = useState(true);
@@ -57,6 +66,7 @@ export const App = ({
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
   const [addingPosition, setAddingPosition] = useState<{position: 'before'|'after'|'start'|'end', index: number} | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [isMoving, setIsMoving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [toast, setToast] = useState<{ message: string } | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -72,7 +82,7 @@ export const App = ({
   useEffect(() => {
     async function init() {
       const loaded = await loadPromptsFn(cwd);
-      setData(loaded);
+      setAppState(prev => ({ ...prev, data: loaded }));
       setIsLoading(false);
     }
     init();
@@ -85,17 +95,19 @@ export const App = ({
     }
   }, [data, isLoading, cwd, savePromptsFn]);
 
-  // Debug: log tab changes if we could, but let's just ensure no accidental resets.
-  
-  const fullList = data[activeTab];
-  const currentList = searchQuery 
-    ? fullList.filter(p => p.text.toLowerCase().includes(searchQuery.toLowerCase()))
-    : fullList;
+  const currentList = React.useMemo(() => {
+    const fullList = data[activeTab];
+    return searchQuery 
+      ? fullList.filter(p => p.text.toLowerCase().includes(searchQuery.toLowerCase()))
+      : fullList;
+  }, [data, activeTab, searchQuery]);
 
-  const selectedIndex = Math.min(
-    selectedIndices[activeTab],
-    Math.max(0, currentList.length - 1)
-  );
+  const selectedIndex = React.useMemo(() => {
+    return Math.min(
+      selectedIndices[activeTab],
+      Math.max(0, currentList.length - 1)
+    );
+  }, [selectedIndices, activeTab, currentList.length]);
 
   const updateSelectedIndex = (index: number) => {
     setSelectedIndices((prev) => ({
@@ -105,32 +117,56 @@ export const App = ({
   };
 
   const pushState = useCallback((nextData: PromptStorageData) => {
-    setHistory((prev) => [...prev, data]);
-    setFuture([]);
-    setData(nextData);
-  }, [data]);
+    setAppState(current => ({
+      history: [...current.history, current.data],
+      future: [],
+      data: nextData,
+    }));
+  }, []);
 
   const undo = useCallback(() => {
-    if (history.length > 0) {
-      const prev = history[history.length - 1];
-      setFuture((f) => [data, ...f]);
-      setHistory((h) => h.slice(0, -1));
-      setData(prev);
-      showToast('Undo performed');
-    }
-  }, [history, data, showToast]);
+    setAppState(current => {
+      if (current.history.length === 0) return current;
+      const prev = current.history[current.history.length - 1];
+      return {
+        history: current.history.slice(0, -1),
+        future: [current.data, ...current.future],
+        data: prev,
+      };
+    });
+    showToast('Undo performed');
+  }, [showToast]);
 
   const redo = useCallback(() => {
-    if (future.length > 0) {
-      const next = future[0];
-      setHistory((h) => [...h, data]);
-      setFuture((f) => f.slice(1));
-      setData(next);
-      showToast('Redo performed');
-    }
-  }, [future, data, showToast]);
+    setAppState(current => {
+      if (current.future.length === 0) return current;
+      const next = current.future[0];
+      return {
+        history: [...current.history, current.data],
+        future: current.future.slice(1),
+        data: next,
+      };
+    });
+    showToast('Redo performed');
+  }, [showToast]);
 
-  const movePrompt = (from: Tab, to: Tab, index: number) => {
+  const moveItemInList = useCallback((fromIndex: number, toIndex: number) => {
+    if (toIndex < 0 || toIndex >= currentList.length) return;
+    if (searchQuery) return; // Disable moving while searching
+
+    const listName = activeTab;
+    const newList = [...data[listName]];
+    const [movedItem] = newList.splice(fromIndex, 1);
+    newList.splice(toIndex, 0, movedItem);
+
+    pushState({
+      ...data,
+      [listName]: newList,
+    });
+    updateSelectedIndex(toIndex);
+  }, [data, currentList.length, searchQuery, activeTab, pushState]);
+
+  const movePrompt = useCallback((from: Tab, to: Tab, index: number) => {
     const fromList = [...data[from]];
     const toList = [...data[to]];
     const [prompt] = fromList.splice(index, 1);
@@ -158,9 +194,9 @@ export const App = ({
         showToast(`Moved to ${toName}`);
       }
     }
-  };
+  }, [data, pushState, showToast]);
 
-  const deletePrompt = (tab: Tab, index: number) => {
+  const deletePrompt = useCallback((tab: Tab, index: number) => {
     const list = [...data[tab]];
     list.splice(index, 1);
     pushState({
@@ -168,7 +204,7 @@ export const App = ({
       [tab]: list,
     });
     showToast("Deleted. Press 'u' to undo (5s)");
-  };
+  }, [data, pushState, showToast]);
 
   const addPrompt = (position: 'before' | 'after' | 'start' | 'end') => {
     const now = new Date().toISOString();
@@ -206,8 +242,31 @@ export const App = ({
       return;
     }
 
+    if (isMoving) {
+      if (key.escape || key.return || input === 'm') {
+        setIsMoving(false);
+        showToast('Exit move mode');
+        return;
+      }
+      if (key.upArrow || input === 'k') {
+        moveItemInList(selectedIndex, selectedIndex - 1);
+      }
+      if (key.downArrow || input === 'j') {
+        moveItemInList(selectedIndex, selectedIndex + 1);
+      }
+      return;
+    }
+
     if (input === 'q') {
       exit();
+      return;
+    }
+
+    if (input === 'm' && view === 'list' && activeTab !== 'archive') {
+      if (currentList.length > 0) {
+        setIsMoving(true);
+        showToast('Move mode: use ↑/↓ to reorder, Enter/Esc to finish');
+      }
       return;
     }
 
@@ -453,6 +512,11 @@ export const App = ({
             const itemColor = prompt.type === 'note' ? 'cyan' : 'yellow';
             const displayIndex = (actualIndex + 1).toString().padStart(currentList.length.toString().length, ' ');
             
+            let backgroundColor: string | undefined = undefined;
+            if (isSelected) {
+              backgroundColor = isMoving ? '#445566' : '#334455';
+            }
+
             return (
               <Box 
                 key={prompt.id} 
@@ -460,12 +524,12 @@ export const App = ({
               >
                 <Box 
                   paddingX={1}
-                  backgroundColor={isSelected ? '#334455' : undefined}
+                  backgroundColor={backgroundColor}
                 >
                   <Box marginRight={1}>
                     <Text color="gray">{displayIndex}. </Text>
                     <Text color={itemColor}>
-                      {isSelected ? '▶' : ' '}
+                      {isSelected ? (isMoving ? '↕' : '▶') : ' '}
                     </Text>
                   </Box>
                   <Box flexDirection="column">
@@ -473,7 +537,7 @@ export const App = ({
                       <Text italic color="gray">Empty item</Text>
                     ) : (
                       displayLines.map((line, i) => (
-                        <Text key={i} wrap="truncate-end" color={itemColor}>
+                        <Text key={i} wrap="truncate-end" color={itemColor} bold={isMoving && isSelected}>
                           {line}
                         </Text>
                       ))
@@ -527,6 +591,7 @@ export const App = ({
         <Box><Text bold>[Tab/h/l]</Text><Text color="gray"> Tab</Text></Box>
         <Box><Text bold>[↑/↓/j/k]</Text><Text color="gray"> Nav</Text></Box>
         <Box><Text bold>[Enter/e]</Text><Text color="gray"> Edit</Text></Box>
+        <Box><Text bold>[m]</Text><Text color="gray"> Move</Text></Box>
         {activeTab !== 'notes' && (
           <Box><Text bold>[y]</Text><Text color="gray"> Yank</Text></Box>
         )}
