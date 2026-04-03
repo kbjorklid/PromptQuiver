@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Text } from 'ink';
 import type { Prompt } from '../storage/paths';
+import { useViewport } from '../hooks/useViewport';
 
 interface PromptListProps {
   currentList: Prompt[];
@@ -17,21 +18,19 @@ export const PromptList: React.FC<PromptListProps> = ({
   terminalSize,
   initialViewportSize,
 }) => {
+  const { start, end } = useViewport({
+    totalItems: currentList.length,
+    selectedIndex,
+    terminalRows: terminalSize.rows,
+    initialViewportSize,
+  });
+
   if (currentList.length === 0) {
     return (
       <Box justifyContent="center" marginTop={2}>
         <Text color="gray">No items yet</Text>
       </Box>
     );
-  }
-
-  const VIEWPORT_SIZE = initialViewportSize || Math.max(3, terminalSize.rows - 15);
-  const half = Math.floor(VIEWPORT_SIZE / 2);
-  let start = Math.max(0, selectedIndex - half);
-  let end = Math.min(currentList.length, start + VIEWPORT_SIZE);
-  
-  if (end - start < VIEWPORT_SIZE) {
-    start = Math.max(0, end - VIEWPORT_SIZE);
   }
 
   const items = currentList.slice(start, end);
