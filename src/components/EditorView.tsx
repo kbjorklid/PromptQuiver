@@ -16,32 +16,41 @@ export function EditorView({ initialText, onSave, onCancel, terminalSize }: Edit
 
   const editorRows = Math.max(5, terminalSize.rows - 8);
 
+  const handleConfirmNavigation = (direction: 'left' | 'right') => {
+    if (direction === 'left') {
+      setConfirmOption(prev => {
+        if (prev === 'cancel') return 'no';
+        if (prev === 'no') return 'yes';
+        return 'yes';
+      });
+    } else {
+      setConfirmOption(prev => {
+        if (prev === 'yes') return 'no';
+        if (prev === 'no') return 'cancel';
+        return 'cancel';
+      });
+    }
+  };
+
+  const handleConfirmAction = () => {
+    if (confirmOption === 'yes') {
+      onSave(textRef.current);
+    } else if (confirmOption === 'no') {
+      onCancel();
+    } else {
+      setShowConfirm(false);
+    }
+  };
+
   useInput((input, key) => {
     if (showConfirm) {
       if (key.leftArrow) {
-        setConfirmOption(prev => {
-          if (prev === 'cancel') return 'no';
-          if (prev === 'no') return 'yes';
-          return 'yes';
-        });
-      }
-      if (key.rightArrow) {
-        setConfirmOption(prev => {
-          if (prev === 'yes') return 'no';
-          if (prev === 'no') return 'cancel';
-          return 'cancel';
-        });
-      }
-      if (key.return) {
-        if (confirmOption === 'yes') {
-          onSave(textRef.current);
-        } else if (confirmOption === 'no') {
-          onCancel();
-        } else {
-          setShowConfirm(false);
-        }
-      }
-      if (key.escape) {
+        handleConfirmNavigation('left');
+      } else if (key.rightArrow) {
+        handleConfirmNavigation('right');
+      } else if (key.return) {
+        handleConfirmAction();
+      } else if (key.escape) {
         setShowConfirm(false);
       }
       return;
@@ -54,7 +63,9 @@ export function EditorView({ initialText, onSave, onCancel, terminalSize }: Edit
       } else {
         onCancel();
       }
+      return;
     }
+
     if (key.ctrl && input === 's') {
       onSave(textRef.current);
     }

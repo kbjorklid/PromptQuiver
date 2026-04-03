@@ -80,20 +80,83 @@ export const App = ({
 
   const orderedTabs: Tab[] = ['main', 'notes', 'archive'];
 
-  useInput((input, key) => {
-    if (view === 'editor') {
-      return;
+  const switchTab = (direction: 'next' | 'prev') => {
+    const currentIndex = orderedTabs.indexOf(activeTab);
+    const offset = direction === 'next' ? 1 : -1;
+    const nextIndex = (currentIndex + offset + orderedTabs.length) % orderedTabs.length;
+    const nextTab = orderedTabs[nextIndex];
+    if (nextTab) {
+      setActiveTab(nextTab);
     }
+  };
+
+  const handleNextTab = () => switchTab('next');
+  const handlePrevTab = () => switchTab('prev');
+
+  const handleCopy = () => {
+    if (activeTab === 'notes') return;
+    const prompt = currentList[selectedIndex];
+    if (prompt) {
+      try {
+        clipboardy.writeSync(prompt.text);
+        showToast('Copied to clipboard');
+      } catch (e) {
+        showToast('Failed to copy to clipboard');
+      }
+    }
+  };
+
+  const handleProcessNext = () => {
+    if (activeTab !== 'main') return;
+    const prompt = processNextPrompt();
+    if (prompt) {
+      try {
+        clipboardy.writeSync(prompt.text);
+        showToast('Processed prompt and copied to clipboard');
+      } catch (e) {
+        showToast('Processed prompt (clipboard error)');
+      }
+    }
+  };
+
+  const handleEdit = () => {
+    const prompt = currentList[selectedIndex];
+    if (prompt) {
+      openEditor(prompt);
+    }
+  };
+
+  const handleArchiveRestore = () => {
+    if (currentList.length === 0) return;
+    if (activeTab === 'archive') {
+      movePrompt('archive', 'main', selectedIndex);
+    } else {
+      movePrompt(activeTab, 'archive', selectedIndex);
+    }
+  };
+
+  const handleDeleteArchive = () => {
+    if (activeTab === 'archive' && currentList.length > 0) {
+      deletePrompt('archive', selectedIndex);
+    }
+  };
+
+  const handleStartMove = () => {
+    if (view === 'list' && activeTab !== 'archive' && currentList.length > 0) {
+      setIsMoving(true);
+      showToast('Move mode: use ↑/↓ to reorder, Enter/Esc to finish');
+    }
+  };
+
+  useInput((input, key) => {
+    if (view === 'editor') return;
 
     if (isSearching) {
       if (key.escape) {
         setIsSearching(false);
         setSearchQuery('');
-        return;
-      }
-      if (key.return) {
+      } else if (key.return) {
         setIsSearching(false);
-        return;
       }
       return;
     }
@@ -102,133 +165,47 @@ export const App = ({
       if (key.escape || key.return || input === 'm') {
         setIsMoving(false);
         showToast('Exit move mode');
-        return;
-      }
-      if (key.upArrow || input === 'k') {
+      } else if (key.upArrow || input === 'k') {
         moveItemInList(selectedIndex, selectedIndex - 1);
-      }
-      if (key.downArrow || input === 'j') {
+      } else if (key.downArrow || input === 'j') {
         moveItemInList(selectedIndex, selectedIndex + 1);
       }
       return;
     }
 
-    if (input === 'q') {
-      exit();
-      return;
-    }
+    // Special keys
+    if (key.upArrow) return updateSelectedIndex(Math.max(0, selectedIndex - 1));
+    if (key.downArrow) return updateSelectedIndex(Math.min(currentList.length - 1, selectedIndex + 1));
+    if (key.rightArrow) return handleNextTab();
+    if (key.leftArrow) return handlePrevTab();
+    if (key.return) return handleEdit();
+    if (key.escape && searchQuery) return setSearchQuery('');
+    if (key.tab) return key.shift ? handlePrevTab() : handleNextTab();
+    if (key.ctrl && input === 'y') return redo();
 
-    if (input === 'm' && view === 'list' && activeTab !== 'archive') {
-      if (currentList.length > 0) {
-        setIsMoving(true);
-        showToast('Move mode: use ↑/↓ to reorder, Enter/Esc to finish');
-      }
-      return;
-    }
-
-    if (input === '/' && view === 'list') {
-      setIsSearching(true);
-      return;
-    }
-
-    if (key.escape && searchQuery && !isSearching) {
-      setSearchQuery('');
-      return;
-    }
-
-    const switchTab = (direction: 'next' | 'prev') => {
-      const currentIndex = orderedTabs.indexOf(activeTab);
-      const offset = direction === 'next' ? 1 : -1;
-      const nextIndex = (currentIndex + offset + orderedTabs.length) % orderedTabs.length;
-      const nextTab = orderedTabs[nextIndex];
-      if (nextTab) {
-        setActiveTab(nextTab);
-      }
+    // Command Map for character inputs
+    const charCommands: Record<string, () => void> = {
+      'q': exit,
+      'k': () => updateSelectedIndex(Math.max(0, selectedIndex - 1)),
+      'j': () => updateSelectedIndex(Math.min(currentList.length - 1, selectedIndex + 1)),
+      'l': handleNextTab,
+      'h': handlePrevTab,
+      '/': () => setIsSearching(true),
+      'u': undo,
+      'm': handleStartMove,
+      'd': handleArchiveRestore,
+      'X': handleDeleteArchive,
+      'N': handleProcessNext,
+      'y': handleCopy,
+      'e': handleEdit,
+      'a': () => activeTab !== 'archive' && addPrompt('after'),
+      'A': () => activeTab !== 'archive' && addPrompt('end'),
+      'i': () => activeTab !== 'archive' && addPrompt('before'),
+      'I': () => activeTab !== 'archive' && addPrompt('start'),
     };
 
-    if (key.tab) {
-      switchTab(key.shift ? 'prev' : 'next');
-      return;
-    }
-
-    if (key.rightArrow || input === 'l') {
-      switchTab('next');
-      return;
-    }
-
-    if (key.leftArrow || input === 'h') {
-      switchTab('prev');
-      return;
-    }
-
-    if (key.upArrow || input === 'k') {
-      updateSelectedIndex(Math.max(0, selectedIndex - 1));
-    }
-
-    if (key.downArrow || input === 'j') {
-      updateSelectedIndex(Math.min(currentList.length - 1, selectedIndex + 1));
-    }
-
-    if (input === 'd') {
-      if (currentList.length > 0) {
-        if (activeTab === 'archive') {
-          movePrompt('archive', 'main', selectedIndex);
-        } else {
-          movePrompt(activeTab, 'archive', selectedIndex);
-        }
-      }
-    }
-
-    if (input === 'X' && activeTab === 'archive') {
-      if (currentList.length > 0) {
-        deletePrompt('archive', selectedIndex);
-      }
-    }
-
-    if (input === 'N' && activeTab === 'main') {
-      const prompt = processNextPrompt();
-      if (prompt) {
-        try {
-          clipboardy.writeSync(prompt.text);
-          showToast('Processed prompt and copied to clipboard');
-        } catch (e) {
-          showToast('Processed prompt (clipboard error)');
-        }
-      }
-    }
-
-    if (input === 'u') {
-      undo();
-    }
-
-    if (key.ctrl && input === 'y') {
-      redo();
-    }
-
-    if (activeTab !== 'archive') {
-      if (input === 'a') addPrompt('after');
-      if (input === 'A') addPrompt('end');
-      if (input === 'i') addPrompt('before');
-      if (input === 'I') addPrompt('start');
-    }
-
-    if (input === 'e' || key.return) {
-      const prompt = currentList[selectedIndex];
-      if (prompt) {
-        openEditor(prompt);
-      }
-    }
-
-    if (input === 'y' && activeTab !== 'notes') {
-      const prompt = currentList[selectedIndex];
-      if (prompt) {
-        try {
-          clipboardy.writeSync(prompt.text);
-          showToast('Copied to clipboard');
-        } catch (e) {
-          showToast('Failed to copy to clipboard');
-        }
-      }
+    if (charCommands[input]) {
+      charCommands[input]();
     }
   });
 
