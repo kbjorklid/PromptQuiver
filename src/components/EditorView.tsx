@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
-import { UncontrolledMultilineInput } from './UncontrolledMultilineInput';
+import { UncontrolledMultilineInput, UncontrolledMultilineInputRef } from './UncontrolledMultilineInput';
+import { fuzzySearchFiles } from '../utils/fileSearch';
 
 export interface EditorViewProps {
   initialText: string;
@@ -11,10 +12,33 @@ export interface EditorViewProps {
 
 export function EditorView({ initialText, onSave, onCancel, terminalSize }: EditorViewProps) {
   const textRef = useRef(initialText);
+  const inputRef = useRef<UncontrolledMultilineInputRef>(null);
+
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmOption, setConfirmOption] = useState<'yes' | 'no' | 'cancel'>('yes');
 
-  const editorRows = Math.max(5, terminalSize.rows - 8);
+  // Mention State
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null);
+  const [mentionStart, setMentionStart] = useState<number | null>(null);
+  const [mentionEnd, setMentionEnd] = useState<number | null>(null);
+  const [searchResults, setSearchResults] = useState<string[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const editorRows = Math.max(5, terminalSize.rows - (mentionQuery !== null ? 12 : 8));
+
+  useEffect(() => {
+    if (mentionQuery !== null) {
+      const fetchResults = async () => {
+        const results = await fuzzySearchFiles(mentionQuery, process.cwd());
+        setSearchResults(results);
+        setSelectedIndex(0);
+      };
+      fetchResults();
+    } else {
+      setSearchResults([]);
+      setSelectedIndex(0);
+    }
+  }, [mentionQuery]);
 
   const handleConfirmNavigation = (direction: 'left' | 'right') => {
     if (direction === 'left') {
@@ -42,6 +66,48 @@ export function EditorView({ initialText, onSave, onCancel, terminalSize }: Edit
     }
   };
 
+  const checkMention = (val: string, cursor: number) => {
+    const beforeCursor = val.slice(0, cursor);
+    // Regex matches " @" followed by non-space characters at the end of the string
+    const match = beforeCursor.match(/(?:^|\s)@([^\s]*)$/);
+    if (match) {
+      setMentionQuery(match[1]);
+      setMentionStart(cursor - match[1].length - 1);
+      setMentionEnd(cursor);
+    } else {
+      setMentionQuery(null);
+      setMentionStart(null);
+      setMentionEnd(null);
+    }
+  };
+
+  const handleInterceptKey = (input: string | undefined, key: any) => {
+    if (mentionQuery !== null) {
+      if (key.upArrow) {
+        setSelectedIndex(i => Math.max(0, i - 1));
+        return true; // Intercept
+      }
+      if (key.downArrow) {
+        setSelectedIndex(i => Math.min(searchResults.length - 1, i + 1));
+        return true; // Intercept
+      }
+      if (key.return || key.tab) {
+        // Insert selected file
+        if (searchResults[selectedIndex] && mentionStart !== null && mentionEnd !== null) {
+          const selectedFile = searchResults[selectedIndex];
+          inputRef.current?.insertText("@" + selectedFile + " ", mentionStart, mentionEnd);
+        }
+        setMentionQuery(null);
+        return true; // Intercept
+      }
+      if (key.escape) {
+        setMentionQuery(null);
+        return true; // Intercept
+      }
+    }
+    return false;
+  };
+
   useInput((input, key) => {
     if (showConfirm) {
       if (key.leftArrow) {
@@ -54,6 +120,14 @@ export function EditorView({ initialText, onSave, onCancel, terminalSize }: Edit
         setShowConfirm(false);
       }
       return;
+    }
+
+    if (mentionQuery !== null) {
+      // Escape is handled by onInterceptKey inside UncontrolledMultilineInput, 
+      // but just in case we don't want to trigger the confirm dialog.
+      if (key.escape || key.return || key.upArrow || key.downArrow) {
+        return;
+      }
     }
 
     if (key.escape) {
@@ -71,6 +145,17 @@ export function EditorView({ initialText, onSave, onCancel, terminalSize }: Edit
     }
   });
 
+  // Re-calculate window to ensure exactly 5 items if possible
+  let startIdx = 0;
+  if (searchResults.length > 5) {
+    if (selectedIndex >= searchResults.length - 2) {
+      startIdx = searchResults.length - 5;
+    } else if (selectedIndex >= 2) {
+      startIdx = selectedIndex - 2;
+    }
+  }
+  const windowedResults = searchResults.slice(startIdx, startIdx + 5);
+
   return (
     <Box flexDirection="column" padding={1} width="100%" height="100%">
       <Box marginBottom={1}>
@@ -84,17 +169,44 @@ export function EditorView({ initialText, onSave, onCancel, terminalSize }: Edit
         flexGrow={1}
       >
         <UncontrolledMultilineInput
+          ref={inputRef}
           initialValue={initialText}
-          onChange={(val) => { textRef.current = val; }}
+          onChange={(val) => { 
+            textRef.current = val;
+          }}
+          onCursorChange={(cursor) => {
+            checkMention(textRef.current, cursor);
+          }}
+          onInterceptKey={handleInterceptKey}
           rows={editorRows}
           focus={!showConfirm}
         />
       </Box>
 
-      <Box marginTop={1}>
-        <Text color="gray">
-          [Ctrl+s] Save | [Esc] Cancel
-        </Text>
+      <Box marginTop={1} minHeight={1}>
+        {mentionQuery !== null ? (
+          <Box flexDirection="column">
+            {searchResults.length === 0 ? (
+              <Text color="gray">No files found matching "{mentionQuery}"</Text>
+            ) : (
+              windowedResults.map((result, i) => {
+                const actualIndex = startIdx + i;
+                const isSelected = actualIndex === selectedIndex;
+                return (
+                  <Box key={result} backgroundColor={isSelected ? '#334455' : undefined}>
+                    <Text color={isSelected ? 'white' : 'gray'}>
+                      {isSelected ? '> ' : '  '}{result}
+                    </Text>
+                  </Box>
+                );
+              })
+            )}
+          </Box>
+        ) : (
+          <Text color="gray">
+            [Ctrl+s] Save | [Esc] Cancel
+          </Text>
+        )}
       </Box>
 
       {showConfirm && (

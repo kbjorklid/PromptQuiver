@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Box, Text, useInput } from 'ink';
 
 function normalizeLineEndings(text: string): string {
@@ -9,22 +9,47 @@ function normalizeLineEndings(text: string): string {
 export interface UncontrolledMultilineInputProps {
   initialValue: string;
   onChange?: (value: string) => void;
+  onCursorChange?: (cursor: number) => void;
+  onInterceptKey?: (input: string | undefined, key: any) => boolean;
   rows?: number;
   width?: number;
   focus?: boolean;
 }
 
-export function UncontrolledMultilineInput({
+export interface UncontrolledMultilineInputRef {
+  insertText: (text: string, start: number, end: number) => void;
+}
+
+export const UncontrolledMultilineInput = forwardRef<UncontrolledMultilineInputRef, UncontrolledMultilineInputProps>(({
   initialValue,
   onChange,
+  onCursorChange,
+  onInterceptKey,
   rows,
   width,
   focus = true
-}: UncontrolledMultilineInputProps) {
+}, ref) => {
   const [value, setValue] = useState(initialValue);
   const valueRef = useRef(initialValue);
   const [cursorIndex, setCursorIndex] = useState(initialValue.length);
   const cursorRef = useRef(initialValue.length);
+
+  useImperativeHandle(ref, () => ({
+    insertText: (text: string, start: number, end: number) => {
+      const currentVal = valueRef.current;
+      const before = currentVal.slice(0, start);
+      const after = currentVal.slice(end);
+      const newVal = before + text + after;
+      const newCursor = start + text.length;
+
+      valueRef.current = newVal;
+      cursorRef.current = newCursor;
+      setValue(newVal);
+      setCursorIndex(newCursor);
+      onChange?.(newVal);
+      onCursorChange?.(newCursor);
+    }
+  }));
 
   useEffect(() => {
     valueRef.current = value;
@@ -36,10 +61,12 @@ export function UncontrolledMultilineInput({
 
   useInput((input, key) => {
     if (!focus) return;
+    if (onInterceptKey?.(input, key)) return;
 
     let newValue = valueRef.current;
     let newCursor = cursorRef.current;
     let changed = false;
+    let cursorChanged = false;
 
     if (key.upArrow) {
       const lines = normalizeLineEndings(newValue).split("\n");
@@ -68,7 +95,7 @@ export function UncontrolledMultilineInput({
         }
         newIdx += newCol;
         newCursor = newIdx;
-        changed = true;
+        cursorChanged = true;
       }
     } else if (key.downArrow) {
       const lines = normalizeLineEndings(newValue).split("\n");
@@ -97,39 +124,53 @@ export function UncontrolledMultilineInput({
         }
         newIdx += newCol;
         newCursor = newIdx;
-        changed = true;
+        cursorChanged = true;
       }
     } else if (key.leftArrow) {
-      newCursor = Math.max(0, newCursor - 1);
-      changed = true;
+      if (newCursor > 0) {
+        newCursor = Math.max(0, newCursor - 1);
+        cursorChanged = true;
+      }
     } else if (key.rightArrow) {
-      newCursor = Math.min(newValue.length, newCursor + 1);
-      changed = true;
+      if (newCursor < newValue.length) {
+        newCursor = Math.min(newValue.length, newCursor + 1);
+        cursorChanged = true;
+      }
     } else if (key.backspace || key.delete) {
       // Map BOTH to backward delete to fix issues on Windows where Backspace acts as Delete
       if (newCursor > 0) {
         newValue = newValue.slice(0, newCursor - 1) + newValue.slice(newCursor);
         newCursor--;
         changed = true;
+        cursorChanged = true;
       }
     } else if (key.return) {
       newValue = newValue.slice(0, newCursor) + "\n" + newValue.slice(newCursor);
       newCursor++;
       changed = true;
+      cursorChanged = true;
     } else if (input && !key.ctrl && !key.meta && !key.escape && !key.tab) {
       // Normalize \r or \r\n to \n
       const normalizedInput = input.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
       newValue = newValue.slice(0, newCursor) + normalizedInput + newValue.slice(newCursor);
       newCursor += normalizedInput.length;
       changed = true;
+      cursorChanged = true;
     }
 
-    if (changed) {
-      valueRef.current = newValue;
-      cursorRef.current = newCursor;
-      setValue(newValue);
-      setCursorIndex(newCursor);
-      onChange?.(newValue);
+    if (changed || cursorChanged) {
+      if (changed) {
+        valueRef.current = newValue;
+        setValue(newValue);
+      }
+      if (cursorChanged) {
+        cursorRef.current = newCursor;
+        setCursorIndex(newCursor);
+      }
+      if (changed) {
+        onChange?.(newValue);
+      }
+      onCursorChange?.(newCursor);
     }
   }, { isActive: focus });
 
@@ -193,4 +234,4 @@ export function UncontrolledMultilineInput({
       ))}
     </Box>
   );
-}
+});
