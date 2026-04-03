@@ -10,7 +10,6 @@ export interface UncontrolledMultilineInputProps {
   initialValue: string;
   onChange?: (value: string) => void;
   rows?: number;
-  maxRows?: number;
   width?: number;
   focus?: boolean;
 }
@@ -19,7 +18,6 @@ export function UncontrolledMultilineInput({
   initialValue,
   onChange,
   rows,
-  maxRows,
   width,
   focus = true
 }: UncontrolledMultilineInputProps) {
@@ -119,8 +117,10 @@ export function UncontrolledMultilineInput({
       newCursor++;
       changed = true;
     } else if (input && !key.ctrl && !key.meta && !key.escape && !key.tab) {
-      newValue = newValue.slice(0, newCursor) + input + newValue.slice(newCursor);
-      newCursor += input.length;
+      // Normalize \r or \r\n to \n
+      const normalizedInput = input.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+      newValue = newValue.slice(0, newCursor) + normalizedInput + newValue.slice(newCursor);
+      newCursor += normalizedInput.length;
       changed = true;
     }
 
@@ -189,7 +189,7 @@ export function UncontrolledMultilineInput({
   return (
     <Box flexDirection="column" height={visibleRows} width={width} overflow="hidden">
       {visibleTextLines.map((line, idx) => (
-        <Text key={idx}>{line}</Text>
+        <Text key={idx}>{line === '' ? ' ' : line}</Text>
       ))}
     </Box>
   );

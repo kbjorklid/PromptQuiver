@@ -126,6 +126,13 @@ describe('App CRUD Operations', () => {
     // Cancel (Esc)
     stdin.write('\u001B');
     await new Promise(resolve => setTimeout(resolve, 50));
+
+    // New: Handle confirmation dialog. Select 'No' to discard.
+    expect(lastFrame()).toContain('Save changes?');
+    stdin.write('\u001b[C'); // Right arrow
+    await new Promise(resolve => setTimeout(resolve, 50));
+    stdin.write('\r'); // Enter
+    await new Promise(resolve => setTimeout(resolve, 50));
     
     expect(lastFrame()).toContain('Prompt');
     expect(lastFrame()).toContain('Prompt 1');

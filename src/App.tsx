@@ -55,6 +55,7 @@ export const App = ({
   const [isLoading, setIsLoading] = useState(true);
   const [view, setView] = useState<View>('list');
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
+  const [addingPosition, setAddingPosition] = useState<{position: 'before'|'after'|'start'|'end', index: number} | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [toast, setToast] = useState<{ message: string } | null>(null);
@@ -180,32 +181,7 @@ export const App = ({
       updated_at: now,
     };
 
-    const list = [...data[activeTab]];
-    let newIndex = 0;
-
-    if (position === 'start') {
-      list.unshift(newPrompt);
-      newIndex = 0;
-    } else if (position === 'end') {
-      list.push(newPrompt);
-      newIndex = list.length - 1;
-    } else if (position === 'before') {
-      list.splice(selectedIndex, 0, newPrompt);
-      newIndex = selectedIndex;
-    } else if (position === 'after') {
-      if (list.length === 0) {
-        list.push(newPrompt);
-        newIndex = 0;
-      } else {
-        list.splice(selectedIndex + 1, 0, newPrompt);
-        newIndex = selectedIndex + 1;
-      }
-    }
-
-    const nextData = { ...data, [activeTab]: list };
-    setData(nextData);
-    
-    updateSelectedIndex(newIndex);
+    setAddingPosition({ position, index: selectedIndex });
     setEditingPrompt(newPrompt);
     setView('editor');
   };
@@ -371,22 +347,56 @@ export const App = ({
         onSave={(text) => {
           const listName = activeTab;
           const list = [...data[listName]];
-          const index = list.findIndex((p) => p.id === editingPrompt.id);
-          if (index !== -1) {
-            const nextData = { ...data };
-            nextData[listName] = [...list];
-            nextData[listName][index] = {
+          
+          if (addingPosition) {
+            const newPrompt = {
               ...editingPrompt,
               text: text,
               updated_at: new Date().toISOString(),
             };
+            let newIndex = 0;
+            if (addingPosition.position === 'start') {
+              list.unshift(newPrompt);
+              newIndex = 0;
+            } else if (addingPosition.position === 'end') {
+              list.push(newPrompt);
+              newIndex = list.length - 1;
+            } else if (addingPosition.position === 'before') {
+              list.splice(addingPosition.index, 0, newPrompt);
+              newIndex = addingPosition.index;
+            } else if (addingPosition.position === 'after') {
+              if (list.length === 0) {
+                list.push(newPrompt);
+                newIndex = 0;
+              } else {
+                list.splice(addingPosition.index + 1, 0, newPrompt);
+                newIndex = addingPosition.index + 1;
+              }
+            }
+            const nextData = { ...data, [listName]: list };
             pushState(nextData);
-            showToast('Saved');
+            updateSelectedIndex(newIndex);
+            showToast('Added');
+          } else {
+            const index = list.findIndex((p) => p.id === editingPrompt.id);
+            if (index !== -1) {
+              const nextData = { ...data };
+              nextData[listName] = [...list];
+              nextData[listName][index] = {
+                ...editingPrompt,
+                text: text,
+                updated_at: new Date().toISOString(),
+              };
+              pushState(nextData);
+              showToast('Saved');
+            }
           }
+          setAddingPosition(null);
           setView('list');
           setEditingPrompt(null);
         }}
         onCancel={() => {
+          setAddingPosition(null);
           setView('list');
           setEditingPrompt(null);
         }}
