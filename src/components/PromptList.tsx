@@ -27,7 +27,7 @@ export const PromptList: React.FC<PromptListProps> = ({
 
   if (currentList.length === 0) {
     return (
-      <Box justifyContent="center" marginTop={2}>
+      <Box flexGrow={1} justifyContent="center" alignItems="center">
         <Text color="gray">No items yet</Text>
       </Box>
     );

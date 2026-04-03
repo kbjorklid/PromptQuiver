@@ -33,10 +33,10 @@ describe('calculateViewport', () => {
 
   test('calculates viewport size from terminal rows', () => {
     const result = calculateViewport({ totalItems: 20, selectedIndex: 10, terminalRows: 30 });
-    // viewportSize = max(3, 30 - 15) = 15.
-    expect(result.viewportSize).toBe(15);
-    // half = 7. start = 10 - 7 = 3. end = 3 + 15 = 18.
-    expect(result.start).toBe(3);
-    expect(result.end).toBe(18);
+    // viewportSize = Math.max(3, Math.floor((30 - 11) / 3)) = Math.max(3, 6) = 6.
+    expect(result.viewportSize).toBe(6);
+    // half = 3. start = 10 - 3 = 7. end = 7 + 6 = 13.
+    expect(result.start).toBe(7);
+    expect(result.end).toBe(13);
   });
 });

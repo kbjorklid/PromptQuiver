@@ -48,6 +48,7 @@ export async function loadPrompts(cwd: string): Promise<PromptStorageData> {
 
 export async function savePrompts(cwd: string, data: PromptStorageData): Promise<void> {
   const filePath = getStoragePath(cwd);
+  const tempPath = `${filePath}.tmp`;
   await ensureStorageDir();
   
   // Use YAML literal blocks for multi-line strings
@@ -56,5 +57,6 @@ export async function savePrompts(cwd: string, data: PromptStorageData): Promise
     noRefs: true,
   });
   
-  await fs.writeFile(filePath, yamlContent, 'utf-8');
+  await fs.writeFile(tempPath, yamlContent, 'utf-8');
+  await fs.rename(tempPath, filePath);
 }

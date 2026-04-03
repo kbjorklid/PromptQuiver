@@ -37,12 +37,14 @@ export const App = ({
   cwd, 
   loadPromptsFn = loadPrompts,
   savePromptsFn = savePrompts,
-  viewportSize: initialViewportSize
+  viewportSize: initialViewportSize,
+  debounceMs
 }: { 
   cwd: string;
   loadPromptsFn?: typeof loadPrompts;
   savePromptsFn?: typeof savePrompts;
   viewportSize?: number;
+  debounceMs?: number;
 }) => {
   const { exit } = useApp();
   const terminalSize = useTerminalSize();
@@ -76,7 +78,7 @@ export const App = ({
     cancelEdit,
     openEditor,
     processNextPrompt,
-  } = usePrompts({ cwd, loadPromptsFn, savePromptsFn });
+  } = usePrompts({ cwd, loadPromptsFn, savePromptsFn, debounceMs });
 
   const orderedTabs: Tab[] = ['main', 'notes', 'archive'];
 
@@ -211,11 +213,13 @@ export const App = ({
 
   if (isLoading) {
     return (
-      <Box padding={1}>
-        <Text color="yellow">
-          <Spinner type="dots" />
-        </Text>
-        <Text> Loading prompts...</Text>
+      <Box padding={1} width="100%" height="100%" justifyContent="center" alignItems="center">
+        <Box>
+          <Text color="yellow">
+            <Spinner type="dots" />
+          </Text>
+          <Text> Loading prompts...</Text>
+        </Box>
       </Box>
     );
   }
@@ -233,23 +237,25 @@ export const App = ({
   }
 
   return (
-    <Box flexDirection="column" padding={1} width="100%" height="100%">
-      <Header activeTab={activeTab} orderedTabs={orderedTabs} />
+    <Box flexDirection="column" width="100%" height="100%">
+      <Box flexDirection="column" paddingX={1} paddingTop={1} flexGrow={1}>
+        <Header activeTab={activeTab} orderedTabs={orderedTabs} />
 
-      <PromptList 
-        currentList={currentList}
-        selectedIndex={selectedIndex}
-        isMoving={isMoving}
-        terminalSize={terminalSize}
-        initialViewportSize={initialViewportSize}
-      />
+        <PromptList 
+          currentList={currentList}
+          selectedIndex={selectedIndex}
+          isMoving={isMoving}
+          terminalSize={terminalSize}
+          initialViewportSize={initialViewportSize}
+        />
 
-      <SearchInput 
-        isSearching={isSearching}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        updateSelectedIndex={updateSelectedIndex}
-      />
+        <SearchInput 
+          isSearching={isSearching}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          updateSelectedIndex={updateSelectedIndex}
+        />
+      </Box>
 
       <Footer activeTab={activeTab} toast={toast} />
     </Box>

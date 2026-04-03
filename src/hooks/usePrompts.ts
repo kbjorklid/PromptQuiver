@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { Prompt, PromptStorageData } from '../storage';
 import { loadPrompts as defaultLoadPrompts, savePrompts as defaultSavePrompts } from '../storage';
 import { v4 as uuidv4 } from 'uuid';
+import { useAutoSave } from './useAutoSave';
 
 export type Tab = 'main' | 'notes' | 'archive';
 export type View = 'list' | 'editor';
@@ -10,12 +11,14 @@ export interface UsePromptsProps {
   cwd: string;
   loadPromptsFn?: typeof defaultLoadPrompts;
   savePromptsFn?: typeof defaultSavePrompts;
+  debounceMs?: number;
 }
 
 export function usePrompts({
   cwd,
   loadPromptsFn = defaultLoadPrompts,
   savePromptsFn = defaultSavePrompts,
+  debounceMs = 500,
 }: UsePromptsProps) {
   const [appState, setAppState] = useState<{
     data: PromptStorageData;
@@ -57,12 +60,18 @@ export function usePrompts({
     init();
   }, [cwd, loadPromptsFn]);
 
-  // Save whenever data changes
-  useEffect(() => {
-    if (!isLoading) {
-      savePromptsFn(cwd, data);
-    }
-  }, [data, isLoading, cwd, savePromptsFn]);
+  // Handle auto-save
+  const { triggerSave } = useAutoSave({
+    cwd,
+    data,
+    isLoading,
+    savePromptsFn,
+    onSaveError: (err) => {
+      showToast('Error: Failed to save prompts!');
+      console.error('Save error:', err);
+    },
+    debounceMs,
+  });
 
   const currentList = useMemo(() => {
     const fullList = data[activeTab];
@@ -85,13 +94,16 @@ export function usePrompts({
     }));
   }, [activeTab]);
 
-  const pushState = useCallback((nextData: PromptStorageData) => {
+  const pushState = useCallback((nextData: PromptStorageData, immediateSave = false) => {
     setAppState(current => ({
       history: [...current.history, current.data],
       future: [],
       data: nextData,
     }));
-  }, []);
+    if (immediateSave) {
+      triggerSave(true, nextData);
+    }
+  }, [triggerSave]);
 
   const undo = useCallback(() => {
     setAppState(current => {
@@ -227,7 +239,7 @@ export function usePrompts({
         }
       }
       const nextData = { ...data, [listName]: list };
-      pushState(nextData);
+      pushState(nextData, true);
       updateSelectedIndex(newIndex);
       showToast('Added');
     } else {
@@ -240,7 +252,7 @@ export function usePrompts({
           text: text,
           updated_at: new Date().toISOString(),
         };
-        pushState(nextData);
+        pushState(nextData, true);
         showToast('Saved');
       }
     }

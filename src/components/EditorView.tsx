@@ -72,7 +72,7 @@ export function EditorView({ initialText, onSave, onCancel, terminalSize }: Edit
   });
 
   return (
-    <Box flexDirection="column" padding={1} width="100%">
+    <Box flexDirection="column" padding={1} width="100%" height="100%">
       <Box marginBottom={1}>
         <Text bold color="blue">Editor</Text>
       </Box>
@@ -81,6 +81,7 @@ export function EditorView({ initialText, onSave, onCancel, terminalSize }: Edit
         paddingX={1} 
         flexDirection="column" 
         borderColor="blue"
+        flexGrow={1}
       >
         <UncontrolledMultilineInput
           initialValue={initialText}
