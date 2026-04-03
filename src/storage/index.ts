@@ -2,7 +2,8 @@ import fs from 'fs/promises';
 import path from 'path';
 import yaml from 'js-yaml';
 export * from './paths';
-import { STORAGE_DIR, getStoragePath, PromptStorageData } from './paths';
+import { STORAGE_DIR, getStoragePath } from './paths';
+import type { Prompt, PromptStorageData } from './paths';
 
 const DEFAULT_DATA: PromptStorageData = {
   main: [],
