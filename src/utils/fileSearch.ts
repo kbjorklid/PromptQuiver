@@ -5,6 +5,7 @@ import ignore from 'ignore';
 export async function fuzzySearchFiles(query: string, cwd: string, maxResults: number = 20): Promise<string[]> {
   let currentDir = cwd;
   let ig = ignore();
+  let ignoreDir: string | null = null;
 
   // Find the first .gitignore going upwards
   while (true) {
@@ -12,6 +13,7 @@ export async function fuzzySearchFiles(query: string, cwd: string, maxResults: n
       const p = path.join(currentDir, '.gitignore');
       const content = await fs.readFile(p, 'utf8');
       ig.add(content);
+      ignoreDir = currentDir;
       break;
     } catch (e) {
       const parentDir = path.dirname(currentDir);
@@ -27,7 +29,7 @@ export async function fuzzySearchFiles(query: string, cwd: string, maxResults: n
   const lowerQuery = query.toLowerCase();
 
   async function walk(dir: string, relPath: string) {
-    if (results.length >= maxResults * 5) return; // Cap search space to allow sorting if we wanted, or just limit
+    if (results.length >= maxResults * 5) return; // Cap search space
     
     let entries;
     try {
@@ -37,14 +39,21 @@ export async function fuzzySearchFiles(query: string, cwd: string, maxResults: n
     }
 
     for (const entry of entries) {
-      const entryRelPath = relPath ? `${relPath}/${entry.name}` : entry.name;
+      const entryRelPath = relPath ? path.join(relPath, entry.name).replace(/\\/g, '/') : entry.name;
       
-      // Check ignore
-      if (ig.ignores(entryRelPath)) continue;
+      // Calculate path relative to ignoreDir for proper pattern matching
+      let pathForIgnore = entryRelPath;
+      if (ignoreDir) {
+        const fullPath = path.join(cwd, entryRelPath);
+        pathForIgnore = path.relative(ignoreDir, fullPath).replace(/\\/g, '/');
+      }
+      
+      if (ig.ignores(pathForIgnore)) continue;
 
       if (entry.isDirectory()) {
-        if (entryRelPath.toLowerCase().includes(lowerQuery)) {
-          results.push(entryRelPath + '/');
+        const displayPath = entryRelPath + '/';
+        if (displayPath.toLowerCase().includes(lowerQuery)) {
+          results.push(displayPath);
         }
         await walk(path.join(dir, entry.name), entryRelPath);
       } else {
