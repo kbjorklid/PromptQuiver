@@ -1,12 +1,13 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import type { Prompt, PromptStorageData } from '../storage';
+import { useCallback } from 'react';
+import type { Prompt } from '../storage';
 import { loadPrompts as defaultLoadPrompts, savePrompts as defaultSavePrompts } from '../storage';
 import { v4 as uuidv4 } from 'uuid';
-import { useAutoSave } from './useAutoSave';
-import { getCurrentGitBranch } from '../utils/git';
+import { useBranchFilter } from './useBranchFilter';
+import { usePromptUI } from './usePromptUI';
+import { usePromptData } from './usePromptData';
+import { Tab, View } from './types';
 
-export type Tab = 'main' | 'notes' | 'archive' | 'canned' | 'snippets';
-export type View = 'list' | 'editor';
+export type { Tab, View };
 export interface Toast { message: string }
 
 export interface UsePromptsProps {
@@ -22,208 +23,68 @@ export function usePrompts({
   savePromptsFn = defaultSavePrompts,
   debounceMs = 500,
 }: UsePromptsProps) {
-  const [appState, setAppState] = useState<{
-    data: PromptStorageData;
-    history: PromptStorageData[];
-    future: PromptStorageData[];
-  }>({
-    data: { main: [], notes: [], archive: [], canned: [], snippets: [] },
-    history: [],
-    future: [],
-  });
-  const { data, history, future } = appState;
-
-  const [activeTab, setActiveTab] = useState<Tab>('main');
-  const [selectedIndices, setSelectedIndices] = useState<Record<Tab, number>>({ main: 0, notes: 0, archive: 0, canned: 0, snippets: 0 });
-  const [isLoading, setIsLoading] = useState(true);
-  const [view, setView] = useState<View>('list');
-  const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
-  const [addingPosition, setAddingPosition] = useState<{position: 'before'|'after'|'start'|'end', index: number} | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
-  const [isMoving, setIsMoving] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [lastCopiedId, setLastCopiedId] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ message: string } | null>(null);
-  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const [branchFilterEnabled, setBranchFilterEnabled] = useState(false);
-  const [currentBranch, setCurrentBranch] = useState<string | undefined>(undefined);
-
-  const refreshCurrentBranch = useCallback(() => {
-    const branch = getCurrentGitBranch(cwd);
-    setCurrentBranch(branch);
-    return branch;
-  }, [cwd]);
-
-  const toggleBranchFilter = useCallback(() => {
-    setBranchFilterEnabled(prev => {
-      const next = !prev;
-      if (next) {
-        refreshCurrentBranch();
-      }
-      return next;
-    });
-  }, [refreshCurrentBranch]);
-
-  useEffect(() => {
-    if (!branchFilterEnabled) return;
-    refreshCurrentBranch();
-    const interval = setInterval(refreshCurrentBranch, 10000);
-    return () => clearInterval(interval);
-  }, [branchFilterEnabled, refreshCurrentBranch]);
-
-  const showToast = useCallback((message: string) => {
-    if (toastTimer.current) clearTimeout(toastTimer.current);
-    setToast({ message });
-    toastTimer.current = setTimeout(() => {
-      setToast(null);
-    }, 3000);
+  const { branchFilterEnabled, currentBranch, toggleBranchFilter, refreshCurrentBranch } = useBranchFilter(cwd);
+  
+  const onSaveError = useCallback((err: any) => {
+    console.error('Save error:', err);
   }, []);
 
-  useEffect(() => {
-    async function init() {
-      const loaded = await loadPromptsFn(cwd);
-      setAppState(prev => ({ ...prev, data: loaded }));
-      setIsLoading(false);
-    }
-    init();
-  }, [cwd, loadPromptsFn]);
-
-  const onSaveError = useCallback((err: any) => {
-    showToast('Error: Failed to save prompts!');
-    console.error('Save error:', err);
-  }, [showToast]);
-
-  // Handle auto-save
-  const { triggerSave } = useAutoSave({
+  const { 
+    data, isLoading, pushState, undo, redo, 
+    moveItemInList: dataMoveItemInList,
+    movePrompt: dataMovePrompt,
+    deletePrompt: dataDeletePrompt,
+    updatePromptInList,
+    insertPromptInList
+  } = usePromptData({
     cwd,
-    data,
-    isLoading,
+    loadPromptsFn,
     savePromptsFn,
-    onSaveError,
     debounceMs,
+    onSaveError,
   });
 
-  const currentList = useMemo(() => {
-    let fullList = data[activeTab] || [];
-    if (branchFilterEnabled && currentBranch && activeTab !== 'canned') {
-      fullList = fullList.filter(p => !p.branch || p.branch === currentBranch);
-    }
-    return searchQuery 
-      ? fullList.filter(p => p.text.toLowerCase().includes(searchQuery.toLowerCase()))
-      : fullList;
-  }, [data, activeTab, searchQuery, branchFilterEnabled, currentBranch]);
-
-  const selectedIndex = useMemo(() => {
-    return Math.min(
-      selectedIndices[activeTab],
-      Math.max(0, currentList.length - 1)
-    );
-  }, [selectedIndices, activeTab, currentList.length]);
-
-  const updateSelectedIndex = useCallback((index: number) => {
-    setSelectedIndices((prev) => ({
-      ...prev,
-      [activeTab]: index,
-    }));
-  }, [activeTab]);
-
-  const pushState = useCallback((nextData: PromptStorageData, immediateSave = false) => {
-    setAppState(current => ({
-      history: [...current.history, current.data],
-      future: [],
-      data: nextData,
-    }));
-    if (immediateSave) {
-      triggerSave(true, nextData);
-    }
-  }, [triggerSave]);
-
-  const undo = useCallback(() => {
-    setAppState(current => {
-      if (current.history.length === 0) return current;
-      const prev = current.history[current.history.length - 1];
-      if (!prev) return current;
-      return {
-        history: current.history.slice(0, -1),
-        future: [current.data, ...current.future],
-        data: prev,
-      };
-    });
-    showToast('Undo performed');
-  }, [showToast]);
-
-  const redo = useCallback(() => {
-    setAppState(current => {
-      if (current.future.length === 0) return current;
-      const next = current.future[0];
-      if (!next) return current;
-      return {
-        history: [...current.history, current.data],
-        future: current.future.slice(1),
-        data: next,
-      };
-    });
-    showToast('Redo performed');
-  }, [showToast]);
+  const {
+    activeTab, setActiveTab, currentList, selectedIndex, updateSelectedIndex,
+    view, setView, editingPrompt, setEditingPrompt, addingPosition, setAddingPosition,
+    isSearching, setIsSearching, searchQuery, setSearchQuery,
+    isMoving, setIsMoving, lastCopiedId, setLastCopiedId,
+    toast, showToast
+  } = usePromptUI(data, branchFilterEnabled, currentBranch);
 
   const moveItemInList = useCallback((fromIndex: number, toIndex: number) => {
     if (toIndex < 0 || toIndex >= currentList.length) return;
-    if (searchQuery) return; // Disable moving while searching
+    if (searchQuery) return;
 
-    const listName = activeTab;
-    const newList = [...data[listName]];
-    const movedItem = newList.splice(fromIndex, 1)[0];
-    if (!movedItem) return;
-    
-    newList.splice(toIndex, 0, movedItem);
-
-    pushState({
-      ...data,
-      [listName]: newList,
-    });
+    dataMoveItemInList(activeTab, fromIndex, toIndex);
     updateSelectedIndex(toIndex);
-  }, [data, currentList.length, searchQuery, activeTab, pushState, updateSelectedIndex]);
+  }, [activeTab, currentList.length, dataMoveItemInList, searchQuery, updateSelectedIndex]);
 
   const movePrompt = useCallback((from: Tab, to: Tab, index: number) => {
-    const fromList = [...data[from]];
-    const toList = [...data[to]];
-    const [prompt] = fromList.splice(index, 1);
-    
-    if (prompt) {
-      if (from === 'archive') {
-        const targetTab: Tab = prompt.type === 'note' ? 'notes' : 'main';
-        const targetList = [...data[targetTab]];
-        targetList.push(prompt);
-        pushState({
-          ...data,
-          archive: fromList,
-          [targetTab]: targetList,
-        });
-        const toName = targetTab === 'main' ? 'Prompt' : 'Notes';
-        showToast(`Restored to ${toName}`);
-      } else {
-        toList.push(prompt);
-        pushState({
-          ...data,
-          [from]: fromList,
-          [to]: toList,
-        });
-        const toName = to === 'main' ? 'Prompt' : to.charAt(0).toUpperCase() + to.slice(1);
-        showToast(`Moved to ${toName}`);
+    let targetTab: Tab | undefined;
+    if (from === 'archive') {
+      const fromList = data[from];
+      const prompt = fromList[index];
+      if (prompt) {
+        targetTab = prompt.type === 'note' ? 'notes' : 'main';
       }
     }
-  }, [data, pushState, showToast]);
+
+    dataMovePrompt(from, to, index, targetTab);
+    
+    if (from === 'archive' && targetTab) {
+      const toName = targetTab === 'main' ? 'Prompt' : 'Notes';
+      showToast(`Restored to ${toName}`);
+    } else {
+      const toName = to === 'main' ? 'Prompt' : to.charAt(0).toUpperCase() + to.slice(1);
+      showToast(`Moved to ${toName}`);
+    }
+  }, [data, dataMovePrompt, showToast]);
 
   const deletePrompt = useCallback((tab: Tab, index: number) => {
-    const list = [...data[tab]];
-    list.splice(index, 1);
-    pushState({
-      ...data,
-      [tab]: list,
-    });
+    dataDeletePrompt(tab, index);
     showToast("Deleted. Press 'u' to undo (5s)");
-  }, [data, pushState, showToast]);
+  }, [dataDeletePrompt, showToast]);
 
   const addPrompt = useCallback((position: 'before' | 'after' | 'start' | 'end') => {
     const now = new Date().toISOString();
@@ -242,13 +103,13 @@ export function usePrompts({
     setAddingPosition({ position, index: selectedIndex });
     setEditingPrompt(newPrompt);
     setView('editor');
-  }, [activeTab, selectedIndex, refreshCurrentBranch]);
+  }, [activeTab, selectedIndex, refreshCurrentBranch, setAddingPosition, setEditingPrompt, setView]);
 
   const saveEditedPrompt = useCallback((text: string, name?: string) => {
     if (!editingPrompt) return;
     
     const listName = activeTab;
-    const list = [...data[listName]];
+    const list = data[listName];
     
     if (addingPosition) {
       const newPrompt = {
@@ -259,75 +120,57 @@ export function usePrompts({
       };
       let newIndex = 0;
       if (addingPosition.position === 'start') {
-        list.unshift(newPrompt);
         newIndex = 0;
+        insertPromptInList(listName, 0, newPrompt, true);
       } else if (addingPosition.position === 'end') {
-        list.push(newPrompt);
-        newIndex = list.length - 1;
+        newIndex = list.length;
+        insertPromptInList(listName, list.length, newPrompt, true);
       } else if (addingPosition.position === 'before') {
-        list.splice(addingPosition.index, 0, newPrompt);
         newIndex = addingPosition.index;
+        insertPromptInList(listName, addingPosition.index, newPrompt, true);
       } else if (addingPosition.position === 'after') {
-        if (list.length === 0) {
-          list.push(newPrompt);
-          newIndex = 0;
-        } else {
-          list.splice(addingPosition.index + 1, 0, newPrompt);
-          newIndex = addingPosition.index + 1;
-        }
+        newIndex = list.length === 0 ? 0 : addingPosition.index + 1;
+        insertPromptInList(listName, newIndex, newPrompt, true);
       }
-      const nextData = { ...data, [listName]: list };
-      pushState(nextData, true);
       updateSelectedIndex(newIndex);
       showToast('Added');
     } else {
       const index = list.findIndex((p) => p.id === editingPrompt.id);
       if (index !== -1) {
-        const nextData = { ...data };
-        nextData[listName] = [...list];
-        nextData[listName][index] = {
+        const updatedPrompt = {
           ...editingPrompt,
           text: text,
           name: name,
           updated_at: new Date().toISOString(),
         };
-        pushState(nextData, true);
+        updatePromptInList(listName, index, updatedPrompt, true);
         showToast('Saved');
       }
     }
     setAddingPosition(null);
     setView('list');
     setEditingPrompt(null);
-  }, [editingPrompt, activeTab, data, addingPosition, pushState, updateSelectedIndex, showToast]);
+  }, [editingPrompt, activeTab, data, addingPosition, updateSelectedIndex, showToast, setAddingPosition, setView, setEditingPrompt, insertPromptInList, updatePromptInList]);
 
   const cancelEdit = useCallback(() => {
     setAddingPosition(null);
     setView('list');
     setEditingPrompt(null);
-  }, []);
+  }, [setAddingPosition, setView, setEditingPrompt]);
 
   const openEditor = useCallback((prompt: Prompt) => {
     setEditingPrompt(prompt);
     setView('editor');
-  }, []);
+  }, [setEditingPrompt, setView]);
 
   const processNextPrompt = useCallback(() => {
     if (activeTab === 'main' && data.main.length > 0) {
-      const fromList = [...data.main];
-      const toList = [...data.archive];
-      const [prompt] = fromList.splice(0, 1);
-      if (prompt) {
-        toList.push(prompt);
-        pushState({
-          ...data,
-          main: fromList,
-          archive: toList,
-        });
-        return prompt;
-      }
+      const prompt = data.main[0];
+      dataMovePrompt('main', 'archive', 0);
+      return prompt;
     }
     return null;
-  }, [activeTab, data, pushState]);
+  }, [activeTab, data, dataMovePrompt]);
 
   return {
     data,
