@@ -1,6 +1,6 @@
-# Top 3 Refactoring Opportunities for promptcue
+# Top 3 Refactoring Opportunities for Prompt Quiver
 
-This document outlines the highest-impact refactoring opportunities identified in the `promptcue` codebase to improve maintainability, testability, and architectural clarity.
+This document outlines the highest-impact refactoring opportunities identified in the `Prompt Quiver` codebase to improve maintainability, testability, and architectural clarity.
 
 ## 1. Decompose the `usePrompts` "God Hook"
 

@@ -1,5 +1,8 @@
 {
-  "name": "promptcue",
+  "name": "prompt-quiver",
+  "bin": {
+    "quiver": "./index.tsx"
+  },
   "module": "index.ts",
   "type": "module",
   "private": true,
@@ -13,7 +16,8 @@
     "@types/react": "^19.2.14",
     "@types/react-test-renderer": "^19.1.0",
     "@types/uuid": "^11.0.0",
-    "ink-testing-library": "^4.0.0"
+    "ink-testing-library": "^4.0.0",
+    "react-devtools-core": "^7.0.1"
   },
   "peerDependencies": {
     "typescript": "^5"

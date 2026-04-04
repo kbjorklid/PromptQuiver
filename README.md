@@ -1,4 +1,4 @@
-# promptcue
+# Prompt Quiver
 
 To install dependencies:
 

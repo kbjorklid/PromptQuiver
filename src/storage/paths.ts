@@ -20,7 +20,7 @@ export interface PromptStorageData {
   snippets: Prompt[];
 }
 
-export const STORAGE_DIR = path.join(os.homedir(), '.promptcue');
+export const STORAGE_DIR = path.join(os.homedir(), '.promptquiver');
 
 /**
  * Generates the specific filename: prompts-{last-folder-name}-{hash}.yml

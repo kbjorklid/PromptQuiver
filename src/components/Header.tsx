@@ -15,7 +15,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, orderedTabs, branchFi
     <Box marginBottom={1} flexDirection="column">
       <Box justifyContent="space-between" alignItems="center">
         <Gradient name="atlas">
-          <Text bold italic>{">>> PROMPTCUE <<<"}</Text>
+          <Text bold italic>{">>> PROMPT QUIVER <<<"}</Text>
         </Gradient>
         {branchFilterEnabled && currentBranch && (
           <Text color="cyan">Branch: {currentBranch}</Text>

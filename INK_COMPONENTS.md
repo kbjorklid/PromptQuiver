@@ -1,6 +1,6 @@
 # Ink Components
 
-A collection of core Ink components and external community components for use in PromptCue.
+A collection of core Ink components and external community components for use in Prompt Quiver.
 
 ## Core Components
 - [<Text>](https://github.com/vadimdemedes/ink#text) - Displays text with support for colors, backgrounds, and styles (bold, italic, etc.).

@@ -1,6 +1,6 @@
-# promptcue
+# Prompt Quiver
 
-`promptcue` is a Terminal User Interface (TUI) application designed to help users manage a queue of prompts for AI agents. It allows users to write and organize future "roads" for an AI while it is busy processing current tasks.
+`Prompt Quiver` is a Terminal User Interface (TUI) application designed to help users manage a queue of prompts for AI agents. It allows users to write and organize future "roads" for an AI while it is busy processing current tasks.
 
 ## Project Overview
 
@@ -8,7 +8,7 @@
 - **Architecture:** 
   - **View Layer:** React components using Ink for terminal rendering.
   - **State Management:** Functional state within `src/App.tsx` with a custom undo/redo history stack.
-  - **Persistence:** YAML-based storage using `js-yaml`. Files are stored in `~/.promptcue/` with a filename derived from the current working directory's absolute path hash.
+  - **Persistence:** YAML-based storage using `js-yaml`. Files are stored in `~/.promptquiver/` with a filename derived from the current working directory's absolute path hash.
   - **Testing:** Comprehensive test suite using Bun's built-in test runner and `ink-testing-library`.
 
 ## Building and Running
@@ -38,7 +38,7 @@
 - **Mandate:** Always add a new test case for bug fixes or new features, as specified in the global context.
 
 ### Storage & Schema
-- **Data Location:** `~/.promptcue/prompts-{cwd-basename}-{cwd-hash}.yml`.
+- **Data Location:** `~/.promptquiver/prompts-{cwd-basename}-{cwd-hash}.yml`.
 - **YAML Format:** Uses YAML literal blocks (`|`) for multi-line prompt text to ensure readability and safety.
 - **Schema:**
   ```yaml
@@ -53,8 +53,8 @@
     text: string;
     type: 'prompt' | 'note';
     branch?: string;
-    created_at: string; // ISO-8601
-    updated_at: string; // ISO-8601
+    created_at: string; // ISO-8601;
+    updated_at: string; // ISO-8601;
   }
   ```
 
@@ -63,5 +63,5 @@
 - `src/App.tsx`: Root component containing the main logic, state, and keyboard event handlers.
 - `src/storage/index.ts`: Handles loading and saving prompt data to YAML.
 - `src/components/EditorView.tsx`: Full-screen multi-line text editor.
-- `PROMPTCUE_SPEC.md`: Detailed functional specification and keyboard shortcut reference.
+- `PROMPT_QUIVER_SPEC.md`: Detailed functional specification and keyboard shortcut reference.
 - `INK_COMPONENTS.md`: Reference for Ink components used in the project.

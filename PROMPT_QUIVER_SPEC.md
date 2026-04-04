@@ -1,6 +1,6 @@
-# promptcue Specification
+# Prompt Quiver Specification
 
-**promptcue** is a Terminal User Interface (TUI) application designed to help users manage a queue of prompts for AI agents. It allows users to write and organize future "roads" for an AI while it is busy processing current tasks.
+**Prompt Quiver** is a Terminal User Interface (TUI) application designed to help users manage a queue of prompts for AI agents. It allows users to write and organize future "roads" for an AI while it is busy processing current tasks.
 
 ## Tech Stack
 - **Runtime:** Bun
@@ -10,11 +10,11 @@
 - **Clipboard:** `clipboardy` or similar Bun-compatible utility
 
 ## Data & Persistence
-- **Storage Directory:** `~/.promptcue/`
+- **Storage Directory:** `~/.promptquiver/`
 - **Filename Convention:** `prompts-{last-folder-name}-{hash}.yml`
   - `{last-folder-name}`: The name of the current working directory (CWD).
   - `{hash}`: A short unique hash (e.g., 8-character SHA-256) of the **full absolute path** of the CWD to avoid collisions.
-  - Example: For `F:\code\promptcue`, the file might be `prompts-promptcue-a1b2c3d4.yml`.
+  - Example: For `F:\code\prompt-quiver`, the file might be `prompts-prompt-quiver-a1b2c3d4.yml`.
 - **Schema:**
   ```yaml
   main:
@@ -109,8 +109,8 @@ A full-screen view for editing a specific prompt.
 - **YAML Safety:** Multi-line strings must be stored using YAML literal blocks (`|`) or properly escaped to handle special characters (quotes, backslashes, etc.).
 
 ## Installation & Usage
-- The app should be runnable via `bun start`.
-- On first run, it should create the `~/.promptcue/` directory and an empty `prompts.yml` if they don't exist.
+- The app should be runnable via `quiver` or `bun start`.
+- On first run, it should create the `~/.promptquiver/` directory and an empty `prompts.yml` if they don't exist.
 
 ## Iteration Plan
 
