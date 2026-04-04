@@ -11,7 +11,8 @@ export type PromptAction =
   | { type: 'UPDATE_PROMPT'; tab: Tab; index: number; prompt: Prompt }
   | { type: 'INSERT_PROMPT'; tab: Tab; index: number; prompt: Prompt }
   | { type: 'UPDATE_SETTINGS'; settings: Settings }
-  | { type: 'PUSH_STATE'; payload: PromptStorageData };
+  | { type: 'PUSH_STATE'; payload: PromptStorageData }
+  | { type: 'STAGE_PROMPT'; tab: Tab; index: number };
 
 export interface PromptState {
   present: PromptStorageData;
@@ -170,6 +171,62 @@ export function promptReducer(state: PromptState, action: PromptAction): PromptS
       return {
         past: [...state.past, state.present],
         present: { ...state.present, settings: action.settings },
+        future: [],
+      };
+    }
+
+    case 'STAGE_PROMPT': {
+      const { tab, index } = action;
+      if (tab === 'settings') return state;
+      const targetPrompt = state.present[tab]?.[index];
+      if (!targetPrompt) return state;
+
+      const isCanned = tab === 'canned';
+      const isStaging = isCanned ? true : !targetPrompt.staged;
+      const nextPresent: PromptStorageData = { ...state.present };
+      
+      // Clone lists we will modify
+      const sourceTabs: (keyof Omit<PromptStorageData, 'settings'>)[] = ['main', 'notes', 'canned', 'snippets', 'archive'];
+      sourceTabs.forEach(t => {
+        nextPresent[t] = state.present[t] ? [...state.present[t]] : [];
+      });
+
+      if (isStaging) {
+        // Move other staged prompts to archive
+        const moveFromTabs: Tab[] = ['main', 'notes', 'canned', 'snippets'];
+        moveFromTabs.forEach(t => {
+          const list = nextPresent[t];
+          for (let i = list.length - 1; i >= 0; i--) {
+            const p = list[i];
+            if (p.staged && p.id !== targetPrompt.id) {
+              list.splice(i, 1);
+              nextPresent.archive.unshift({ ...p, staged: false });
+            }
+          }
+        });
+        // Also un-stage any in archive
+        nextPresent.archive = nextPresent.archive.map(p => 
+          (p.staged && p.id !== targetPrompt.id) ? { ...p, staged: false } : p
+        );
+
+        // Stage the target (unless it's canned)
+        if (!isCanned) {
+          const targetIdx = nextPresent[tab].findIndex(p => p.id === targetPrompt.id);
+          if (targetIdx !== -1) {
+            nextPresent[tab][targetIdx] = { ...nextPresent[tab][targetIdx], staged: true };
+          }
+        }
+      } else {
+        // Just un-stage
+        const targetIdx = nextPresent[tab].findIndex(p => p.id === targetPrompt.id);
+        if (targetIdx !== -1) {
+          nextPresent[tab][targetIdx] = { ...nextPresent[tab][targetIdx], staged: false };
+        }
+      }
+
+      return {
+        past: [...state.past, state.present],
+        present: nextPresent,
         future: [],
       };
     }

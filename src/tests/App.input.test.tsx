@@ -110,7 +110,7 @@ describe('App Keyboard Inputs', () => {
     expect(lastFrame()).not.toContain('Prompt 1');
   });
 
-  test('Next Prompt (N) and Copy (y)', async () => {
+  test('Stage Prompt (s) and Copy (y)', async () => {
     const writeSpy = spyOn(clipboardy, 'writeSync').mockImplementation(() => {});
     const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -121,14 +121,22 @@ describe('App Keyboard Inputs', () => {
     expect(writeSpy).toHaveBeenCalledWith('Prompt 1');
     expect(lastFrame()).toContain('Copied to clipboard');
 
-    // Next Prompt (N)
-    stdin.write('N');
+    // Stage Prompt (s)
+    stdin.write('s');
     await new Promise(resolve => setTimeout(resolve, 50));
     expect(writeSpy).toHaveBeenCalledWith('Prompt 1');
-    expect(lastFrame()).toContain('Processed prompt and copied to clipboard');
-    // After processing, it should move to archive (so Prompt 1 should be gone from Main)
+    expect(lastFrame()).toContain('Staged and copied to clipboard');
+    expect(lastFrame()).toContain('🎯');
+    
+    // Stage Prompt 2 (should archive Prompt 1)
+    stdin.write('j');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    stdin.write('s');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
     expect(lastFrame()).not.toContain('Prompt 1');
     expect(lastFrame()).toContain('Prompt 2');
+    expect(lastFrame()).toContain('🎯');
     
     writeSpy.mockRestore();
   });

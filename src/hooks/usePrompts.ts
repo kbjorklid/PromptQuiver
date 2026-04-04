@@ -34,6 +34,7 @@ export function usePrompts({
     moveItemInList: dataMoveItemInList,
     movePrompt: dataMovePrompt,
     deletePrompt: dataDeletePrompt,
+    stagePrompt: dataStagePrompt,
     updatePromptInList,
     insertPromptInList,
     updateSettings,
@@ -164,14 +165,14 @@ export function usePrompts({
     setView('editor');
   }, [setEditingPrompt, setView]);
 
-  const processNextPrompt = useCallback(() => {
-    if (activeTab === 'main' && data.main.length > 0) {
-      const prompt = data.main[0];
-      dataMovePrompt('main', 'archive', 0);
+  const stagePrompt = useCallback(() => {
+    const prompt = currentList[selectedIndex];
+    if (prompt) {
+      dataStagePrompt(activeTab, selectedIndex);
       return prompt;
     }
     return null;
-  }, [activeTab, data, dataMovePrompt]);
+  }, [activeTab, currentList, dataStagePrompt, selectedIndex]);
 
   return {
     data,
@@ -204,7 +205,7 @@ export function usePrompts({
     saveEditedPrompt,
     cancelEdit,
     openEditor,
-    processNextPrompt,
+    stagePrompt,
     updateSettings,
     pushState,
     branchFilterEnabled,

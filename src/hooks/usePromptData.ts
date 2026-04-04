@@ -73,6 +73,10 @@ export function usePromptData({
     dispatch({ type: 'DELETE_PROMPT', tab, index });
   }, []);
 
+  const stagePrompt = useCallback((tab: Tab, index: number) => {
+    dispatch({ type: 'STAGE_PROMPT', tab, index });
+  }, []);
+
   const updatePromptInList = useCallback((tab: Tab, index: number, prompt: Prompt, immediateSave = false) => {
     dispatch({ type: 'UPDATE_PROMPT', tab, index, prompt });
     if (immediateSave) {
@@ -114,6 +118,7 @@ export function usePromptData({
     moveItemInList,
     movePrompt,
     deletePrompt,
+    stagePrompt,
     updatePromptInList,
     insertPromptInList,
     updateSettings,

@@ -72,7 +72,9 @@ describe('App CRUD Operations', () => {
     
     expect(lastFrame()).not.toContain('Archived 1');
     
-    // Switch to prompt (wrap around)
+    // Switch to prompt (wrap around via Settings)
+    stdin.write('\t');
+    await new Promise(resolve => setTimeout(resolve, 50));
     stdin.write('\t');
     await new Promise(resolve => setTimeout(resolve, 50));
     expect(lastFrame()).toContain('Archived 1');

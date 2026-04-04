@@ -205,23 +205,29 @@ describe('usePrompts Hook (Unit)', () => {
     expect(result.current.data.main[0].text).toBe('New Prompt');
   });
 
-  test('processNextPrompt archives first prompt', async () => {
+  test('stagePrompt toggles staged status', async () => {
     const { result } = renderHook(usePrompts, {
       cwd: '/test',
       loadPromptsFn: async () => ({
         main: [{ id: '1', text: 'P1', type: 'prompt', created_at: 'now', updated_at: 'now' }],
-        notes: [], archive: [], canned: [], snippets: []
+        notes: [], archive: [], canned: [], snippets: [], settings: { tabVisibility: { main: true, notes: true, canned: true, snippets: true, archive: true, settings: true } }
       }),
       savePromptsFn: async () => {},
     });
-    
+
     await new Promise(resolve => setTimeout(resolve, 100));
-    
-    const processed = result.current.processNextPrompt();
+
+    // Stage P1
+    result.current.stagePrompt();
     await new Promise(resolve => setTimeout(resolve, 10));
-    
-    expect(processed.text).toBe('P1');
-    expect(result.current.data.main).toHaveLength(0);
-    expect(result.current.data.archive).toHaveLength(1);
+
+    expect(result.current.data.main[0].staged).toBe(true);
+
+    // Stage P1 again (un-stage)
+    result.current.stagePrompt();
+    await new Promise(resolve => setTimeout(resolve, 10));
+
+    expect(result.current.data.main[0].staged).toBe(false);
   });
-});
+  });
+

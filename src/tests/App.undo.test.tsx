@@ -10,6 +10,9 @@ const mockData = {
     { id: '2', text: 'Prompt 2', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' },
   ],
   notes: [],
+  canned: [
+    { id: 'c1', text: 'Canned 1', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' },
+  ],
   archive: [
     { id: '3', text: 'Archived 1', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' },
   ],
@@ -20,33 +23,84 @@ const mockLoadPrompts = async () => JSON.parse(JSON.stringify(mockData));
 describe('App Advanced Logic (Iteration 4)', () => {
   const mockCwd = '/test/path';
 
-  test('Process Prompt (N) copies first and archives', async () => {
+  test('Stage Prompt (s) marks with 🎯 and copies', async () => {
     const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     expect(lastFrame()).toContain('Prompt 1');
     expect(lastFrame()).toContain('▶'); // Visual cue
     
-    stdin.write('N');
+    // Stage Prompt 1
+    stdin.write('s');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    expect(lastFrame()).toContain('🎯');
+    expect(lastFrame()).toContain('Staged and copied to clipboard');
+    
+    // Move to Prompt 2 and stage it
+    stdin.write('j');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    stdin.write('s');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    expect(lastFrame()).toContain('Prompt 2');
+    // Now Prompt 2 should have 🎯
+    // Prompt 1 should be gone from main because it was staged and we staged another one
+    expect(lastFrame()).not.toContain('Prompt 1');
+    
+    // Check archive
+    // Switch tabs to archive (4 times Tab)
+    stdin.write('\t');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    stdin.write('\t');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    stdin.write('\t');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    stdin.write('\t');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    expect(lastFrame()).toContain('Prompt 1');
+  });
+
+  test('Staging a Canned Prompt clears others but is not marked staged', async () => {
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    // 1. Stage Prompt 1 in Main
+    stdin.write('s');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    expect(lastFrame()).toContain('🎯');
+    
+    // 2. Switch to Canned tab (Tab twice: Main -> Notes -> Canned)
+    stdin.write('\t');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    stdin.write('\t');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    expect(lastFrame()).toContain('Canned 1');
+    
+    // 3. Press 's' on a canned prompt
+    stdin.write('s');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    // Should show 📋 (last copied) but NOT 🎯 (staged)
+    expect(lastFrame()).toContain('📋');
+    expect(lastFrame()).not.toContain('🎯');
+    expect(lastFrame()).toContain('Copied to clipboard (other staged items archived)');
+    
+    // 4. Switch back to Main and verify Prompt 1 is gone (moved to archive)
+    // Canned -> Snippets -> Archive -> Settings -> Main (4 tabs)
+    stdin.write('\t');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    stdin.write('\t');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    stdin.write('\t');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    stdin.write('\t');
     await new Promise(resolve => setTimeout(resolve, 50));
     
     expect(lastFrame()).not.toContain('Prompt 1');
     expect(lastFrame()).toContain('Prompt 2');
-    
-    // Switch to notes
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    // Switch to canned
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    // Switch to snippets
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    // Switch to archive
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    expect(lastFrame()).toContain('Prompt 1');
-    expect(lastFrame()).toContain('Archived 1');
   });
 
   test('Undo (u) multiple operations', async () => {

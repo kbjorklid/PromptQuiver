@@ -46,7 +46,7 @@ describe('App Error Paths', () => {
     expect(lastFrame()?.includes('Failed to copy to clipboard')).toBe(true);
   });
 
-  test('shows toast when clipboard.writeSync fails during Process (N)', async () => {
+  test('shows toast when clipboard.writeSync fails during Stage (s)', async () => {
     const mockData = {
       main: [{ id: '1', text: 'Prompt 1', type: 'prompt', created_at: '', updated_at: '' }],
       notes: [],
@@ -63,13 +63,13 @@ describe('App Error Paths', () => {
     // Wait for load
     await new Promise(resolve => setTimeout(resolve, 150));
 
-    // Press 'N' to process
-    stdin.write('N');
+    // Press 's' to stage
+    stdin.write('s');
     
     // Wait for state update
     await new Promise(resolve => setTimeout(resolve, 100));
     
     // Check for error toast
-    expect(lastFrame()?.includes('Processed prompt (clipboard error)')).toBe(true);
+    expect(lastFrame()?.includes('Staged (clipboard error)')).toBe(true);
   });
 });

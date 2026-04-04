@@ -29,27 +29,16 @@ describe('App Last Copied Icon', () => {
     expect(lastFrame()).toContain('First Prompt');
   });
 
-  test('shows clipboard icon when a prompt is processed (N)', async () => {
+  test('shows bullseye icon when a prompt is staged (s)', async () => {
     const { lastFrame, stdin } = render(<App cwd="/test" loadPromptsFn={mockLoadPrompts} savePromptsFn={mockSavePrompts} />);
     await new Promise(resolve => setTimeout(resolve, 50));
 
-    // Press 'N' to process first prompt
-    stdin.write('N');
+    // Press 's' to stage first prompt
+    stdin.write('s');
     await new Promise(resolve => setTimeout(resolve, 50));
 
-    // It should now be in archive, but the state should still track it if rendered (though it won't be in main anymore)
-    // Actually, PromptList only renders currentList. 
-    // Let's check archive tab
-    stdin.write('l'); // to Notes
-    await new Promise(resolve => setTimeout(resolve, 50));
-    stdin.write('l'); // to Canned
-    await new Promise(resolve => setTimeout(resolve, 50));
-    stdin.write('l'); // to Snippets
-    await new Promise(resolve => setTimeout(resolve, 50));
-    stdin.write('l'); // to Archive
-    await new Promise(resolve => setTimeout(resolve, 50));
-    
-    expect(lastFrame()).toContain('📋');
+    expect(lastFrame()).toContain('🎯');
+    expect(lastFrame()).not.toContain('📋');
     expect(lastFrame()).toContain('First Prompt');
   });
 });

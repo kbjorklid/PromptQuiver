@@ -10,6 +10,7 @@ export interface Prompt {
   type: 'prompt' | 'note';
   name?: string;
   branch?: string;
+  staged?: boolean;
   created_at: string;
   updated_at: string;
 }

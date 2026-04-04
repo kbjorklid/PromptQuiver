@@ -51,6 +51,7 @@ export const PromptList: React.FC<PromptListProps> = ({
         
         const isSelected = actualIndex === selectedIndex;
         const isLastCopied = prompt.id === lastCopiedId;
+        const isStaged = prompt.staged;
         const itemColor = prompt.type === 'note' ? 'cyan' : (prompt.name ? 'magenta' : 'yellow');
         const displayIndex = (actualIndex + 1).toString().padStart(currentList.length.toString().length, ' ');
         
@@ -69,18 +70,19 @@ export const PromptList: React.FC<PromptListProps> = ({
               backgroundColor={backgroundColor}
             >
               <Box marginRight={1} flexShrink={0}>
-                <Text color="gray">{displayIndex}. </Text>
-                <Text color={itemColor}>
+                <Text color="gray" dim={isStaged}>{displayIndex}. </Text>
+                <Text color={itemColor} dim={isStaged}>
                   {isSelected ? (isMoving ? '↕' : '▶') : ' '}
                 </Text>
                 {isLastCopied && <Text color="green"> 📋</Text>}
+                {isStaged && <Text color="red"> 🎯</Text>}
               </Box>
               <Box flexDirection="column" flexShrink={1}>
                 {displayLines.length === 0 ? (
                   <Text italic color="gray">Empty item</Text>
                 ) : (
                   displayLines.map((line, i) => (
-                    <Text key={i} wrap="truncate-end" color={itemColor} bold={isMoving && isSelected}>
+                    <Text key={i} wrap="truncate-end" color={itemColor} bold={isMoving && isSelected} dim={isStaged}>
                       {line}
                     </Text>
                   ))

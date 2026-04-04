@@ -17,10 +17,14 @@ Think of it as a "staging area" for your AI interactions, helping you maintain y
 
 ## ⚡ Rapid Workflow
 
-The core power of Prompt Quiver is the **Process** (`N`) command. In one keystroke:
-1. The top prompt in your **Prompts** list is copied to your clipboard.
-2. It is automatically moved to the **Archive**.
-3. You are ready to paste it into your AI agent and move on to the next one you've already prepared.
+The core power of Prompt Quiver is the **Stage** (`s`) command. In one keystroke:
+1. The highlighted item in your list is marked as **Staged** (indicated by a 🎯 bullseye).
+2. It is copied to your clipboard.
+3. Any previously staged item is automatically moved to the **Archive**.
+4. The staged item is shown dimmed in the list to indicate it's ready.
+5. You can un-stage an item by pressing `s` again.
+
+This allows you to prepare exactly which prompt you want to use next, maintain a history of what you've staged, and keep your workspace clean.
 
 ## 🚀 Getting Started
 
@@ -69,11 +73,12 @@ For convenience, you can alias the command in your shell:
 - `i` / `I`: Add new item before current / at beginning of list.
 - `d`: Move to Archive (from Prompts/Notes) or Delete permanently (from Archive).
 - `r`: Restore item (from Archive back to original list).
-- `N`: **Process** (Copy first prompt AND archive it).
+- `s`: **Stage** (Mark with 🎯, copy to clipboard, and archive previous).
 
 ### History & Meta
 - `u`: Undo last list operation.
 - `Ctrl + y`: Redo last operation.
+- `S`: Open Settings.
 - `q`: Quit application.
 
 ## 💾 Storage

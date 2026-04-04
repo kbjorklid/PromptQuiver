@@ -59,7 +59,7 @@ describe('App Settings', () => {
     expect(stripAnsi(lastFrame()!)).toContain('Notes');
 
     // Go to settings
-    stdin.write('s');
+    stdin.write('S');
     await new Promise(resolve => setTimeout(resolve, 100));
 
     // Move to Notes (index 1)

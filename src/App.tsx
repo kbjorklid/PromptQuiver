@@ -81,7 +81,7 @@ export const App = ({
     saveEditedPrompt,
     cancelEdit,
     openEditor,
-    processNextPrompt,
+    stagePrompt,
     updateSettings,
     branchFilterEnabled,
     toggleBranchFilter,
@@ -89,14 +89,17 @@ export const App = ({
   } = usePrompts({ cwd, loadPromptsFn, savePromptsFn, debounceMs });
 
   const allTabs: Tab[] = ['main', 'notes', 'canned', 'snippets', 'archive', 'settings'];
-  const tabVisibility = data.settings?.tabVisibility || {
-    main: true,
-    notes: true,
-    canned: true,
-    snippets: true,
-    archive: true,
-    settings: true,
+  const defaultSettings: Settings = {
+    tabVisibility: {
+      main: true,
+      notes: true,
+      canned: true,
+      snippets: true,
+      archive: true,
+      settings: true,
+    },
   };
+  const tabVisibility = (data.settings || defaultSettings).tabVisibility;
   const orderedTabs = allTabs.filter(tab => tabVisibility[tab]);
 
   const switchTab = (direction: 'next' | 'prev') => {
@@ -127,17 +130,35 @@ export const App = ({
     }
   };
 
-  const handleProcessNext = () => {
-    if (activeTab !== 'main') return;
-    const prompt = processNextPrompt();
+  const handleStage = () => {
+    const prompt = currentList[selectedIndex];
     if (prompt) {
-      try {
-        const expandedText = expandSnippets(prompt.text, data.snippets);
-        clipboardy.writeSync(expandedText);
-        setLastCopiedId(prompt.id);
-        showToast('Processed prompt and copied to clipboard');
-      } catch (e) {
-        showToast('Processed prompt (clipboard error)');
+      if (activeTab === 'canned') {
+        stagePrompt(); // Clears others via reducer
+        try {
+          const expandedText = expandSnippets(prompt.text, data.snippets);
+          clipboardy.writeSync(expandedText);
+          setLastCopiedId(prompt.id); // Show 📋
+          showToast('Copied to clipboard (other staged items archived)');
+        } catch (e) {
+          showToast('Clipboard error');
+        }
+        return;
+      }
+
+      const wasStaged = prompt.staged;
+      stagePrompt();
+      if (!wasStaged) {
+        try {
+          const expandedText = activeTab === 'snippets' ? prompt.text : expandSnippets(prompt.text, data.snippets);
+          clipboardy.writeSync(expandedText);
+          setLastCopiedId(null);
+          showToast('Staged and copied to clipboard');
+        } catch (e) {
+          showToast('Staged (clipboard error)');
+        }
+      } else {
+        showToast('Unstaged');
       }
     }
   };
@@ -226,10 +247,10 @@ export const App = ({
       'm': handleStartMove,
       'd': handleArchive,
       'r': handleRestore,
-      'N': handleProcessNext,
+      's': handleStage,
+      'S': () => setActiveTab('settings'),
       'y': handleCopy,
       'e': handleEdit,
-      's': () => setActiveTab('settings'),
       'a': () => activeTab !== 'archive' && activeTab !== 'settings' && addPrompt('after'),
       'A': () => activeTab !== 'archive' && activeTab !== 'settings' && addPrompt('end'),
       'i': () => activeTab !== 'archive' && activeTab !== 'settings' && addPrompt('before'),
@@ -282,7 +303,7 @@ export const App = ({
 
         {activeTab === 'settings' ? (
           <SettingsView 
-            settings={data.settings}
+            settings={data.settings || defaultSettings}
             onUpdateSettings={updateSettings}
             terminalSize={terminalSize}
           />

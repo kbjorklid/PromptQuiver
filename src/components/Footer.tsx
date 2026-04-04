@@ -93,9 +93,10 @@ export const Footer: React.FC<FooterProps> = ({
         ) : (
           <Box><Text bold>[d]</Text><Text color="gray"> Archive</Text></Box>
         )}
-        {activeTab === 'main' && (
-          <Box><Text bold>[N]</Text><Text color="gray"> Process</Text></Box>
+        {activeTab !== 'archive' && activeTab !== 'settings' && (
+          <Box><Text bold>[s]</Text><Text color="gray"> Stage</Text></Box>
         )}
+        <Box><Text bold>[S]</Text><Text color="gray"> Settings</Text></Box>
         <Box><Text bold>[u/Ctrl+y]</Text><Text color="gray"> Undo/Redo</Text></Box>
         <Box><Text bold>[q]</Text><Text color="gray"> Quit</Text></Box>
       </Box>

@@ -27,14 +27,14 @@ describe('App UI (Iteration 5)', () => {
     expect(lastFrame()).toContain('Copied to clipboard');
   });
 
-  test('Shows toast when processing prompt (N)', async () => {
+  test('Shows toast when staging prompt (s)', async () => {
     const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
-    stdin.write('N');
+    stdin.write('s');
     await new Promise(resolve => setTimeout(resolve, 50));
     
-    expect(lastFrame()).toContain('Processed prompt');
+    expect(lastFrame()).toContain('Staged and copied to clipboard');
   });
 
   test('Truncates prompt to 2 lines', async () => {
