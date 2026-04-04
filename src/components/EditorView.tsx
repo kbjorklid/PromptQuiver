@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
-import { UncontrolledMultilineInput, UncontrolledMultilineInputRef } from './UncontrolledMultilineInput';
+import { UncontrolledMultilineInput } from './UncontrolledMultilineInput';
+import type { UncontrolledMultilineInputRef } from './UncontrolledMultilineInput';
 import { fuzzySearchFiles } from '../utils/fileSearch';
 
 export interface EditorViewProps {
@@ -70,7 +71,7 @@ export function EditorView({ initialText, onSave, onCancel, terminalSize }: Edit
     const beforeCursor = val.slice(0, cursor);
     // Regex matches " @" followed by non-space characters at the end of the string
     const match = beforeCursor.match(/(?:^|\s)@([^\s]*)$/);
-    if (match) {
+    if (match && match[1] !== undefined) {
       setMentionQuery(match[1]);
       setMentionStart(cursor - match[1].length - 1);
       setMentionEnd(cursor);

@@ -75,6 +75,7 @@ export const UncontrolledMultilineInput = forwardRef<UncontrolledMultilineInputR
       let col = 0;
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
+        if (line === undefined) continue;
         const lineLen = line.length;
         const lineEnd = currentPos + lineLen;
         if (newCursor >= currentPos && newCursor <= lineEnd) {
@@ -87,15 +88,20 @@ export const UncontrolledMultilineInput = forwardRef<UncontrolledMultilineInputR
       if (currentLineIndex > 0) {
         const targetLineIndex = currentLineIndex - 1;
         const targetLine = lines[targetLineIndex];
-        const targetLineLen = targetLine.length;
-        const newCol = Math.min(col, targetLineLen);
-        let newIdx = 0;
-        for (let i = 0; i < targetLineIndex; i++) {
-          newIdx += lines[i].length + 1;
+        if (targetLine !== undefined) {
+          const targetLineLen = targetLine.length;
+          const newCol = Math.min(col, targetLineLen);
+          let newIdx = 0;
+          for (let i = 0; i < targetLineIndex; i++) {
+            const l = lines[i];
+            if (l !== undefined) {
+              newIdx += l.length + 1;
+            }
+          }
+          newIdx += newCol;
+          newCursor = newIdx;
+          cursorChanged = true;
         }
-        newIdx += newCol;
-        newCursor = newIdx;
-        cursorChanged = true;
       }
     } else if (key.downArrow) {
       const lines = normalizeLineEndings(newValue).split("\n");
@@ -104,6 +110,7 @@ export const UncontrolledMultilineInput = forwardRef<UncontrolledMultilineInputR
       let col = 0;
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
+        if (line === undefined) continue;
         const lineLen = line.length;
         const lineEnd = currentPos + lineLen;
         if (newCursor >= currentPos && newCursor <= lineEnd) {
@@ -116,15 +123,20 @@ export const UncontrolledMultilineInput = forwardRef<UncontrolledMultilineInputR
       if (currentLineIndex < lines.length - 1) {
         const targetLineIndex = currentLineIndex + 1;
         const targetLine = lines[targetLineIndex];
-        const targetLineLen = targetLine.length;
-        const newCol = Math.min(col, targetLineLen);
-        let newIdx = 0;
-        for (let i = 0; i < targetLineIndex; i++) {
-          newIdx += lines[i].length + 1;
+        if (targetLine !== undefined) {
+          const targetLineLen = targetLine.length;
+          const newCol = Math.min(col, targetLineLen);
+          let newIdx = 0;
+          for (let i = 0; i < targetLineIndex; i++) {
+            const l = lines[i];
+            if (l !== undefined) {
+              newIdx += l.length + 1;
+            }
+          }
+          newIdx += newCol;
+          newCursor = newIdx;
+          cursorChanged = true;
         }
-        newIdx += newCol;
-        newCursor = newIdx;
-        cursorChanged = true;
       }
     } else if (key.leftArrow) {
       if (newCursor > 0) {
@@ -208,7 +220,9 @@ export const UncontrolledMultilineInput = forwardRef<UncontrolledMultilineInputR
   let currentLineIndex = 0;
   let currentPos = 0;
   for (let i = 0; i < lines.length; i++) {
-    const lineEnd = currentPos + lines[i].length;
+    const line = lines[i];
+    if (line === undefined) continue;
+    const lineEnd = currentPos + line.length;
     if (cursorIndex >= currentPos && cursorIndex <= lineEnd) {
       currentLineIndex = i;
       break;

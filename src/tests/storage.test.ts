@@ -52,9 +52,9 @@ describe("Storage", () => {
 
     await savePrompts(mockCwd, data);
     const loaded = await loadPrompts(mockCwd);
-    expect(loaded.main[0].text).toBe("Hello");
-    expect(loaded.main[0].id).toBe("2");
-    expect(loaded.notes[0].text).toBe("Note");
+    expect(loaded!.main[0]!.text).toBe("Hello");
+    expect(loaded!.main[0]!.id).toBe("2");
+    expect(loaded!.notes[0]!.text).toBe("Note");
   });
 
   test("loadPrompts returns default data if file missing", async () => {

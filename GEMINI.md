@@ -52,6 +52,7 @@
     id: string; // UUID v4
     text: string;
     type: 'prompt' | 'note';
+    branch?: string;
     created_at: string; // ISO-8601
     updated_at: string; // ISO-8601
   }

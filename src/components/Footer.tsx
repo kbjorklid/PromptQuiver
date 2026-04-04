@@ -14,8 +14,7 @@ export const Footer: React.FC<FooterProps> = ({ activeTab, toast }) => {
         <Box 
           position="absolute" 
           width="100%" 
-          justifyContent="center" 
-          bottom={1}
+          justifyContent="center"
         >
           <Box borderStyle="round" borderColor="yellow" paddingX={2} backgroundColor="black">
             <Text bold color="yellow">{toast.message}</Text>
@@ -35,7 +34,14 @@ export const Footer: React.FC<FooterProps> = ({ activeTab, toast }) => {
         {activeTab !== 'archive' && (
           <Box><Text bold>[a/A/i/I]</Text><Text color="gray"> Add</Text></Box>
         )}
-        <Box><Text bold>[d]</Text><Text color="gray"> {activeTab === 'archive' ? 'Restore' : 'Archive'}</Text></Box>
+        {activeTab === 'archive' ? (
+          <>
+            <Box><Text bold>[r]</Text><Text color="gray"> Restore</Text></Box>
+            <Box><Text bold>[d]</Text><Text color="gray"> Delete</Text></Box>
+          </>
+        ) : (
+          <Box><Text bold>[d]</Text><Text color="gray"> Archive</Text></Box>
+        )}
         {activeTab === 'main' && (
           <Box><Text bold>[N]</Text><Text color="gray"> Process</Text></Box>
         )}

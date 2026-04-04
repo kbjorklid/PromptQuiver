@@ -22,7 +22,7 @@ describe('App Component', () => {
   const mockCwd = '/test/path';
 
   test('renders loading state initially and then content', async () => {
-    const { lastFrame } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} />);
     
     // Wait for useEffect to finish
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -35,7 +35,7 @@ describe('App Component', () => {
   });
 
   test('switches tabs with Tab key', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Initially on Prompt (Main)
@@ -55,7 +55,7 @@ describe('App Component', () => {
   });
 
   test('navigates list with arrow keys', async () => {
-    const { stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Just verify it doesn't crash on navigation

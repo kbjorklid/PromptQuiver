@@ -110,8 +110,9 @@ describe('App Advanced Logic (Iteration 4)', () => {
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Permanent delete
-    stdin.write('X');
+    stdin.write('d');
     await new Promise(resolve => setTimeout(resolve, 50));
+    
     expect(lastFrame()).not.toContain('Archived 1');
     
     // Undo

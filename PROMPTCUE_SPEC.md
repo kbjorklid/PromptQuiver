@@ -63,6 +63,7 @@ The main interface features a tabbed navigation system. Use `Tab` to cycle betwe
 - `N`: **Process Prompt** (Copy the first prompt to clipboard AND move it to Archive).
 - `u`: Undo the last list operation (full history).
 - `Ctrl+y`: Redo the last undone list operation.
+- `b`: Toggle branch filter (shows only items for the current git branch).
 - `Tab/h/l`: Switch tabs.
 
 #### Keyboard Shortcuts (Notes List)
@@ -74,15 +75,16 @@ The main interface features a tabbed navigation system. Use `Tab` to cycle betwe
 - `d`: Move the selected note to the Archive.
 - `u`: Undo.
 - `Ctrl+y`: Redo.
+- `b`: Toggle branch filter.
 - `Tab/h/l`: Switch tabs.
 - **Note:** `N` (Process) and `y` (Yank) are disabled for notes.
 
 #### Keyboard Shortcuts (Archive List)
-- `d`: Move the selected item back to its original list.
-- `X`: Permanent delete.
-  - **No Confirmation:** Deletes immediately.
-  - **Undo Window:** A 5-second window allows for undoing the deletion using `u`.
-- `u`: Undo (including the 5-second permanent delete window).
+- `r`: Restore the selected item back to its original list (Prompt or Notes).
+- `d`: Delete completely.
+  - **Undo:** The deletion can be undone using `u`.
+- `u`: Undo.
+- `b`: Toggle branch filter.
 - `Tab/h/l`: Switch tabs.
 
 ### 2. Editor View

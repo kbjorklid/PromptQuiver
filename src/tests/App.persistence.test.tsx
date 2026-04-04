@@ -48,9 +48,9 @@ describe('App Persistence', () => {
     
     expect(saveSpy).toHaveBeenCalled();
     const lastCall = saveSpy.mock.calls[saveSpy.mock.calls.length - 1];
-    expect(lastCall[0]).toBe(mockCwd);
-    expect(lastCall[1].main.length).toBe(2);
-    expect(lastCall[1].main[1].text).toBe('New Prompt Content');
+    expect(lastCall![0]).toBe(mockCwd);
+    expect(lastCall![1].main.length).toBe(2);
+    expect(lastCall![1].main[1].text).toBe('New Prompt Content');
   });
 
   test('calls savePromptsFn when a prompt is deleted', async () => {
@@ -80,12 +80,12 @@ describe('App Persistence', () => {
     stdin.write('\t');
     await new Promise(resolve => setTimeout(resolve, 50));
 
-    // Permanent delete (X)
-    stdin.write('X');
+    // Permanent delete (d)
+    stdin.write('d');
     await new Promise(resolve => setTimeout(resolve, 100));
 
     expect(saveSpy).toHaveBeenCalled();
     const lastCall = saveSpy.mock.calls[saveSpy.mock.calls.length - 1];
-    expect(lastCall[1].archive.length).toBe(0);
+    expect(lastCall![1].archive.length).toBe(0);
   });
 });

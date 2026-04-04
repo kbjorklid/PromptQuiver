@@ -3,9 +3,11 @@ import type { Prompt, PromptStorageData } from '../storage';
 import { loadPrompts as defaultLoadPrompts, savePrompts as defaultSavePrompts } from '../storage';
 import { v4 as uuidv4 } from 'uuid';
 import { useAutoSave } from './useAutoSave';
+import { getCurrentGitBranch } from '../utils/git';
 
 export type Tab = 'main' | 'notes' | 'archive';
 export type View = 'list' | 'editor';
+export interface Toast { message: string }
 
 export interface UsePromptsProps {
   cwd: string;
@@ -44,6 +46,32 @@ export function usePrompts({
   const [toast, setToast] = useState<{ message: string } | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const [branchFilterEnabled, setBranchFilterEnabled] = useState(false);
+  const [currentBranch, setCurrentBranch] = useState<string | undefined>(undefined);
+
+  const refreshCurrentBranch = useCallback(() => {
+    const branch = getCurrentGitBranch(cwd);
+    setCurrentBranch(branch);
+    return branch;
+  }, [cwd]);
+
+  const toggleBranchFilter = useCallback(() => {
+    setBranchFilterEnabled(prev => {
+      const next = !prev;
+      if (next) {
+        refreshCurrentBranch();
+      }
+      return next;
+    });
+  }, [refreshCurrentBranch]);
+
+  useEffect(() => {
+    if (!branchFilterEnabled) return;
+    refreshCurrentBranch();
+    const interval = setInterval(refreshCurrentBranch, 10000);
+    return () => clearInterval(interval);
+  }, [branchFilterEnabled, refreshCurrentBranch]);
+
   const showToast = useCallback((message: string) => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     setToast({ message });
@@ -75,11 +103,14 @@ export function usePrompts({
   });
 
   const currentList = useMemo(() => {
-    const fullList = data[activeTab];
+    let fullList = data[activeTab];
+    if (branchFilterEnabled && currentBranch) {
+      fullList = fullList.filter(p => !p.branch || p.branch === currentBranch);
+    }
     return searchQuery 
       ? fullList.filter(p => p.text.toLowerCase().includes(searchQuery.toLowerCase()))
       : fullList;
-  }, [data, activeTab, searchQuery]);
+  }, [data, activeTab, searchQuery, branchFilterEnabled, currentBranch]);
 
   const selectedIndex = useMemo(() => {
     return Math.min(
@@ -194,11 +225,13 @@ export function usePrompts({
 
   const addPrompt = useCallback((position: 'before' | 'after' | 'start' | 'end') => {
     const now = new Date().toISOString();
+    const branch = refreshCurrentBranch();
     const type: 'prompt' | 'note' = activeTab === 'notes' ? 'note' : 'prompt';
     const newPrompt: Prompt = {
       id: uuidv4(),
       text: '',
       type,
+      branch,
       created_at: now,
       updated_at: now,
     };
@@ -206,7 +239,7 @@ export function usePrompts({
     setAddingPosition({ position, index: selectedIndex });
     setEditingPrompt(newPrompt);
     setView('editor');
-  }, [activeTab, selectedIndex]);
+  }, [activeTab, selectedIndex, refreshCurrentBranch]);
 
   const saveEditedPrompt = useCallback((text: string) => {
     if (!editingPrompt) return;
@@ -324,5 +357,8 @@ export function usePrompts({
     openEditor,
     processNextPrompt,
     pushState,
+    branchFilterEnabled,
+    toggleBranchFilter,
+    currentBranch,
   };
 }

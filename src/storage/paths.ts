@@ -6,6 +6,7 @@ export interface Prompt {
   id: string;
   text: string;
   type: 'prompt' | 'note';
+  branch?: string;
   created_at: string;
   updated_at: string;
 }

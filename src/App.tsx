@@ -80,6 +80,9 @@ export const App = ({
     cancelEdit,
     openEditor,
     processNextPrompt,
+    branchFilterEnabled,
+    toggleBranchFilter,
+    currentBranch,
   } = usePrompts({ cwd, loadPromptsFn, savePromptsFn, debounceMs });
 
   const orderedTabs: Tab[] = ['main', 'notes', 'archive'];
@@ -132,18 +135,18 @@ export const App = ({
     }
   };
 
-  const handleArchiveRestore = () => {
+  const handleArchive = () => {
     if (currentList.length === 0) return;
     if (activeTab === 'archive') {
-      movePrompt('archive', 'main', selectedIndex);
+      deletePrompt('archive', selectedIndex);
     } else {
       movePrompt(activeTab, 'archive', selectedIndex);
     }
   };
 
-  const handleDeleteArchive = () => {
+  const handleRestore = () => {
     if (activeTab === 'archive' && currentList.length > 0) {
-      deletePrompt('archive', selectedIndex);
+      movePrompt('archive', 'main', selectedIndex);
     }
   };
 
@@ -199,8 +202,8 @@ export const App = ({
       '/': () => setIsSearching(true),
       'u': undo,
       'm': handleStartMove,
-      'd': handleArchiveRestore,
-      'X': handleDeleteArchive,
+      'd': handleArchive,
+      'r': handleRestore,
       'N': handleProcessNext,
       'y': handleCopy,
       'e': handleEdit,
@@ -208,6 +211,7 @@ export const App = ({
       'A': () => activeTab !== 'archive' && addPrompt('end'),
       'i': () => activeTab !== 'archive' && addPrompt('before'),
       'I': () => activeTab !== 'archive' && addPrompt('start'),
+      'b': toggleBranchFilter,
     };
 
     if (charCommands[input]) {
@@ -243,7 +247,12 @@ export const App = ({
   return (
     <Box flexDirection="column" width="100%" height="100%">
       <Box flexDirection="column" paddingX={1} paddingTop={1} flexGrow={1}>
-        <Header activeTab={activeTab} orderedTabs={orderedTabs} />
+        <Header 
+          activeTab={activeTab} 
+          orderedTabs={orderedTabs} 
+          branchFilterEnabled={branchFilterEnabled}
+          currentBranch={currentBranch}
+        />
 
         <PromptList 
           currentList={currentList}

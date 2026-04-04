@@ -6,14 +6,21 @@ import type { Tab } from '../hooks/usePrompts';
 interface HeaderProps {
   activeTab: Tab;
   orderedTabs: Tab[];
+  branchFilterEnabled?: boolean;
+  currentBranch?: string;
 }
 
-export const Header: React.FC<HeaderProps> = ({ activeTab, orderedTabs }) => {
+export const Header: React.FC<HeaderProps> = ({ activeTab, orderedTabs, branchFilterEnabled, currentBranch }) => {
   return (
     <Box marginBottom={1} flexDirection="column">
-      <Gradient name="atlas">
-        <Text bold italic>{">>> PROMPTCUE <<<"}</Text>
-      </Gradient>
+      <Box justifyContent="space-between" alignItems="center">
+        <Gradient name="atlas">
+          <Text bold italic>{">>> PROMPTCUE <<<"}</Text>
+        </Gradient>
+        {branchFilterEnabled && currentBranch && (
+          <Text color="cyan">Branch: {currentBranch}</Text>
+        )}
+      </Box>
       <Box marginTop={1}>
         {orderedTabs.map((t, i) => (
           <React.Fragment key={t}>

@@ -25,7 +25,7 @@ describe('PromptList', () => {
 
   test('renders empty state', () => {
     const { lastFrame } = render(
-      <PromptList currentList={[]} selectedIndex={0} isMoving={false} terminalSize={terminalSize} />
+      <PromptList currentList={[]} selectedIndex={0} isMoving={false} terminalSize={terminalSize} lastCopiedId={null} />
     );
     expect(lastFrame()?.includes('No items yet')).toBe(true);
   });
@@ -38,6 +38,7 @@ describe('PromptList', () => {
         isMoving={false} 
         terminalSize={terminalSize} 
         initialViewportSize={5} 
+        lastCopiedId={null}
       />
     );
     expect(lastFrame()?.includes('Prompt 1')).toBe(true);
@@ -53,6 +54,7 @@ describe('PromptList', () => {
         isMoving={false} 
         terminalSize={terminalSize} 
         initialViewportSize={3} 
+        lastCopiedId={null}
       />
     );
     // Should show 1, 2, 3
@@ -69,6 +71,7 @@ describe('PromptList', () => {
         isMoving={false} 
         terminalSize={terminalSize} 
         initialViewportSize={3} 
+        lastCopiedId={null}
       />
     );
     // Half of 3 is 1. Start = 2 - 1 = 1. End = 1 + 3 = 4. 
@@ -88,6 +91,7 @@ describe('PromptList', () => {
         isMoving={false} 
         terminalSize={terminalSize} 
         initialViewportSize={3} 
+        lastCopiedId={null}
       />
     );
     // Should show 3, 4, 5
@@ -105,6 +109,7 @@ describe('PromptList', () => {
         isMoving={false} 
         terminalSize={terminalSize} 
         initialViewportSize={3} 
+        lastCopiedId={null}
       />
     );
     // Initially shows 3, 4, 5
@@ -118,6 +123,7 @@ describe('PromptList', () => {
         isMoving={false} 
         terminalSize={terminalSize} 
         initialViewportSize={3} 
+        lastCopiedId={null}
       />
     );
     // Should show 1, 2, 3
@@ -134,6 +140,7 @@ describe('PromptList', () => {
         isMoving={false} 
         terminalSize={terminalSize} 
         initialViewportSize={10} 
+        lastCopiedId={null}
       />
     );
     expect(lastFrame()?.includes('Prompt 1')).toBe(true);
@@ -149,6 +156,7 @@ describe('PromptList', () => {
         isMoving={false} 
         terminalSize={terminalSize} 
         initialViewportSize={5} 
+        lastCopiedId={null}
       />
     );
     // Viewport size 5, half is 2. 
@@ -163,13 +171,13 @@ describe('PromptList', () => {
 
   test('shows different indicators for moving mode', () => {
     const { lastFrame, rerender } = render(
-      <PromptList currentList={mockPrompts} selectedIndex={0} isMoving={false} terminalSize={terminalSize} />
+      <PromptList currentList={mockPrompts} selectedIndex={0} isMoving={false} terminalSize={terminalSize} lastCopiedId={null} />
     );
     expect(lastFrame()?.includes('▶')).toBe(true);
     expect(lastFrame()?.includes('↕')).toBe(false);
 
     rerender(
-      <PromptList currentList={mockPrompts} selectedIndex={0} isMoving={true} terminalSize={terminalSize} />
+      <PromptList currentList={mockPrompts} selectedIndex={0} isMoving={true} terminalSize={terminalSize} lastCopiedId={null} />
     );
     expect(lastFrame()?.includes('↕')).toBe(true);
     expect(lastFrame()?.includes('▶')).toBe(false);

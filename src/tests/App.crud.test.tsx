@@ -43,7 +43,7 @@ describe('App CRUD Operations', () => {
     expect(lastFrame()).toContain('Archived 1');
   });
 
-  test('un-archiving a prompt (d) from archive', async () => {
+  test('un-archiving a prompt (r) from archive', async () => {
     const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
@@ -55,7 +55,7 @@ describe('App CRUD Operations', () => {
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Select Archived 1 (index 0)
-    stdin.write('d');
+    stdin.write('r');
     await new Promise(resolve => setTimeout(resolve, 50));
     
     expect(lastFrame()).not.toContain('Archived 1');
@@ -66,7 +66,7 @@ describe('App CRUD Operations', () => {
     expect(lastFrame()).toContain('Archived 1');
   });
 
-  test('permanent delete (X) from archive', async () => {
+  test('permanent delete (d) from archive', async () => {
     const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
@@ -77,8 +77,8 @@ describe('App CRUD Operations', () => {
     stdin.write('\t');
     await new Promise(resolve => setTimeout(resolve, 50));
     
-    // Select Archived 1
-    stdin.write('X');
+    // Select Archived 1, press 'd'
+    stdin.write('d');
     await new Promise(resolve => setTimeout(resolve, 50));
     
     expect(lastFrame()).not.toContain('Archived 1');

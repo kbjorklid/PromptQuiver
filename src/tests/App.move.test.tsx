@@ -1,8 +1,8 @@
 import React from 'react';
 import { render } from 'ink-testing-library';
 import { App } from '../App';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { PromptStorageData } from '../storage';
+import { describe, test, expect, vi, beforeEach } from 'bun:test';
+import type { PromptStorageData } from '../storage';
 
 // Mock clipboardy
 vi.mock('clipboardy', () => ({
@@ -33,9 +33,9 @@ describe('App Move Mode', () => {
     vi.clearAllMocks();
   });
 
-  it('enters and exits move mode with "m"', async () => {
+  test('enters and exits move mode with "m"', async () => {
     const { stdin, lastFrame } = render(
-      <App cwd="/test" loadPromptsFn={mockLoad} savePromptsFn={mockSave} viewportSize={10} />
+      <App cwd="/test" loadPromptsFn={mockLoad as any} savePromptsFn={mockSave as any} viewportSize={10} />
     );
 
     // Wait for load
@@ -44,21 +44,21 @@ describe('App Move Mode', () => {
     // Press 'm' to enter move mode
     stdin.write('m');
     await new Promise(resolve => setTimeout(resolve, 50));
-    let frame = stripAnsi(lastFrame());
+    let frame = stripAnsi(lastFrame()!);
     expect(frame).toContain('Move mode');
     expect(frame).toContain('↕');
 
     // Press 'm' to exit
     stdin.write('m');
     await new Promise(resolve => setTimeout(resolve, 50));
-    frame = stripAnsi(lastFrame());
+    frame = stripAnsi(lastFrame()!);
     expect(frame).toContain('Exit move mode');
     expect(frame).toContain('▶');
   });
 
-  it('moves item up and down in list', async () => {
+  test('moves item up and down in list', async () => {
     const { stdin, lastFrame } = render(
-      <App cwd="/test" loadPromptsFn={mockLoad} savePromptsFn={mockSave} viewportSize={10} />
+      <App cwd="/test" loadPromptsFn={mockLoad as any} savePromptsFn={mockSave as any} viewportSize={10} />
     );
 
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -72,7 +72,7 @@ describe('App Move Mode', () => {
     await new Promise(resolve => setTimeout(resolve, 50));
 
     // Check order: SECOND PROMPT should now be first, FIRST PROMPT second
-    let frame = stripAnsi(lastFrame());
+    let frame = stripAnsi(lastFrame()!);
     const p1Index = frame.indexOf('FIRST PROMPT');
     const p2Index = frame.indexOf('SECOND PROMPT');
     expect(p2Index).toBeLessThan(p1Index);
@@ -84,14 +84,14 @@ describe('App Move Mode', () => {
     stdin.write('\u001b[A'); // Up arrow
     await new Promise(resolve => setTimeout(resolve, 50));
     
-    frame = stripAnsi(lastFrame());
+    frame = stripAnsi(lastFrame()!);
     expect(frame.indexOf('FIRST PROMPT')).toBeLessThan(frame.indexOf('SECOND PROMPT'));
     expect(frame).toContain('1. ↕');
   });
 
-  it('exits move mode with Enter or Esc', async () => {
+  test('exits move mode with Enter or Esc', async () => {
     const { stdin, lastFrame } = render(
-      <App cwd="/test" loadPromptsFn={mockLoad} savePromptsFn={mockSave} viewportSize={10} />
+      <App cwd="/test" loadPromptsFn={mockLoad as any} savePromptsFn={mockSave as any} viewportSize={10} />
     );
 
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -99,27 +99,27 @@ describe('App Move Mode', () => {
     // Enter move mode
     stdin.write('m');
     await new Promise(resolve => setTimeout(resolve, 50));
-    expect(stripAnsi(lastFrame())).toContain('↕');
+    expect(stripAnsi(lastFrame()!)).toContain('↕');
 
     // Press Enter to exit
     stdin.write('\r');
     await new Promise(resolve => setTimeout(resolve, 50));
-    expect(stripAnsi(lastFrame())).toContain('▶');
+    expect(stripAnsi(lastFrame()!)).toContain('▶');
 
     // Re-enter
     stdin.write('m');
     await new Promise(resolve => setTimeout(resolve, 50));
-    expect(stripAnsi(lastFrame())).toContain('↕');
+    expect(stripAnsi(lastFrame()!)).toContain('↕');
 
     // Press Esc to exit
     stdin.write('\u001b');
     await new Promise(resolve => setTimeout(resolve, 50));
-    expect(stripAnsi(lastFrame())).toContain('▶');
+    expect(stripAnsi(lastFrame()!)).toContain('▶');
   });
 
-  it('undoes move operation', async () => {
+  test('undoes move operation', async () => {
     const { stdin, lastFrame } = render(
-      <App cwd="/test" loadPromptsFn={mockLoad} savePromptsFn={mockSave} viewportSize={10} />
+      <App cwd="/test" loadPromptsFn={mockLoad as any} savePromptsFn={mockSave as any} viewportSize={10} />
     );
 
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -132,16 +132,15 @@ describe('App Move Mode', () => {
     stdin.write('m'); // Exit
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    let frame = stripAnsi(lastFrame());
-    console.log('Frame after move in undo test:', frame);
+    let frame = stripAnsi(lastFrame()!);
+    // console.log('Frame after move in undo test:', frame);
     expect(frame.indexOf('SECOND PROMPT')).toBeLessThan(frame.indexOf('FIRST PROMPT'));
 
     // Undo
     stdin.write('u');
     await new Promise(resolve => setTimeout(resolve, 50));
     
-    frame = stripAnsi(lastFrame());
+    frame = stripAnsi(lastFrame()!);
     expect(frame.indexOf('FIRST PROMPT')).toBeLessThan(frame.indexOf('SECOND PROMPT'));
   });
 });
-
