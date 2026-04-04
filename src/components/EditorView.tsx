@@ -14,6 +14,7 @@ export interface EditorViewProps {
   onCancel: () => void;
   terminalSize: { rows: number; columns: number };
   snippets?: Prompt[];
+  canned?: Prompt[];
 }
 
 export function EditorView({ 
@@ -23,7 +24,8 @@ export function EditorView({
   onSave, 
   onCancel, 
   terminalSize,
-  snippets = []
+  snippets = [],
+  canned = []
 }: EditorViewProps) {
   const textRef = useRef(initialText);
   const [name, setName] = useState(initialName);
@@ -35,7 +37,7 @@ export function EditorView({
 
   // Mention State
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
-  const [mentionType, setMentionType] = useState<'file' | 'snippet' | null>(null);
+  const [mentionType, setMentionType] = useState<'file' | 'snippet-expand' | 'snippet-var' | null>(null);
   const [mentionStart, setMentionStart] = useState<number | null>(null);
   const [mentionEnd, setMentionEnd] = useState<number | null>(null);
   const [searchResults, setSearchResults] = useState<string[]>([]);
@@ -44,10 +46,10 @@ export function EditorView({
   const nameRegex = /^[a-zA-Z0-9]+([-_][a-zA-Z0-9]+)*$/;
   const isNameValid = !isSnippet || nameRegex.test(name);
 
-  const editorRows = Math.max(5, terminalSize.rows - (mentionQuery !== null ? 12 : (isSnippet ? 10 : 8)));
+  const editorRows = Math.max(5, terminalSize.rows - (mentionQuery !== null ? 12 : (isSnippet ? 11 : 9)));
 
   const prevMentionQuery = useRef<string | null>(null);
-  const prevMentionType = useRef<'file' | 'snippet' | null>(null);
+  const prevMentionType = useRef<'file' | 'snippet-expand' | 'snippet-var' | null>(null);
 
   useEffect(() => {
     if (mentionQuery !== null) {
@@ -55,7 +57,7 @@ export function EditorView({
         if (mentionType === 'file') {
           const results = await fuzzySearchFiles(mentionQuery, process.cwd());
           setSearchResults(results);
-        } else if (mentionType === 'snippet') {
+        } else if (mentionType === 'snippet-expand' || mentionType === 'snippet-var') {
           const results = snippets
             .filter(s => s.name?.toLowerCase().includes(mentionQuery.toLowerCase()))
             .map(s => s.name!)
@@ -107,17 +109,23 @@ export function EditorView({
   const checkMention = (val: string, cursor: number) => {
     const beforeCursor = val.slice(0, cursor);
     const fileMatch = beforeCursor.match(/(?:^|\s)@([^\s]*)$/);
-    const snippetMatch = beforeCursor.match(/(?:^|\s)\$\$([^\s]*)$/);
+    const snippetVarMatch = beforeCursor.match(/(?:^|\s)\$\$([^\s]*)$/);
+    const snippetExpandMatch = beforeCursor.match(/(?:^|\s)\$([^\s]*)$/);
 
     if (fileMatch && fileMatch[1] !== undefined) {
       setMentionType('file');
       setMentionQuery(fileMatch[1]);
       setMentionStart(cursor - fileMatch[1].length - 1);
       setMentionEnd(cursor);
-    } else if (snippetMatch && snippetMatch[1] !== undefined) {
-      setMentionType('snippet');
-      setMentionQuery(snippetMatch[1]);
-      setMentionStart(cursor - snippetMatch[1].length - 2);
+    } else if (snippetVarMatch && snippetVarMatch[1] !== undefined) {
+      setMentionType('snippet-var');
+      setMentionQuery(snippetVarMatch[1]);
+      setMentionStart(cursor - snippetVarMatch[1].length - 2);
+      setMentionEnd(cursor);
+    } else if (snippetExpandMatch && snippetExpandMatch[1] !== undefined) {
+      setMentionType('snippet-expand');
+      setMentionQuery(snippetExpandMatch[1]);
+      setMentionStart(cursor - snippetExpandMatch[1].length - 1);
       setMentionEnd(cursor);
     } else {
       setMentionType(null);
@@ -142,8 +150,13 @@ export function EditorView({
           const result = searchResults[selectedIndex];
           if (mentionType === 'file') {
             inputRef.current?.insertText("@" + result + " ", mentionStart, mentionEnd);
-          } else if (mentionType === 'snippet') {
+          } else if (mentionType === 'snippet-var') {
             inputRef.current?.insertText("$$" + result + " ", mentionStart, mentionEnd);
+          } else if (mentionType === 'snippet-expand') {
+            const snippet = snippets.find(s => s.name === result);
+            if (snippet) {
+              inputRef.current?.insertText(snippet.text + " ", mentionStart, mentionEnd);
+            }
           }
         }
         setMentionQuery(null);
@@ -271,6 +284,14 @@ export function EditorView({
           focus={!showConfirm && !isEditingName}
         />
       </Box>
+
+      {mentionQuery === null && (
+        <Box paddingX={1} marginBottom={1}>
+          <Text color="gray">
+            <Text bold color="cyan">@</Text> File | <Text bold color="cyan">$</Text> Snippet (expand) | <Text bold color="cyan">$$</Text> Snippet (var)
+          </Text>
+        </Box>
+      )}
 
       <Box marginTop={1} minHeight={1}>
         {mentionQuery !== null ? (

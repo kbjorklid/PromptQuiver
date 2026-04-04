@@ -253,6 +253,7 @@ export const App = ({
         onSave={saveEditedPrompt}
         onCancel={cancelEdit}
         snippets={data.snippets}
+        canned={data.canned}
       />
     );
   }

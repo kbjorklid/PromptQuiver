@@ -52,9 +52,8 @@ describe('App Snippets', () => {
     // Move cursor to end
     for (let i=0; i<5; i++) stdin.write('\x1b[C');
     
-    // Type " $$"
+    // Type " $"
     stdin.write(' ');
-    stdin.write('$');
     stdin.write('$');
     await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -65,8 +64,8 @@ describe('App Snippets', () => {
     stdin.write('\r');
     await new Promise(resolve => setTimeout(resolve, 50));
 
-    // Check if inserted $$ask
-    expect(lastFrame()).toContain('Hello $$ask ');
+    // Check if expanded
+    expect(lastFrame()).toContain('Hello Ask me questions');
 
     // Save
     stdin.write('\u0013'); // Ctrl+s
@@ -74,7 +73,7 @@ describe('App Snippets', () => {
 
     expect(savePromptsFn).toHaveBeenCalled();
     const lastCall = savePromptsFn.mock.calls[savePromptsFn.mock.calls.length - 1];
-    expect(lastCall![1].main[0].text).toBe('Hello $$ask ');
+    expect(lastCall![1].main[0].text).toBe('Hello Ask me questions ');
   });
 
   test('Snippet name validation', async () => {
@@ -160,6 +159,50 @@ describe('App Snippets', () => {
 
     // Check clipboardy.writeSync call
     const clipboardWrite = (clipboardy as any).default.writeSync;
-    expect(clipboardWrite).toHaveBeenCalledWith('Prompt with Ask me questions and $$missing');
+    expect(clipboardWrite).toHaveBeenCalledWith('Prompt with Ask me questions and $$missing');        
+    });
+
+  test('Snippet variable insertion with $$ trigger', async () => {
+    const snippets = [
+      { id: 's1', name: 'ask', text: 'Ask me questions', type: 'prompt' as const, created_at: '', updated_at: '' }
+    ];
+    const loadPromptsFn = async () => ({
+      main: [{ id: '1', text: 'Start', type: 'prompt' as const, created_at: '', updated_at: '' }],
+      notes: [],
+      archive: [],
+      canned: [],
+      snippets: snippets
+    });
+    
+    const savePromptsFn = mock(async () => {});
+
+    const { lastFrame, stdin } = render(
+      <App cwd={mockCwd} loadPromptsFn={loadPromptsFn} savePromptsFn={savePromptsFn} />
+    );
+    
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Press 'e' to edit
+    stdin.write('e');
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    // Move cursor to end
+    for (let i=0; i<5; i++) stdin.write('\x1b[C');
+    
+    // Type " $$"
+    stdin.write(' ');
+    stdin.write('$');
+    stdin.write('$');
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    // Menu should show "ask"
+    expect(lastFrame()).toContain('ask');
+
+    // Press Enter to select
+    stdin.write('\r');
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    // Check if inserted variable
+    expect(lastFrame()).toContain('Start $$ask ');
   });
 });
