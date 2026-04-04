@@ -93,7 +93,7 @@ export async function savePrompts(cwd: string, data: PromptStorageData): Promise
     archive: data.archive,
   };
   const projectYaml = yaml.dump(projectToSave, { lineWidth: -1, noRefs: true });
-  const projectTempPath = `${filePath}.tmp`;
+  const projectTempPath = `${filePath}.${Math.random().toString(36).substring(7)}.tmp`;
   await fs.writeFile(projectTempPath, projectYaml, 'utf-8');
   await fs.rename(projectTempPath, filePath);
 
@@ -113,7 +113,7 @@ export async function savePrompts(cwd: string, data: PromptStorageData): Promise
     'settings': data.settings,
   };
   const commonYaml = yaml.dump(newCommon, { lineWidth: -1, noRefs: true });
-  const commonTempPath = `${commonPath}.tmp`;
+  const commonTempPath = `${commonPath}.${Math.random().toString(36).substring(7)}.tmp`;
   await fs.writeFile(commonTempPath, commonYaml, 'utf-8');
   await fs.rename(commonTempPath, commonPath);
 }
