@@ -41,15 +41,17 @@ export const PromptList: React.FC<PromptListProps> = ({
     <Box flexDirection="column" flexGrow={1}>
       {items.map((prompt, index) => {
         const actualIndex = start + index;
-        const displayLines = prompt.text
-          .split('\n')
-          .map((line) => line.trim())
-          .filter((line) => line.length > 0)
-          .slice(0, 2);
+        const displayLines = prompt.name 
+          ? [prompt.name]
+          : prompt.text
+              .split('\n')
+              .map((line) => line.trim())
+              .filter((line) => line.length > 0)
+              .slice(0, 2);
         
         const isSelected = actualIndex === selectedIndex;
         const isLastCopied = prompt.id === lastCopiedId;
-        const itemColor = prompt.type === 'note' ? 'cyan' : 'yellow';
+        const itemColor = prompt.type === 'note' ? 'cyan' : (prompt.name ? 'magenta' : 'yellow');
         const displayIndex = (actualIndex + 1).toString().padStart(currentList.length.toString().length, ' ');
         
         let backgroundColor: string | undefined = undefined;

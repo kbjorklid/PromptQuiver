@@ -44,6 +44,8 @@ describe('App Last Copied Icon', () => {
     await new Promise(resolve => setTimeout(resolve, 50));
     stdin.write('l'); // to Canned
     await new Promise(resolve => setTimeout(resolve, 50));
+    stdin.write('l'); // to Snippets
+    await new Promise(resolve => setTimeout(resolve, 50));
     stdin.write('l'); // to Archive
     await new Promise(resolve => setTimeout(resolve, 50));
     

@@ -10,6 +10,7 @@ const DEFAULT_DATA: PromptStorageData = {
   notes: [],
   archive: [],
   canned: [],
+  snippets: [],
 };
 
 export async function ensureStorageDir() {
@@ -55,6 +56,7 @@ export async function loadPrompts(cwd: string): Promise<PromptStorageData> {
     notes: ensureType(projectData?.notes, 'note'),
     archive: ensureType(projectData?.archive, 'prompt'),
     canned: ensureType(commonData?.['canned-prompts'], 'prompt'),
+    snippets: ensureType(commonData?.snippets, 'prompt'),
   };
 }
 
@@ -86,6 +88,7 @@ export async function savePrompts(cwd: string, data: PromptStorageData): Promise
   const newCommon = {
     ...existingCommon,
     'canned-prompts': data.canned,
+    'snippets': data.snippets,
   };
   const commonYaml = yaml.dump(newCommon, { lineWidth: -1, noRefs: true });
   const commonTempPath = `${commonPath}.tmp`;

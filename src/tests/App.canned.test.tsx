@@ -79,6 +79,7 @@ describe('App Canned Tab', () => {
       main: [],
       notes: [],
       archive: [],
+      snippets: [],
       canned: [
         { id: 'save-test', text: 'To be saved', type: 'prompt' as const, created_at: 'now', updated_at: 'now' }
       ]

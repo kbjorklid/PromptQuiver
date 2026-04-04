@@ -85,7 +85,7 @@ export const App = ({
     currentBranch,
   } = usePrompts({ cwd, loadPromptsFn, savePromptsFn, debounceMs });
 
-  const orderedTabs: Tab[] = ['main', 'notes', 'canned', 'archive'];
+  const orderedTabs: Tab[] = ['main', 'notes', 'canned', 'snippets', 'archive'];
 
   const switchTab = (direction: 'next' | 'prev') => {
     const currentIndex = orderedTabs.indexOf(activeTab);
@@ -182,6 +182,13 @@ export const App = ({
       return;
     }
 
+    // Tab shortcuts
+    if (input === '1') setActiveTab('main');
+    if (input === '2') setActiveTab('notes');
+    if (input === '3') setActiveTab('canned');
+    if (input === '4') setActiveTab('snippets');
+    if (input === '5') setActiveTab('archive');
+
     // Special keys
     if (key.upArrow) return updateSelectedIndex(Math.max(0, selectedIndex - 1));
     if (key.downArrow) return updateSelectedIndex(Math.min(currentList.length - 1, selectedIndex + 1));
@@ -237,9 +244,12 @@ export const App = ({
       <EditorView
         key={editingPrompt.id}
         initialText={editingPrompt.text}
+        initialName={editingPrompt.name}
+        isSnippet={activeTab === 'snippets'}
         terminalSize={terminalSize}
         onSave={saveEditedPrompt}
         onCancel={cancelEdit}
+        snippets={data.snippets}
       />
     );
   }

@@ -48,6 +48,11 @@ describe('App Keyboard Inputs', () => {
     await new Promise(resolve => setTimeout(resolve, 50));
     expect(lastFrame()).toContain('Canned');
 
+    // 'l' again to move to next tab (Snippets)
+    stdin.write('l');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    expect(lastFrame()).toContain('Snippets');
+
     // 'l' again to move to next tab (Archive)
     stdin.write('l');
     await new Promise(resolve => setTimeout(resolve, 50));

@@ -39,6 +39,9 @@ describe('App CRUD Operations', () => {
     // Switch to canned
     stdin.write('\t');
     await new Promise(resolve => setTimeout(resolve, 50));
+    // Switch to snippets
+    stdin.write('\t');
+    await new Promise(resolve => setTimeout(resolve, 50));
     // Switch to archive
     stdin.write('\t');
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -54,6 +57,9 @@ describe('App CRUD Operations', () => {
     stdin.write('\t');
     await new Promise(resolve => setTimeout(resolve, 50));
     // Switch to canned
+    stdin.write('\t');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    // Switch to snippets
     stdin.write('\t');
     await new Promise(resolve => setTimeout(resolve, 50));
     // Switch to archive
@@ -80,6 +86,9 @@ describe('App CRUD Operations', () => {
     stdin.write('\t');
     await new Promise(resolve => setTimeout(resolve, 50));
     // Switch to canned
+    stdin.write('\t');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    // Switch to snippets
     stdin.write('\t');
     await new Promise(resolve => setTimeout(resolve, 50));
     // Switch to archive

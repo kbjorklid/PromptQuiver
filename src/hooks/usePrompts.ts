@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useAutoSave } from './useAutoSave';
 import { getCurrentGitBranch } from '../utils/git';
 
-export type Tab = 'main' | 'notes' | 'archive' | 'canned';
+export type Tab = 'main' | 'notes' | 'archive' | 'canned' | 'snippets';
 export type View = 'list' | 'editor';
 export interface Toast { message: string }
 
@@ -27,14 +27,14 @@ export function usePrompts({
     history: PromptStorageData[];
     future: PromptStorageData[];
   }>({
-    data: { main: [], notes: [], archive: [], canned: [] },
+    data: { main: [], notes: [], archive: [], canned: [], snippets: [] },
     history: [],
     future: [],
   });
   const { data, history, future } = appState;
 
   const [activeTab, setActiveTab] = useState<Tab>('main');
-  const [selectedIndices, setSelectedIndices] = useState<Record<Tab, number>>({ main: 0, notes: 0, archive: 0, canned: 0 });
+  const [selectedIndices, setSelectedIndices] = useState<Record<Tab, number>>({ main: 0, notes: 0, archive: 0, canned: 0, snippets: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [view, setView] = useState<View>('list');
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
@@ -89,16 +89,18 @@ export function usePrompts({
     init();
   }, [cwd, loadPromptsFn]);
 
+  const onSaveError = useCallback((err: any) => {
+    showToast('Error: Failed to save prompts!');
+    console.error('Save error:', err);
+  }, [showToast]);
+
   // Handle auto-save
   const { triggerSave } = useAutoSave({
     cwd,
     data,
     isLoading,
     savePromptsFn,
-    onSaveError: (err) => {
-      showToast('Error: Failed to save prompts!');
-      console.error('Save error:', err);
-    },
+    onSaveError,
     debounceMs,
   });
 
@@ -225,7 +227,7 @@ export function usePrompts({
 
   const addPrompt = useCallback((position: 'before' | 'after' | 'start' | 'end') => {
     const now = new Date().toISOString();
-    const branch = activeTab === 'canned' ? undefined : refreshCurrentBranch();
+    const branch = (activeTab === 'canned' || activeTab === 'snippets') ? undefined : refreshCurrentBranch();
     const type: 'prompt' | 'note' = activeTab === 'notes' ? 'note' : 'prompt';
     const newPrompt: Prompt = {
       id: uuidv4(),
@@ -234,6 +236,7 @@ export function usePrompts({
       branch,
       created_at: now,
       updated_at: now,
+      name: activeTab === 'snippets' ? '' : undefined,
     };
 
     setAddingPosition({ position, index: selectedIndex });
@@ -241,7 +244,7 @@ export function usePrompts({
     setView('editor');
   }, [activeTab, selectedIndex, refreshCurrentBranch]);
 
-  const saveEditedPrompt = useCallback((text: string) => {
+  const saveEditedPrompt = useCallback((text: string, name?: string) => {
     if (!editingPrompt) return;
     
     const listName = activeTab;
@@ -251,6 +254,7 @@ export function usePrompts({
       const newPrompt = {
         ...editingPrompt,
         text: text,
+        name: name,
         updated_at: new Date().toISOString(),
       };
       let newIndex = 0;
@@ -284,6 +288,7 @@ export function usePrompts({
         nextData[listName][index] = {
           ...editingPrompt,
           text: text,
+          name: name,
           updated_at: new Date().toISOString(),
         };
         pushState(nextData, true);

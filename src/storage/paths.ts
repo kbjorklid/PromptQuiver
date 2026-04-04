@@ -6,6 +6,7 @@ export interface Prompt {
   id: string;
   text: string;
   type: 'prompt' | 'note';
+  name?: string;
   branch?: string;
   created_at: string;
   updated_at: string;
@@ -16,6 +17,7 @@ export interface PromptStorageData {
   notes: Prompt[];
   archive: Prompt[];
   canned: Prompt[];
+  snippets: Prompt[];
 }
 
 export const STORAGE_DIR = path.join(os.homedir(), '.promptcue');
