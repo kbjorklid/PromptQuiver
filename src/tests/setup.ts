@@ -1,12 +1,16 @@
 import { mock } from "bun:test";
 
 // Mock clipboardy globally for tests to avoid failures in non-TTY environments (Linux CI)
-mock.module("clipboardy", () => ({
-  default: {
+mock.module("clipboardy", () => {
+  const mockClipboard = {
     writeSync: () => {},
     readSync: () => "",
-  },
-}));
+  };
+  return {
+    ...mockClipboard,
+    default: mockClipboard,
+  };
+});
 
 // Ensure process.stdout.columns/rows have defaults for tests
 if (!process.stdout.columns) {
