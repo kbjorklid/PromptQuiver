@@ -1,7 +1,17 @@
 import React from 'react';
 import { render } from 'ink-testing-library';
-import { expect, test, describe } from "bun:test";
+import { expect, test, describe, vi } from "bun:test";
+import './setup';
 import { App } from '../App';
+
+vi.mock('clipboardy', () => ({
+  default: {
+    writeSync: () => {},
+    readSync: () => "",
+  },
+  writeSync: () => {},
+  readSync: () => "",
+}));
 
 const mockData = {
   main: Array.from({ length: 10 }, (_, i) => ({

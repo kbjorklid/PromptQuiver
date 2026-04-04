@@ -1,8 +1,18 @@
 import React from 'react';
 import { render } from 'ink-testing-library';
+import './setup';
 import { App } from '../App';
-import { expect, test, describe, mock } from 'bun:test';
+import { expect, test, describe, mock, vi } from 'bun:test';
 import type { PromptStorageData } from '../storage';
+
+vi.mock('clipboardy', () => ({
+  default: {
+    writeSync: () => {},
+    readSync: () => "",
+  },
+  writeSync: () => {},
+  readSync: () => "",
+}));
 
 const mockData: PromptStorageData = {
   main: [

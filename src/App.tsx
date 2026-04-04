@@ -8,6 +8,7 @@ import { SearchInput } from './components/SearchInput';
 import { PromptList } from './components/PromptList';
 import { SettingsView } from './components/SettingsView';
 import { loadPrompts, savePrompts } from './storage';
+import clipboardy from 'clipboardy';
 import { usePrompts } from './hooks/usePrompts';
 import type { Tab } from './hooks/usePrompts';
 import { expandSnippets } from './utils/snippetExpansion';
@@ -114,12 +115,11 @@ export const App = ({
   const handleNextTab = () => switchTab('next');
   const handlePrevTab = () => switchTab('prev');
 
-  const handleCopy = async () => {
+  const handleCopy = () => {
     if (activeTab === 'notes') return;
     const prompt = currentList[selectedIndex];
     if (prompt) {
       try {
-        const clipboardy = (await import('clipboardy')).default;
         const expandedText = activeTab === 'snippets' ? prompt.text : expandSnippets(prompt.text, data.snippets);
         clipboardy.writeSync(expandedText);
         setLastCopiedId(prompt.id);
@@ -130,13 +130,12 @@ export const App = ({
     }
   };
 
-  const handleStage = async () => {
+  const handleStage = () => {
     const prompt = currentList[selectedIndex];
     if (prompt) {
       if (activeTab === 'canned') {
         stagePrompt(); // Clears others via reducer
         try {
-          const clipboardy = (await import('clipboardy')).default;
           const expandedText = expandSnippets(prompt.text, data.snippets);
           clipboardy.writeSync(expandedText);
           setLastCopiedId(prompt.id); // Show 📋
@@ -151,7 +150,6 @@ export const App = ({
       stagePrompt();
       if (!wasStaged) {
         try {
-          const clipboardy = (await import('clipboardy')).default;
           const expandedText = activeTab === 'snippets' ? prompt.text : expandSnippets(prompt.text, data.snippets);
           clipboardy.writeSync(expandedText);
           setLastCopiedId(null);

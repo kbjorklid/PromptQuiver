@@ -1,8 +1,18 @@
 import React from 'react';
 import { render } from 'ink-testing-library';
-import { expect, test, describe, spyOn, beforeEach, afterEach } from "bun:test";
+import { expect, test, describe, spyOn, beforeEach, afterEach, vi } from "bun:test";
+import './setup';
 import { App } from '../App';
 import * as storage from '../storage';
+
+vi.mock('clipboardy', () => ({
+  default: {
+    writeSync: () => {},
+    readSync: () => "",
+  },
+  writeSync: () => {},
+  readSync: () => "",
+}));
 
 const mockData = {
   main: [
