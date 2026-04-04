@@ -68,14 +68,14 @@ export const PromptList: React.FC<PromptListProps> = ({
               paddingX={1}
               backgroundColor={backgroundColor}
             >
-              <Box marginRight={1}>
+              <Box marginRight={1} flexShrink={0}>
                 <Text color="gray">{displayIndex}. </Text>
                 <Text color={itemColor}>
                   {isSelected ? (isMoving ? '↕' : '▶') : ' '}
                 </Text>
                 {isLastCopied && <Text color="green"> 📋</Text>}
               </Box>
-              <Box flexDirection="column">
+              <Box flexDirection="column" flexShrink={1}>
                 {displayLines.length === 0 ? (
                   <Text italic color="gray">Empty item</Text>
                 ) : (

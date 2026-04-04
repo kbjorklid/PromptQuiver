@@ -53,7 +53,10 @@ export function EditorView({
   const nameRegex = /^[a-zA-Z0-9]+([-_][a-zA-Z0-9]+)*$/;
   const isNameValid = !isSnippet || nameRegex.test(name);
 
-  const editorRows = Math.max(5, terminalSize.rows - (mentionQuery !== null ? 12 : (isSnippet ? 11 : 9)));
+  const overhead = mentionQuery !== null 
+    ? (isSnippet ? 17 : 12) 
+    : (isSnippet ? 15 : 10);
+  const editorRows = Math.max(5, terminalSize.rows - overhead);
 
   const handleConfirmNavigation = (direction: 'left' | 'right') => {
     if (direction === 'left') {
@@ -157,19 +160,19 @@ export function EditorView({
         {isSnippet && (
            <Box flexDirection="column" marginTop={1}>
              <Text color="gray">Name:</Text>
-             {isEditingName ? (
-               <Box borderStyle="single" borderColor={isNameValid ? 'cyan' : 'red'} paddingX={1} width="100%">
-                 <UncontrolledSingleLineInput 
-                   initialValue={name} 
-                   onChange={setName}
-                   focus={!showConfirm}
-                 />
-               </Box>
-             ) : (
-               <Box paddingX={1}>
-                 <Text color={isNameValid ? 'cyan' : 'red'} bold>{name || '(empty)'}</Text>
-               </Box>
-             )}
+             <Box 
+               borderStyle="round" 
+               borderColor={isEditingName ? (isNameValid ? 'cyan' : 'red') : 'gray'} 
+               paddingX={1} 
+               width="100%"
+             >
+               <UncontrolledSingleLineInput 
+                 initialValue={name} 
+                 onChange={setName}
+                 focus={isEditingName && !showConfirm}
+                 placeholder="(empty)"
+               />
+             </Box>
            </Box>
         )}
       </Box>
