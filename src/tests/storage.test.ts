@@ -4,6 +4,19 @@ import path from "path";
 import yaml from 'js-yaml';
 import { getStoragePath, getCommonStoragePath, STORAGE_DIR } from "../storage/paths";
 import { loadPrompts, savePrompts, ensureStorageDir } from "../storage/index";
+import { mock } from "bun:test";
+import os from 'os';
+
+const tempCommonPath = path.join(os.tmpdir(), `common-storage-test-${Math.random().toString(36).substring(7)}.yml`);
+
+import * as originalPaths from '../storage/paths';
+
+mock.module('../storage/paths', () => {
+  return {
+    ...originalPaths,
+    getCommonStoragePath: () => tempCommonPath,
+  };
+});
 
 describe("Storage", () => {
   const mockCwd = path.join(process.cwd(), "test-project");
@@ -15,7 +28,7 @@ describe("Storage", () => {
       await fs.unlink(expectedPath);
     } catch {}
     try {
-      await fs.unlink(commonPath);
+      await fs.unlink(tempCommonPath);
     } catch {}
   });
 

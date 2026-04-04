@@ -68,6 +68,7 @@ export function promptReducer(state: PromptState, action: PromptAction): PromptS
 
     case 'MOVE_ITEM_IN_LIST': {
       const { tab, fromIndex, toIndex } = action;
+      if (fromIndex === toIndex) return state;
       const list = [...state.present[tab]];
       const movedItem = list.splice(fromIndex, 1)[0];
       if (!movedItem) return state;

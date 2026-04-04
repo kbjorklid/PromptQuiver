@@ -205,4 +205,98 @@ describe('App Snippets', () => {
     // Check if inserted variable
     expect(lastFrame()).toContain('Start $$ask ');
   });
+
+  test('Snippets are NOT expanded when copied from the snippets tab', async () => {
+    const snippets = [
+      { id: 's1', name: 'inner', text: 'Inner Content', type: 'prompt' as const, created_at: '', updated_at: '' },
+      { id: 's2', name: 'outer', text: 'Outer with $$inner', type: 'prompt' as const, created_at: '', updated_at: '' }
+    ];
+    const loadPromptsFn = async () => ({
+      main: [],
+      notes: [],
+      archive: [],
+      canned: [],
+      snippets: snippets
+    });
+    
+    (clipboardy as any).default.writeSync.mockClear();
+    const { stdin } = render(
+      <App cwd={mockCwd} loadPromptsFn={loadPromptsFn} />
+    );
+    
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Press '4' to switch to Snippets tab
+    stdin.write('4');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    // Select the second snippet (outer)
+    stdin.write('j');
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    // Press 'y' to copy
+    stdin.write('y');
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    // Check clipboardy.writeSync call - should NOT be expanded
+    const clipboardWrite = (clipboardy as any).default.writeSync;
+    expect(clipboardWrite).toHaveBeenCalledWith('Outer with $$inner');
+  });
+
+  test('Snippet autocomplete ($/$$) is NOT active and help hints are hidden when editing a snippet', async () => {
+    const snippets = [
+      { id: 's1', name: 'other', text: 'Other Snippet', type: 'prompt' as const, created_at: '', updated_at: '' },
+      { id: 's2', name: 'current', text: 'Current', type: 'prompt' as const, created_at: '', updated_at: '' }
+    ];
+    const loadPromptsFn = async () => ({
+      main: [],
+      notes: [],
+      archive: [],
+      canned: [],
+      snippets: snippets
+    });
+    
+    const { lastFrame, stdin } = render(
+      <App cwd={mockCwd} loadPromptsFn={loadPromptsFn} />
+    );
+    
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Press '4' to switch to Snippets tab
+    stdin.write('4');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    // Select the second snippet
+    stdin.write('j');
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    // Press 'e' to edit
+    stdin.write('e');
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Verify help text doesn't contain snippet hints
+    const frame = lastFrame();
+    const plainFrame = frame.replace(/\u001b\[[0-9;]*m/g, '');
+    expect(plainFrame).toContain('@ File');
+    expect(plainFrame).not.toContain('$ Snippet (expand)');
+    expect(plainFrame).not.toContain('$$ Snippet (var)');
+
+    // Move cursor to end
+    for (let i=0; i<7; i++) stdin.write('\x1b[C');
+    
+    // Type " $"
+    stdin.write(' ');
+    stdin.write('$');
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    // Menu should NOT show "other"
+    expect(lastFrame()).not.toContain('other');
+    
+    // Type " $" again for "$$"
+    stdin.write('$');
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    // Menu should NOT show "other"
+    expect(lastFrame()).not.toContain('other');
+  });
 });

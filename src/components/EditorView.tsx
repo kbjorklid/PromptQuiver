@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
-import TextInput from 'ink-text-input';
 import { UncontrolledMultilineInput } from './UncontrolledMultilineInput';
+import { UncontrolledSingleLineInput } from './UncontrolledSingleLineInput';
 import type { UncontrolledMultilineInputRef } from './UncontrolledMultilineInput';
 import { useMentionAutocomplete } from '../hooks/useMentionAutocomplete';
 
@@ -46,7 +46,8 @@ export function EditorView({
     snippets,
     onApply: (textToInsert, start, end) => {
       inputRef.current?.insertText(textToInsert, start, end);
-    }
+    },
+    allowSnippets: !isSnippet
   });
 
   const nameRegex = /^[a-zA-Z0-9]+([-_][a-zA-Z0-9]+)*$/;
@@ -158,9 +159,10 @@ export function EditorView({
              <Text color="gray">Name:</Text>
              {isEditingName ? (
                <Box borderStyle="single" borderColor={isNameValid ? 'cyan' : 'red'} paddingX={1} width="100%">
-                 <TextInput 
-                   value={name} 
-                   onChange={setName} 
+                 <UncontrolledSingleLineInput 
+                   initialValue={name} 
+                   onChange={setName}
+                   focus={!showConfirm}
                  />
                </Box>
              ) : (
@@ -196,7 +198,7 @@ export function EditorView({
       {mentionQuery === null && (
         <Box paddingX={1} marginBottom={1}>
           <Text color="gray">
-            <Text bold color="cyan">@</Text> File | <Text bold color="cyan">$</Text> Snippet (expand) | <Text bold color="cyan">$$</Text> Snippet (var)
+            <Text bold color="cyan">@</Text> File{isSnippet ? '' : <Text> | <Text bold color="cyan">$</Text> Snippet (expand) | <Text bold color="cyan">$$</Text> Snippet (var)</Text>}
           </Text>
         </Box>
       )}

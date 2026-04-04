@@ -7,9 +7,10 @@ export type MentionType = 'file' | 'snippet-expand' | 'snippet-var';
 export interface UseMentionAutocompleteProps {
   snippets: Prompt[];
   onApply: (text: string, start: number, end: number) => void;
+  allowSnippets?: boolean;
 }
 
-export function useMentionAutocomplete({ snippets, onApply }: UseMentionAutocompleteProps) {
+export function useMentionAutocomplete({ snippets, onApply, allowSnippets = true }: UseMentionAutocompleteProps) {
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
   const [mentionType, setMentionType] = useState<MentionType | null>(null);
   const [mentionStart, setMentionStart] = useState<number | null>(null);
@@ -54,8 +55,8 @@ export function useMentionAutocomplete({ snippets, onApply }: UseMentionAutocomp
   const checkMention = (val: string, cursor: number) => {
     const beforeCursor = val.slice(0, cursor);
     const fileMatch = beforeCursor.match(/(?:^|\s)@([^\s]*)$/);
-    const snippetVarMatch = beforeCursor.match(/(?:^|\s)\$\$([^\s]*)$/);
-    const snippetExpandMatch = beforeCursor.match(/(?:^|\s)\$([^\s]*)$/);
+    const snippetVarMatch = allowSnippets ? beforeCursor.match(/(?:^|\s)\$\$([^\s]*)$/) : null;
+    const snippetExpandMatch = allowSnippets ? beforeCursor.match(/(?:^|\s)\$([^\s]*)$/) : null;
 
     if (fileMatch && fileMatch[1] !== undefined) {
       setMentionType('file');

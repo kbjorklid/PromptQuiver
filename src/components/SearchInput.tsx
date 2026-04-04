@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Text } from 'ink';
-import TextInput from 'ink-text-input';
+import { UncontrolledSingleLineInput } from './UncontrolledSingleLineInput';
 
 interface SearchInputProps {
   isSearching: boolean;
@@ -19,8 +19,8 @@ export const SearchInput: React.FC<SearchInputProps> = ({
     return (
       <Box paddingX={1} marginTop={1}>
         <Text color="blue">/</Text>
-        <TextInput 
-          value={searchQuery} 
+        <UncontrolledSingleLineInput 
+          initialValue={searchQuery} 
           onChange={(val) => {
             setSearchQuery(val);
             updateSelectedIndex(0);

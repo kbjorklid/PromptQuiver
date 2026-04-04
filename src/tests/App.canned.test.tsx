@@ -6,6 +6,26 @@ import * as gitUtils from '../utils/git';
 import { getCommonStoragePath } from '../storage/paths';
 import { savePrompts } from '../storage/index';
 import fs from 'fs/promises';
+import { mock, beforeEach, afterEach } from 'bun:test';
+import os from 'os';
+import path from 'path';
+
+const tempCommonPath = path.join(os.tmpdir(), `common-test-${Math.random().toString(36).substring(7)}.yml`);
+
+afterEach(async () => {
+  try {
+    await fs.unlink(tempCommonPath);
+  } catch {}
+});
+
+import * as originalPaths from '../storage/paths';
+
+mock.module('../storage/paths', () => {
+  return {
+    ...originalPaths,
+    getCommonStoragePath: () => tempCommonPath,
+  };
+});
 
 const mockData = {
   main: [
@@ -22,7 +42,7 @@ const mockData = {
 const mockLoadPrompts = async () => mockData;
 
 describe('App Canned Tab', () => {
-  const mockCwd = '/test/path';
+  const mockCwd = `/test/path-${Math.random().toString(36).substring(7)}`;
 
   test('renders Canned tab in the header', async () => {
     const { lastFrame } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} />);
@@ -73,7 +93,7 @@ describe('App Canned Tab', () => {
 
   test('saves canned prompts to common.yml', async () => {
     const commonPath = getCommonStoragePath();
-    const mockCwd = '/test/path';
+    const localMockCwd = `/test/path-save-${Math.random().toString(36).substring(7)}`;
     
     const data = {
       main: [],
@@ -85,10 +105,15 @@ describe('App Canned Tab', () => {
       ]
     };
 
-    await savePrompts(mockCwd, data);
+    await savePrompts(localMockCwd, data);
     
     const content = await fs.readFile(commonPath, 'utf-8');
     expect(content).toContain('To be saved');
     expect(content).toContain('canned-prompts:');
+    
+    // Cleanup the project file too
+    try {
+      await fs.unlink(originalPaths.getStoragePath(localMockCwd));
+    } catch {}
   });
 });

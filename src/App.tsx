@@ -106,7 +106,7 @@ export const App = ({
     const prompt = currentList[selectedIndex];
     if (prompt) {
       try {
-        const expandedText = expandSnippets(prompt.text, data.snippets);
+        const expandedText = activeTab === 'snippets' ? prompt.text : expandSnippets(prompt.text, data.snippets);
         clipboardy.writeSync(expandedText);
         setLastCopiedId(prompt.id);
         showToast('Copied to clipboard');
