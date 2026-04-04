@@ -1,0 +1,42 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run tests
+        run: bun test src/tests
+
+      - name: Build binaries
+        run: |
+          mkdir dist
+          bun build --compile index.tsx --target bun-linux-x64 --outfile dist/quiver-linux-x64
+          bun build --compile index.tsx --target bun-linux-arm64 --outfile dist/quiver-linux-arm64
+          bun build --compile index.tsx --target bun-darwin-x64 --outfile dist/quiver-macos-x64
+          bun build --compile index.tsx --target bun-darwin-arm64 --outfile dist/quiver-macos-arm64
+          bun build --compile index.tsx --target bun-windows-x64 --outfile dist/quiver-windows-x64.exe
+
+      - name: Create Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create ${{ github.ref_name }} \
+            --title "Release ${{ github.ref_name }}" \
+            --generate-notes \
+            dist/*

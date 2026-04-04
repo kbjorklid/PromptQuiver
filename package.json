@@ -1,5 +1,6 @@
 {
   "name": "prompt-quiver",
+  "version": "0.1.0",
   "bin": {
     "quiver": "./index.tsx"
   },
@@ -8,7 +9,8 @@
   "private": true,
   "scripts": {
     "start": "bun index.tsx",
-    "test": "bun test src/tests"
+    "test": "bun test src/tests",
+    "build": "bun build --compile index.tsx --outfile quiver"
   },
   "devDependencies": {
     "@types/bun": "latest",
