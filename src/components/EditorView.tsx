@@ -3,8 +3,7 @@ import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
 import { UncontrolledMultilineInput } from './UncontrolledMultilineInput';
 import type { UncontrolledMultilineInputRef } from './UncontrolledMultilineInput';
-import { fuzzySearchFiles } from '../utils/fileSearch';
-import type { Prompt } from '../storage/paths';
+import { useMentionAutocomplete } from '../hooks/useMentionAutocomplete';
 
 export interface EditorViewProps {
   initialText: string;
@@ -35,50 +34,25 @@ export function EditorView({
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmOption, setConfirmOption] = useState<'yes' | 'no' | 'cancel'>('yes');
 
-  // Mention State
-  const [mentionQuery, setMentionQuery] = useState<string | null>(null);
-  const [mentionType, setMentionType] = useState<'file' | 'snippet-expand' | 'snippet-var' | null>(null);
-  const [mentionStart, setMentionStart] = useState<number | null>(null);
-  const [mentionEnd, setMentionEnd] = useState<number | null>(null);
-  const [searchResults, setSearchResults] = useState<string[]>([]);
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const {
+    mentionQuery,
+    mentionType,
+    searchResults,
+    selectedIndex,
+    checkMention,
+    handleInterceptKey,
+    closeAutocomplete
+  } = useMentionAutocomplete({
+    snippets,
+    onApply: (textToInsert, start, end) => {
+      inputRef.current?.insertText(textToInsert, start, end);
+    }
+  });
 
   const nameRegex = /^[a-zA-Z0-9]+([-_][a-zA-Z0-9]+)*$/;
   const isNameValid = !isSnippet || nameRegex.test(name);
 
   const editorRows = Math.max(5, terminalSize.rows - (mentionQuery !== null ? 12 : (isSnippet ? 11 : 9)));
-
-  const prevMentionQuery = useRef<string | null>(null);
-  const prevMentionType = useRef<'file' | 'snippet-expand' | 'snippet-var' | null>(null);
-
-  useEffect(() => {
-    if (mentionQuery !== null) {
-      const fetchResults = async () => {
-        if (mentionType === 'file') {
-          const results = await fuzzySearchFiles(mentionQuery, process.cwd());
-          setSearchResults(results);
-        } else if (mentionType === 'snippet-expand' || mentionType === 'snippet-var') {
-          const results = snippets
-            .filter(s => s.name?.toLowerCase().includes(mentionQuery.toLowerCase()))
-            .map(s => s.name!)
-            .sort();
-          setSearchResults(results);
-        }
-        
-        if (mentionQuery !== prevMentionQuery.current || mentionType !== prevMentionType.current) {
-          setSelectedIndex(0);
-          prevMentionQuery.current = mentionQuery;
-          prevMentionType.current = mentionType;
-        }
-      };
-      fetchResults();
-    } else {
-      setSearchResults([]);
-      setSelectedIndex(0);
-      prevMentionQuery.current = null;
-      prevMentionType.current = null;
-    }
-  }, [mentionQuery, mentionType, snippets]);
 
   const handleConfirmNavigation = (direction: 'left' | 'right') => {
     if (direction === 'left') {
@@ -104,72 +78,6 @@ export function EditorView({
     } else {
       setShowConfirm(false);
     }
-  };
-
-  const checkMention = (val: string, cursor: number) => {
-    const beforeCursor = val.slice(0, cursor);
-    const fileMatch = beforeCursor.match(/(?:^|\s)@([^\s]*)$/);
-    const snippetVarMatch = beforeCursor.match(/(?:^|\s)\$\$([^\s]*)$/);
-    const snippetExpandMatch = beforeCursor.match(/(?:^|\s)\$([^\s]*)$/);
-
-    if (fileMatch && fileMatch[1] !== undefined) {
-      setMentionType('file');
-      setMentionQuery(fileMatch[1]);
-      setMentionStart(cursor - fileMatch[1].length - 1);
-      setMentionEnd(cursor);
-    } else if (snippetVarMatch && snippetVarMatch[1] !== undefined) {
-      setMentionType('snippet-var');
-      setMentionQuery(snippetVarMatch[1]);
-      setMentionStart(cursor - snippetVarMatch[1].length - 2);
-      setMentionEnd(cursor);
-    } else if (snippetExpandMatch && snippetExpandMatch[1] !== undefined) {
-      setMentionType('snippet-expand');
-      setMentionQuery(snippetExpandMatch[1]);
-      setMentionStart(cursor - snippetExpandMatch[1].length - 1);
-      setMentionEnd(cursor);
-    } else {
-      setMentionType(null);
-      setMentionQuery(null);
-      setMentionStart(null);
-      setMentionEnd(null);
-    }
-  };
-
-  const handleInterceptKey = (input: string | undefined, key: any) => {
-    if (mentionQuery !== null) {
-      if (key.upArrow) {
-        setSelectedIndex(i => Math.max(0, i - 1));
-        return true; // Intercept
-      }
-      if (key.downArrow) {
-        setSelectedIndex(i => Math.min(searchResults.length - 1, i + 1));
-        return true; // Intercept
-      }
-      if (key.return || key.tab) {
-        if (searchResults[selectedIndex] && mentionStart !== null && mentionEnd !== null) {
-          const result = searchResults[selectedIndex];
-          if (mentionType === 'file') {
-            inputRef.current?.insertText("@" + result + " ", mentionStart, mentionEnd);
-          } else if (mentionType === 'snippet-var') {
-            inputRef.current?.insertText("$$" + result + " ", mentionStart, mentionEnd);
-          } else if (mentionType === 'snippet-expand') {
-            const snippet = snippets.find(s => s.name === result);
-            if (snippet) {
-              inputRef.current?.insertText(snippet.text + " ", mentionStart, mentionEnd);
-            }
-          }
-        }
-        setMentionQuery(null);
-        setMentionType(null);
-        return true; // Intercept
-      }
-      if (key.escape) {
-        setMentionQuery(null);
-        setMentionType(null);
-        return true; // Intercept
-      }
-    }
-    return false;
   };
 
   useInput((input, key) => {
