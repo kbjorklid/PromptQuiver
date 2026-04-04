@@ -123,4 +123,105 @@ describe('usePrompts Hook (Unit)', () => {
     expect(result.current.activeTab).toBe('notes');
     expect(result.current.currentList[0].text).toBe('N1');
   });
+
+  test('moveItemInList reorders prompts', async () => {
+    const { result } = renderHook(usePrompts, {
+      cwd: '/test',
+      loadPromptsFn: async () => ({
+        main: [
+          { id: '1', text: 'P1', type: 'prompt', created_at: 'now', updated_at: 'now' },
+          { id: '2', text: 'P2', type: 'prompt', created_at: 'now', updated_at: 'now' },
+        ],
+        notes: [], archive: [], canned: [], snippets: []
+      }),
+      savePromptsFn: async () => {},
+    });
+    
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    result.current.moveItemInList(0, 1);
+    await new Promise(resolve => setTimeout(resolve, 10));
+    
+    expect(result.current.data.main[0].text).toBe('P2');
+    expect(result.current.data.main[1].text).toBe('P1');
+  });
+
+  test('deletePrompt removes a prompt', async () => {
+    const { result } = renderHook(usePrompts, {
+      cwd: '/test',
+      loadPromptsFn: async () => ({
+        main: [{ id: '1', text: 'P1', type: 'prompt', created_at: 'now', updated_at: 'now' }],
+        notes: [], archive: [], canned: [], snippets: []
+      }),
+      savePromptsFn: async () => {},
+    });
+    
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    result.current.deletePrompt('main', 0);
+    await new Promise(resolve => setTimeout(resolve, 10));
+    
+    expect(result.current.data.main).toHaveLength(0);
+  });
+
+  test('movePrompt moves prompt between lists', async () => {
+    const { result } = renderHook(usePrompts, {
+      cwd: '/test',
+      loadPromptsFn: async () => ({
+        main: [{ id: '1', text: 'P1', type: 'prompt', created_at: 'now', updated_at: 'now' }],
+        notes: [], archive: [], canned: [], snippets: []
+      }),
+      savePromptsFn: async () => {},
+    });
+    
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    result.current.movePrompt('main', 'notes', 0);
+    await new Promise(resolve => setTimeout(resolve, 10));
+    
+    expect(result.current.data.main).toHaveLength(0);
+    expect(result.current.data.notes).toHaveLength(1);
+    expect(result.current.data.notes[0].text).toBe('P1');
+  });
+
+  test('saveEditedPrompt adds new prompt', async () => {
+    const { result } = renderHook(usePrompts, {
+      cwd: '/test',
+      loadPromptsFn: async () => ({
+        main: [], notes: [], archive: [], canned: [], snippets: []
+      }),
+      savePromptsFn: async () => {},
+    });
+    
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    result.current.addPrompt('end');
+    await new Promise(resolve => setTimeout(resolve, 10));
+    
+    result.current.saveEditedPrompt('New Prompt');
+    await new Promise(resolve => setTimeout(resolve, 10));
+    
+    expect(result.current.data.main).toHaveLength(1);
+    expect(result.current.data.main[0].text).toBe('New Prompt');
+  });
+
+  test('processNextPrompt archives first prompt', async () => {
+    const { result } = renderHook(usePrompts, {
+      cwd: '/test',
+      loadPromptsFn: async () => ({
+        main: [{ id: '1', text: 'P1', type: 'prompt', created_at: 'now', updated_at: 'now' }],
+        notes: [], archive: [], canned: [], snippets: []
+      }),
+      savePromptsFn: async () => {},
+    });
+    
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    const processed = result.current.processNextPrompt();
+    await new Promise(resolve => setTimeout(resolve, 10));
+    
+    expect(processed.text).toBe('P1');
+    expect(result.current.data.main).toHaveLength(0);
+    expect(result.current.data.archive).toHaveLength(1);
+  });
 });
