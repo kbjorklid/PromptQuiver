@@ -1,6 +1,6 @@
 {
   "name": "prompt-quiver",
-  "version": "0.1.0",
+  "version": "0.1.4",
   "license": "MIT",
   "bin": {
     "quiver": "./index.tsx"
