@@ -107,7 +107,7 @@ export function EditorView({
   const checkMention = (val: string, cursor: number) => {
     const beforeCursor = val.slice(0, cursor);
     const fileMatch = beforeCursor.match(/(?:^|\s)@([^\s]*)$/);
-    const snippetMatch = beforeCursor.match(/(?:^|\s)\$([^\s]*)$/);
+    const snippetMatch = beforeCursor.match(/(?:^|\s)\$\$([^\s]*)$/);
 
     if (fileMatch && fileMatch[1] !== undefined) {
       setMentionType('file');
@@ -117,7 +117,7 @@ export function EditorView({
     } else if (snippetMatch && snippetMatch[1] !== undefined) {
       setMentionType('snippet');
       setMentionQuery(snippetMatch[1]);
-      setMentionStart(cursor - snippetMatch[1].length - 1);
+      setMentionStart(cursor - snippetMatch[1].length - 2);
       setMentionEnd(cursor);
     } else {
       setMentionType(null);
@@ -143,10 +143,7 @@ export function EditorView({
           if (mentionType === 'file') {
             inputRef.current?.insertText("@" + result + " ", mentionStart, mentionEnd);
           } else if (mentionType === 'snippet') {
-            const snippet = snippets.find(s => s.name === result);
-            if (snippet) {
-              inputRef.current?.insertText(snippet.text, mentionStart, mentionEnd);
-            }
+            inputRef.current?.insertText("$$" + result + " ", mentionStart, mentionEnd);
           }
         }
         setMentionQuery(null);

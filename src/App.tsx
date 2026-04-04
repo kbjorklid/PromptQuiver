@@ -10,6 +10,7 @@ import { loadPrompts, savePrompts } from './storage';
 import clipboardy from 'clipboardy';
 import { usePrompts } from './hooks/usePrompts';
 import type { Tab } from './hooks/usePrompts';
+import { expandSnippets } from './utils/snippetExpansion';
 
 const useTerminalSize = () => {
   const [size, setSize] = useState({
@@ -105,7 +106,8 @@ export const App = ({
     const prompt = currentList[selectedIndex];
     if (prompt) {
       try {
-        clipboardy.writeSync(prompt.text);
+        const expandedText = expandSnippets(prompt.text, data.snippets);
+        clipboardy.writeSync(expandedText);
         setLastCopiedId(prompt.id);
         showToast('Copied to clipboard');
       } catch (e) {
@@ -119,7 +121,8 @@ export const App = ({
     const prompt = processNextPrompt();
     if (prompt) {
       try {
-        clipboardy.writeSync(prompt.text);
+        const expandedText = expandSnippets(prompt.text, data.snippets);
+        clipboardy.writeSync(expandedText);
         setLastCopiedId(prompt.id);
         showToast('Processed prompt and copied to clipboard');
       } catch (e) {

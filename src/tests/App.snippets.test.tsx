@@ -2,6 +2,14 @@ import React from 'react';
 import { render } from 'ink-testing-library';
 import { expect, test, describe, mock } from "bun:test";
 import { App } from '../App';
+import * as clipboardy from 'clipboardy';
+
+// Mock clipboardy
+mock.module('clipboardy', () => ({
+  default: {
+    writeSync: mock(() => {}),
+  },
+}));
 
 describe('App Snippets', () => {
   const mockCwd = '/test/path';
@@ -44,8 +52,9 @@ describe('App Snippets', () => {
     // Move cursor to end
     for (let i=0; i<5; i++) stdin.write('\x1b[C');
     
-    // Type " $"
+    // Type " $$"
     stdin.write(' ');
+    stdin.write('$');
     stdin.write('$');
     await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -56,8 +65,8 @@ describe('App Snippets', () => {
     stdin.write('\r');
     await new Promise(resolve => setTimeout(resolve, 50));
 
-    // Check if expanded
-    expect(lastFrame()).toContain('Hello Ask me questions');
+    // Check if inserted $$ask
+    expect(lastFrame()).toContain('Hello $$ask ');
 
     // Save
     stdin.write('\u0013'); // Ctrl+s
@@ -65,7 +74,7 @@ describe('App Snippets', () => {
 
     expect(savePromptsFn).toHaveBeenCalled();
     const lastCall = savePromptsFn.mock.calls[savePromptsFn.mock.calls.length - 1];
-    expect(lastCall![1].main[0].text).toBe('Hello Ask me questions');
+    expect(lastCall![1].main[0].text).toBe('Hello $$ask ');
   });
 
   test('Snippet name validation', async () => {
@@ -125,5 +134,32 @@ describe('App Snippets', () => {
 
     // Should be back in list and show the name
     expect(lastFrame()).toContain('valid-name_123');
+  });
+
+  test('Copying expands snippets', async () => {
+    const snippets = [
+      { id: 's1', name: 'ask', text: 'Ask me questions', type: 'prompt' as const, created_at: '', updated_at: '' }
+    ];
+    const loadPromptsFn = async () => ({
+      main: [{ id: '1', text: 'Prompt with $$ask and $$missing', type: 'prompt' as const, created_at: '', updated_at: '' }],
+      notes: [],
+      archive: [],
+      canned: [],
+      snippets: snippets
+    });
+    
+    const { stdin } = render(
+      <App cwd={mockCwd} loadPromptsFn={loadPromptsFn} />
+    );
+    
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Press 'y' to copy
+    stdin.write('y');
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    // Check clipboardy.writeSync call
+    const clipboardWrite = (clipboardy as any).default.writeSync;
+    expect(clipboardWrite).toHaveBeenCalledWith('Prompt with Ask me questions and $$missing');
   });
 });
