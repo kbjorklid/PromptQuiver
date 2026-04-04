@@ -1,5 +1,5 @@
 import type { Prompt, PromptStorageData } from '../storage';
-import { Tab } from './types';
+import { Tab, Settings } from './types';
 
 export type PromptAction =
   | { type: 'SET_DATA'; payload: PromptStorageData }
@@ -10,6 +10,7 @@ export type PromptAction =
   | { type: 'DELETE_PROMPT'; tab: Tab; index: number }
   | { type: 'UPDATE_PROMPT'; tab: Tab; index: number; prompt: Prompt }
   | { type: 'INSERT_PROMPT'; tab: Tab; index: number; prompt: Prompt }
+  | { type: 'UPDATE_SETTINGS'; settings: Settings }
   | { type: 'PUSH_STATE'; payload: PromptStorageData };
 
 export interface PromptState {
@@ -24,7 +25,17 @@ export const INITIAL_PROMPT_STATE: PromptState = {
     notes: [],
     archive: [],
     canned: [],
-    snippets: []
+    snippets: [],
+    settings: {
+      tabVisibility: {
+        main: true,
+        notes: true,
+        canned: true,
+        snippets: true,
+        archive: true,
+        settings: true,
+      }
+    }
   },
   past: [],
   future: [],
@@ -68,6 +79,7 @@ export function promptReducer(state: PromptState, action: PromptAction): PromptS
 
     case 'MOVE_ITEM_IN_LIST': {
       const { tab, fromIndex, toIndex } = action;
+      if (tab === 'archive') return state;
       if (fromIndex === toIndex) return state;
       const list = [...state.present[tab]];
       const movedItem = list.splice(fromIndex, 1)[0];
@@ -99,7 +111,11 @@ export function promptReducer(state: PromptState, action: PromptAction): PromptS
           [targetTab]: actualTargetList,
         };
       } else {
-        toList.push(prompt);
+        if (to === 'archive') {
+          toList.unshift(prompt);
+        } else {
+          toList.push(prompt);
+        }
         nextPresent = {
           ...state.present,
           [from]: fromList,
@@ -146,6 +162,14 @@ export function promptReducer(state: PromptState, action: PromptAction): PromptS
       return {
         past: [...state.past, state.present],
         present: { ...state.present, [tab]: list },
+        future: [],
+      };
+    }
+
+    case 'UPDATE_SETTINGS': {
+      return {
+        past: [...state.past, state.present],
+        present: { ...state.present, settings: action.settings },
         future: [],
       };
     }

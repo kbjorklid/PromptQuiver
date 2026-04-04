@@ -6,20 +6,35 @@ import type { Tab } from '../hooks/usePrompts';
 interface HeaderProps {
   activeTab: Tab;
   orderedTabs: Tab[];
-  branchFilterEnabled?: boolean;
-  currentBranch?: string;
+  terminalSize?: { columns: number; rows: number };
 }
 
-export const Header: React.FC<HeaderProps> = ({ activeTab, orderedTabs, branchFilterEnabled, currentBranch }) => {
+export const Header: React.FC<HeaderProps> = ({ 
+  activeTab, 
+  orderedTabs, 
+  terminalSize 
+}) => {
+  const title = " PROMPT QUIVER ";
+  const tail = "≫≫≫";
+  const head = "➤";
+  const columns = terminalSize?.columns || 80;
+  
+  // Account for margin and some safety padding
+  const reservedWidth = 2;
+  const availableForArrow = columns - reservedWidth - title.length - tail.length - head.length;
+  const arrowWidth = Math.max(0, Math.floor(availableForArrow / 2));
+  
+  const shaft = "━".repeat(arrowWidth);
+  const arrowArt = `${tail}${shaft}${title}${shaft}${head}`;
+
   return (
     <Box marginBottom={1} flexDirection="column">
       <Box justifyContent="space-between" alignItems="center">
-        <Gradient name="atlas">
-          <Text bold italic>{">>> PROMPT QUIVER <<<"}</Text>
-        </Gradient>
-        {branchFilterEnabled && currentBranch && (
-          <Text color="cyan">Branch: {currentBranch}</Text>
-        )}
+        <Box flexShrink={1}>
+          <Gradient name="atlas">
+            <Text bold italic wrap="truncate-end">{arrowArt}</Text>
+          </Gradient>
+        </Box>
       </Box>
       <Box marginTop={1}>
         {orderedTabs.map((t, i) => (

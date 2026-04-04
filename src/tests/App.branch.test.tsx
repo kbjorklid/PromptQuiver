@@ -74,10 +74,10 @@ describe('App Branch Tracking', () => {
     // Wait for load
     await new Promise(resolve => setTimeout(resolve, 50));
 
-    // Initially, both prompts should be visible
+    // Initially, both prompts should be visible, and branch name should be in footer
     expect(stripAnsi(lastFrame() || '')).toContain('Prompt 1');
     expect(stripAnsi(lastFrame() || '')).toContain('Prompt 2');
-    expect(stripAnsi(lastFrame() || '')).not.toContain('Branch: feature-x');
+    expect(stripAnsi(lastFrame() || '')).toContain('feature-x');
 
     // Press 'b' to toggle branch filter
     stdin.write('b');
@@ -86,7 +86,7 @@ describe('App Branch Tracking', () => {
     // Now, only 'Prompt 2' (which is on 'feature-x') should be visible
     expect(stripAnsi(lastFrame() || '')).not.toContain('Prompt 1');
     expect(stripAnsi(lastFrame() || '')).toContain('Prompt 2');
-    expect(stripAnsi(lastFrame() || '')).toContain('Branch: feature-x');
+    expect(stripAnsi(lastFrame() || '')).toContain('feature-x');
 
     // Press 'b' again to turn off branch filter
     stdin.write('b');
@@ -95,7 +95,7 @@ describe('App Branch Tracking', () => {
     // Both should be visible again
     expect(stripAnsi(lastFrame() || '')).toContain('Prompt 1');
     expect(stripAnsi(lastFrame() || '')).toContain('Prompt 2');
-    expect(stripAnsi(lastFrame() || '')).not.toContain('Branch: feature-x');
+    expect(stripAnsi(lastFrame() || '')).toContain('feature-x');
   });
 
   test('shows all items if no current branch is detected, even if filter is enabled', async () => {

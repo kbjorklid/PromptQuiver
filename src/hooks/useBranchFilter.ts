@@ -22,8 +22,11 @@ export function useBranchFilter(cwd: string) {
   }, [refreshCurrentBranch]);
 
   useEffect(() => {
-    if (!branchFilterEnabled) return;
     refreshCurrentBranch();
+  }, [refreshCurrentBranch]);
+
+  useEffect(() => {
+    if (!branchFilterEnabled) return;
     const interval = setInterval(refreshCurrentBranch, 10000);
     return () => clearInterval(interval);
   }, [branchFilterEnabled, refreshCurrentBranch]);

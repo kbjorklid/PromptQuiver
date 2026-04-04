@@ -5,6 +5,8 @@ import { useAutoSave } from './useAutoSave';
 import { Tab } from './types';
 import { promptReducer, INITIAL_PROMPT_STATE } from './usePromptReducer';
 
+import { Settings } from './types';
+
 export interface UsePromptDataProps {
   cwd: string;
   loadPromptsFn?: typeof defaultLoadPrompts;
@@ -94,6 +96,14 @@ export function usePromptData({
     }
   }, [data, triggerSave]);
 
+  const updateSettings = useCallback((settings: Settings, immediateSave = false) => {
+    dispatch({ type: 'UPDATE_SETTINGS', settings });
+    if (immediateSave) {
+      const nextData = { ...data, settings };
+      triggerSave(true, nextData);
+    }
+  }, [data, triggerSave]);
+
   return {
     data,
     isLoading,
@@ -106,6 +116,7 @@ export function usePromptData({
     deletePrompt,
     updatePromptInList,
     insertPromptInList,
+    updateSettings,
   };
 }
 

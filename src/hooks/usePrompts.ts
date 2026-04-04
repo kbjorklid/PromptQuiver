@@ -35,7 +35,8 @@ export function usePrompts({
     movePrompt: dataMovePrompt,
     deletePrompt: dataDeletePrompt,
     updatePromptInList,
-    insertPromptInList
+    insertPromptInList,
+    updateSettings,
   } = usePromptData({
     cwd,
     loadPromptsFn,
@@ -204,6 +205,7 @@ export function usePrompts({
     cancelEdit,
     openEditor,
     processNextPrompt,
+    updateSettings,
     pushState,
     branchFilterEnabled,
     toggleBranchFilter,

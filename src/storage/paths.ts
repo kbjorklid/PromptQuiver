@@ -2,6 +2,8 @@ import path from 'path';
 import os from 'os';
 import crypto from 'crypto';
 
+import { Settings } from '../hooks/types';
+
 export interface Prompt {
   id: string;
   text: string;
@@ -18,6 +20,7 @@ export interface PromptStorageData {
   archive: Prompt[];
   canned: Prompt[];
   snippets: Prompt[];
+  settings: Settings;
 }
 
 export const STORAGE_DIR = path.join(os.homedir(), '.promptquiver');

@@ -6,6 +6,7 @@ import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { SearchInput } from './components/SearchInput';
 import { PromptList } from './components/PromptList';
+import { SettingsView } from './components/SettingsView';
 import { loadPrompts, savePrompts } from './storage';
 import clipboardy from 'clipboardy';
 import { usePrompts } from './hooks/usePrompts';
@@ -81,12 +82,22 @@ export const App = ({
     cancelEdit,
     openEditor,
     processNextPrompt,
+    updateSettings,
     branchFilterEnabled,
     toggleBranchFilter,
     currentBranch,
   } = usePrompts({ cwd, loadPromptsFn, savePromptsFn, debounceMs });
 
-  const orderedTabs: Tab[] = ['main', 'notes', 'canned', 'snippets', 'archive'];
+  const allTabs: Tab[] = ['main', 'notes', 'canned', 'snippets', 'archive', 'settings'];
+  const tabVisibility = data.settings?.tabVisibility || {
+    main: true,
+    notes: true,
+    canned: true,
+    snippets: true,
+    archive: true,
+    settings: true,
+  };
+  const orderedTabs = allTabs.filter(tab => tabVisibility[tab]);
 
   const switchTab = (direction: 'next' | 'prev') => {
     const currentIndex = orderedTabs.indexOf(activeTab);
@@ -201,6 +212,7 @@ export const App = ({
     if (key.escape && searchQuery) return setSearchQuery('');
     if (key.tab) return key.shift ? handlePrevTab() : handleNextTab();
     if (key.ctrl && input === 'y') return redo();
+    if (key.ctrl && input === 's') return setActiveTab('settings');
 
     // Command Map for character inputs
     const charCommands: Record<string, () => void> = {
@@ -217,10 +229,11 @@ export const App = ({
       'N': handleProcessNext,
       'y': handleCopy,
       'e': handleEdit,
-      'a': () => activeTab !== 'archive' && addPrompt('after'),
-      'A': () => activeTab !== 'archive' && addPrompt('end'),
-      'i': () => activeTab !== 'archive' && addPrompt('before'),
-      'I': () => activeTab !== 'archive' && addPrompt('start'),
+      's': () => setActiveTab('settings'),
+      'a': () => activeTab !== 'archive' && activeTab !== 'settings' && addPrompt('after'),
+      'A': () => activeTab !== 'archive' && activeTab !== 'settings' && addPrompt('end'),
+      'i': () => activeTab !== 'archive' && activeTab !== 'settings' && addPrompt('before'),
+      'I': () => activeTab !== 'archive' && activeTab !== 'settings' && addPrompt('start'),
       'b': toggleBranchFilter,
     };
 
@@ -264,28 +277,45 @@ export const App = ({
         <Header 
           activeTab={activeTab} 
           orderedTabs={orderedTabs} 
-          branchFilterEnabled={branchFilterEnabled}
-          currentBranch={currentBranch}
-        />
-
-        <PromptList 
-          currentList={currentList}
-          selectedIndex={selectedIndex}
-          isMoving={isMoving}
-          lastCopiedId={lastCopiedId}
           terminalSize={terminalSize}
-          initialViewportSize={initialViewportSize}
         />
 
-        <SearchInput 
-          isSearching={isSearching}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          updateSelectedIndex={updateSelectedIndex}
-        />
+        {activeTab === 'settings' ? (
+          <SettingsView 
+            settings={data.settings}
+            onUpdateSettings={updateSettings}
+            terminalSize={terminalSize}
+          />
+        ) : (
+          <>
+            <PromptList 
+              currentList={currentList}
+              selectedIndex={selectedIndex}
+              isMoving={isMoving}
+              lastCopiedId={lastCopiedId}
+              terminalSize={terminalSize}
+              initialViewportSize={initialViewportSize}
+            />
+
+            <SearchInput 
+              isSearching={isSearching}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              updateSelectedIndex={updateSelectedIndex}
+            />
+          </>
+        )}
       </Box>
 
-      <Footer activeTab={activeTab} toast={toast} />
+      <Footer 
+        activeTab={activeTab} 
+        toast={toast} 
+        data={data} 
+        cwd={cwd} 
+        branchFilterEnabled={branchFilterEnabled} 
+        currentBranch={currentBranch} 
+        terminalSize={terminalSize}
+      />
     </Box>
   );
 };

@@ -5,12 +5,26 @@ export * from './paths';
 import { STORAGE_DIR, getStoragePath, getCommonStoragePath } from './paths';
 import type { Prompt, PromptStorageData } from './paths';
 
+import { Tab, Settings } from '../hooks/types';
+
+const DEFAULT_SETTINGS: Settings = {
+  tabVisibility: {
+    main: true,
+    notes: true,
+    canned: true,
+    snippets: true,
+    archive: true,
+    settings: true,
+  },
+};
+
 const DEFAULT_DATA: PromptStorageData = {
   main: [],
   notes: [],
   archive: [],
   canned: [],
   snippets: [],
+  settings: DEFAULT_SETTINGS,
 };
 
 export async function ensureStorageDir() {
@@ -28,6 +42,12 @@ const ensureType = (list: any[], defaultType: 'prompt' | 'note'): Prompt[] => {
     ...item,
     type: item.type || defaultType
   }));
+};
+
+const ensureSettings = (settings: any): Settings => {
+  if (!settings || typeof settings !== 'object') return DEFAULT_SETTINGS;
+  const tabVisibility = { ...DEFAULT_SETTINGS.tabVisibility, ...(settings.tabVisibility || {}) };
+  return { tabVisibility };
 };
 
 export async function loadPrompts(cwd: string): Promise<PromptStorageData> {
@@ -57,6 +77,7 @@ export async function loadPrompts(cwd: string): Promise<PromptStorageData> {
     archive: ensureType(projectData?.archive, 'prompt'),
     canned: ensureType(commonData?.['canned-prompts'], 'prompt'),
     snippets: ensureType(commonData?.snippets, 'prompt'),
+    settings: ensureSettings(commonData?.settings),
   };
 }
 
@@ -89,6 +110,7 @@ export async function savePrompts(cwd: string, data: PromptStorageData): Promise
     ...existingCommon,
     'canned-prompts': data.canned,
     'snippets': data.snippets,
+    'settings': data.settings,
   };
   const commonYaml = yaml.dump(newCommon, { lineWidth: -1, noRefs: true });
   const commonTempPath = `${commonPath}.tmp`;
