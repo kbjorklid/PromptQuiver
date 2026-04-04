@@ -15,15 +15,15 @@ import { expandSnippets } from './utils/snippetExpansion';
 
 const useTerminalSize = () => {
   const [size, setSize] = useState({
-    columns: process.stdout.columns,
-    rows: process.stdout.rows,
+    columns: process.stdout.columns || 100,
+    rows: process.stdout.rows || 20,
   });
 
   useEffect(() => {
     const handler = () => {
       setSize({
-        columns: process.stdout.columns,
-        rows: process.stdout.rows,
+        columns: process.stdout.columns || 100,
+        rows: process.stdout.rows || 20,
       });
     };
     process.stdout.on('resize', handler);
