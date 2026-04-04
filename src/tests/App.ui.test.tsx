@@ -59,6 +59,9 @@ describe('App UI (Iteration 5)', () => {
     // Switch to notes
     stdin.write('\t');
     await new Promise(resolve => setTimeout(resolve, 50));
+    // Switch to canned
+    stdin.write('\t');
+    await new Promise(resolve => setTimeout(resolve, 50));
     // Switch to archive
     stdin.write('\t');
     await new Promise(resolve => setTimeout(resolve, 50));

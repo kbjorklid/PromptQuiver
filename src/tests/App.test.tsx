@@ -47,7 +47,9 @@ describe('App Component', () => {
     expect(lastFrame()).toContain('Note 1');
     expect(lastFrame()).not.toContain('Prompt 1');
 
-    // Press Tab again to Archive
+    // Press Tab twice more to Canned then Archive
+    stdin.write('\t');
+    await new Promise(resolve => setTimeout(resolve, 50));
     stdin.write('\t');
     await new Promise(resolve => setTimeout(resolve, 50));
     expect(lastFrame()).toContain('Archived 1');

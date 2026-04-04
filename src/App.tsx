@@ -85,7 +85,7 @@ export const App = ({
     currentBranch,
   } = usePrompts({ cwd, loadPromptsFn, savePromptsFn, debounceMs });
 
-  const orderedTabs: Tab[] = ['main', 'notes', 'archive'];
+  const orderedTabs: Tab[] = ['main', 'notes', 'canned', 'archive'];
 
   const switchTab = (direction: 'next' | 'prev') => {
     const currentIndex = orderedTabs.indexOf(activeTab);

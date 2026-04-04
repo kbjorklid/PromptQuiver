@@ -42,6 +42,8 @@ describe('App Last Copied Icon', () => {
     // Let's check archive tab
     stdin.write('l'); // to Notes
     await new Promise(resolve => setTimeout(resolve, 50));
+    stdin.write('l'); // to Canned
+    await new Promise(resolve => setTimeout(resolve, 50));
     stdin.write('l'); // to Archive
     await new Promise(resolve => setTimeout(resolve, 50));
     

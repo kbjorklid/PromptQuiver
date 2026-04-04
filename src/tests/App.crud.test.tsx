@@ -36,6 +36,9 @@ describe('App CRUD Operations', () => {
     // Switch to notes
     stdin.write('\t');
     await new Promise(resolve => setTimeout(resolve, 50));
+    // Switch to canned
+    stdin.write('\t');
+    await new Promise(resolve => setTimeout(resolve, 50));
     // Switch to archive
     stdin.write('\t');
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -50,6 +53,9 @@ describe('App CRUD Operations', () => {
     // Switch to notes
     stdin.write('\t');
     await new Promise(resolve => setTimeout(resolve, 50));
+    // Switch to canned
+    stdin.write('\t');
+    await new Promise(resolve => setTimeout(resolve, 50));
     // Switch to archive
     stdin.write('\t');
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -60,7 +66,7 @@ describe('App CRUD Operations', () => {
     
     expect(lastFrame()).not.toContain('Archived 1');
     
-    // Switch to prompt
+    // Switch to prompt (wrap around)
     stdin.write('\t');
     await new Promise(resolve => setTimeout(resolve, 50));
     expect(lastFrame()).toContain('Archived 1');
@@ -71,6 +77,9 @@ describe('App CRUD Operations', () => {
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Switch to notes
+    stdin.write('\t');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    // Switch to canned
     stdin.write('\t');
     await new Promise(resolve => setTimeout(resolve, 50));
     // Switch to archive

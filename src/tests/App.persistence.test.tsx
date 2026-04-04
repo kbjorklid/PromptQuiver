@@ -74,7 +74,9 @@ describe('App Persistence', () => {
     // Clear calls
     saveSpy.mockClear();
 
-    // Switch to Archive (Tab, Tab)
+    // Switch to Archive (Tab, Tab, Tab)
+    stdin.write('\t');
+    await new Promise(resolve => setTimeout(resolve, 50));
     stdin.write('\t');
     await new Promise(resolve => setTimeout(resolve, 50));
     stdin.write('\t');

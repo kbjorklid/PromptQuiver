@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useAutoSave } from './useAutoSave';
 import { getCurrentGitBranch } from '../utils/git';
 
-export type Tab = 'main' | 'notes' | 'archive';
+export type Tab = 'main' | 'notes' | 'archive' | 'canned';
 export type View = 'list' | 'editor';
 export interface Toast { message: string }
 
@@ -27,14 +27,14 @@ export function usePrompts({
     history: PromptStorageData[];
     future: PromptStorageData[];
   }>({
-    data: { main: [], notes: [], archive: [] },
+    data: { main: [], notes: [], archive: [], canned: [] },
     history: [],
     future: [],
   });
   const { data, history, future } = appState;
 
   const [activeTab, setActiveTab] = useState<Tab>('main');
-  const [selectedIndices, setSelectedIndices] = useState<Record<Tab, number>>({ main: 0, notes: 0, archive: 0 });
+  const [selectedIndices, setSelectedIndices] = useState<Record<Tab, number>>({ main: 0, notes: 0, archive: 0, canned: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [view, setView] = useState<View>('list');
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
@@ -103,8 +103,8 @@ export function usePrompts({
   });
 
   const currentList = useMemo(() => {
-    let fullList = data[activeTab];
-    if (branchFilterEnabled && currentBranch) {
+    let fullList = data[activeTab] || [];
+    if (branchFilterEnabled && currentBranch && activeTab !== 'canned') {
       fullList = fullList.filter(p => !p.branch || p.branch === currentBranch);
     }
     return searchQuery 
@@ -225,7 +225,7 @@ export function usePrompts({
 
   const addPrompt = useCallback((position: 'before' | 'after' | 'start' | 'end') => {
     const now = new Date().toISOString();
-    const branch = refreshCurrentBranch();
+    const branch = activeTab === 'canned' ? undefined : refreshCurrentBranch();
     const type: 'prompt' | 'note' = activeTab === 'notes' ? 'note' : 'prompt';
     const newPrompt: Prompt = {
       id: uuidv4(),
