@@ -218,11 +218,10 @@ export const App = ({
     }
 
     // Tab shortcuts
-    if (input === '1') setActiveTab('main');
-    if (input === '2') setActiveTab('notes');
-    if (input === '3') setActiveTab('canned');
-    if (input === '4') setActiveTab('snippets');
-    if (input === '5') setActiveTab('archive');
+    const tabNumber = parseInt(input);
+    if (!isNaN(tabNumber) && tabNumber > 0 && tabNumber <= orderedTabs.length) {
+      setActiveTab(orderedTabs[tabNumber - 1]);
+    }
 
     // Special keys
     if (key.upArrow) return updateSelectedIndex(Math.max(0, selectedIndex - 1));
