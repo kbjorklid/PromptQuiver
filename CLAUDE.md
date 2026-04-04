@@ -1,5 +1,8 @@
 # CLAUDE.md
 
+## Documentation Guidelines
+- Check `README.md` on any change to see if it needs updating. Keep documentation in sync with the current functionality.
+
 ## Testing Guidelines
 - Always write automated tests whenever adding new functionality.
 - For bug fixes, always follow a TDD (Test-Driven Development) approach:
