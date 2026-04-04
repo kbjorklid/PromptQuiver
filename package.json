@@ -10,7 +10,7 @@
   "private": true,
   "scripts": {
     "start": "bun index.tsx",
-    "test": "bun test src/tests",
+    "test": "bun test --preload ./src/tests/setup.ts src/tests",
     "build": "bun build --compile index.tsx --outfile quiver"
   },
   "devDependencies": {
