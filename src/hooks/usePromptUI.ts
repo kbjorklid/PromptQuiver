@@ -1,5 +1,6 @@
-import { useState, useCallback, useMemo } from 'react';
-import type { Prompt, PromptStorageData } from '../storage';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import type { Prompt, PromptStorageData, GlobalSearchResult } from '../storage';
+import { searchGlobalPrompts } from '../storage';
 import type { Tab, View } from './types';
 
 export function usePromptUI(data: PromptStorageData, branchFilterEnabled: boolean, currentBranch: string | undefined) {
@@ -13,7 +14,45 @@ export function usePromptUI(data: PromptStorageData, branchFilterEnabled: boolea
   const [searchQuery, setSearchQuery] = useState('');
   const [lastCopiedId, setLastCopiedId] = useState<string | null>(null);
 
+  // Global Search State
+  const [globalSearchQuery, setGlobalSearchQuery] = useState('');
+  const [globalSearchType, setGlobalSearchType] = useState<'prompt' | 'note'>('prompt');
+  const [globalSearchResults, setGlobalSearchResults] = useState<GlobalSearchResult[]>([]);
+  const [isGlobalSearchLoading, setIsGlobalSearchLoading] = useState(false);
+  const [selectedIndexGlobal, setSelectedIndexGlobal] = useState(0);
+
+  useEffect(() => {
+    if (view !== 'globalSearch') return;
+
+    const controller = new AbortController();
+    const fetchResults = async () => {
+      setIsGlobalSearchLoading(true);
+      try {
+        const results = await searchGlobalPrompts(globalSearchQuery, globalSearchType);
+        if (!controller.signal.aborted) {
+          setGlobalSearchResults(results);
+          setSelectedIndexGlobal(0);
+        }
+      } catch (err) {
+        if (!controller.signal.aborted) {
+          setGlobalSearchResults([]);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsGlobalSearchLoading(false);
+        }
+      }
+    };
+
+    const timeout = setTimeout(fetchResults, 300);
+    return () => {
+      controller.abort();
+      clearTimeout(timeout);
+    };
+  }, [globalSearchQuery, globalSearchType, view]);
+
   const currentList = useMemo(() => {
+    if (view === 'globalSearch') return globalSearchResults;
     if (activeTab === 'settings') return [];
     let fullList = data[activeTab] as Prompt[] || [];
     if (branchFilterEnabled && currentBranch && activeTab !== 'canned' && activeTab !== 'snippets') {
@@ -22,21 +61,28 @@ export function usePromptUI(data: PromptStorageData, branchFilterEnabled: boolea
     return searchQuery 
       ? fullList.filter(p => p.text.toLowerCase().includes(searchQuery.toLowerCase()))
       : fullList;
-  }, [data, activeTab, searchQuery, branchFilterEnabled, currentBranch]);
+  }, [data, activeTab, searchQuery, branchFilterEnabled, currentBranch, view, globalSearchResults]);
 
   const selectedIndex = useMemo(() => {
+    if (view === 'globalSearch') {
+      return Math.min(selectedIndexGlobal, Math.max(0, globalSearchResults.length - 1));
+    }
     return Math.min(
       selectedIndices[activeTab],
       Math.max(0, currentList.length - 1)
     );
-  }, [selectedIndices, activeTab, currentList.length]);
+  }, [selectedIndices, activeTab, currentList.length, view, selectedIndexGlobal, globalSearchResults.length]);
 
   const updateSelectedIndex = useCallback((index: number) => {
-    setSelectedIndices((prev) => ({
-      ...prev,
-      [activeTab]: index,
-    }));
-  }, [activeTab]);
+    if (view === 'globalSearch') {
+      setSelectedIndexGlobal(index);
+    } else {
+      setSelectedIndices((prev) => ({
+        ...prev,
+        [activeTab]: index,
+      }));
+    }
+  }, [activeTab, view]);
 
   return {
     activeTab,
@@ -58,5 +104,12 @@ export function usePromptUI(data: PromptStorageData, branchFilterEnabled: boolea
     setIsMoving,
     lastCopiedId,
     setLastCopiedId,
+    globalSearchQuery,
+    setGlobalSearchQuery,
+    globalSearchType,
+    setGlobalSearchType,
+    globalSearchResults,
+    isGlobalSearchLoading,
   };
 }
+

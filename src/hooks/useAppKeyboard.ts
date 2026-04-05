@@ -2,7 +2,7 @@ import { useInput, useApp } from 'ink';
 import type { Tab, View } from './types';
 
 interface AppKeyboardProps {
-  view: 'list' | 'editor';
+  view: 'list' | 'editor' | 'globalSearch';
   activeTab: Tab;
   orderedTabs: Tab[];
   setActiveTab: (tab: Tab) => void;
@@ -30,6 +30,7 @@ interface AppKeyboardProps {
   undo: () => void;
   redo: () => void;
   moveItemInList: (from: number, to: number) => void;
+  openGlobalSearch: () => void;
 }
 
 export const useAppKeyboard = ({
@@ -60,11 +61,12 @@ export const useAppKeyboard = ({
   undo,
   redo,
   moveItemInList,
+  openGlobalSearch,
 }: AppKeyboardProps) => {
   const { exit } = useApp();
 
   useInput((input, key) => {
-    if (view === 'editor' || isModalOpen) return;
+    if (view === 'editor' || view === 'globalSearch' || isModalOpen) return;
 
     // 1. Priority Modes (Searching, Moving)
     if (isSearching) {
@@ -103,9 +105,11 @@ export const useAppKeyboard = ({
     }
 
     if (input === 'q') return exit();
+    if (input === 'G') return openGlobalSearch();
     if (input === 'S' || (key.ctrl && input === 's')) return setActiveTab('settings');
     if (key.ctrl && input === 'y') return redo();
     if (input === 'u') return undo();
+
 
     // 3. Settings Mode navigation
     if (activeTab === 'settings') {

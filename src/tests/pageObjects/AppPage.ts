@@ -98,6 +98,10 @@ export class AppPage {
     await this.write('/');
   }
 
+  async startGlobalSearch() {
+    await this.write('G');
+  }
+
   async goToSettings() {
     await this.write('S');
   }

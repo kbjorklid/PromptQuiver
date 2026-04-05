@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import type { Prompt } from '../storage';
 import { loadPrompts as defaultLoadPrompts, savePrompts as defaultSavePrompts } from '../storage';
 import { v4 as uuidv4 } from 'uuid';
@@ -53,7 +53,21 @@ export function usePrompts({
     view, setView, editingPrompt, setEditingPrompt, addingPosition, setAddingPosition,
     isSearching, setIsSearching, searchQuery, setSearchQuery,
     isMoving, setIsMoving, lastCopiedId, setLastCopiedId,
+    globalSearchQuery, setGlobalSearchQuery,
+    globalSearchType, setGlobalSearchType,
+    globalSearchResults, isGlobalSearchLoading,
   } = usePromptUI(data, branchFilterEnabled, currentBranch);
+
+  const [previousView, setPreviousView] = useState<View>('list');
+
+  const openGlobalSearch = useCallback(() => {
+    setPreviousView(view);
+    setView('globalSearch');
+  }, [view, setView]);
+
+  const cancelGlobalSearch = useCallback(() => {
+    setView('list');
+  }, [setView]);
 
   const moveItemInList = useCallback((fromIndex: number, toIndex: number) => {
     if (toIndex < 0 || toIndex >= currentList.length) return;
@@ -111,6 +125,31 @@ export function usePrompts({
   const saveEditedPrompt = useCallback((text: string, name?: string, shouldStage?: boolean) => {
     if (!editingPrompt) return;
     if (activeTab === 'settings') return; // Should not happen
+
+    if (previousView === 'globalSearch') {
+      const targetTab = editingPrompt.type === 'note' ? 'notes' : 'main';
+      const now = new Date().toISOString();
+      const newPrompt: Prompt = {
+        ...editingPrompt,
+        id: uuidv4(),
+        text,
+        name,
+        created_at: now,
+        updated_at: now,
+        staged: shouldStage || false,
+      };
+      
+      insertPromptInList(targetTab, 0, newPrompt, true);
+      setActiveTab(targetTab);
+      updateSelectedIndex(0);
+      showToast(`Copied to ${targetTab === 'main' ? 'Prompts' : 'Notes'}${shouldStage ? ' and Staged' : ''}`);
+      
+      setAddingPosition(null);
+      setView('list');
+      setEditingPrompt(null);
+      setPreviousView('list');
+      return;
+    }
     
     const listName = activeTab;
     const list = data[listName] as Prompt[];
@@ -165,18 +204,20 @@ export function usePrompts({
     setAddingPosition(null);
     setView('list');
     setEditingPrompt(null);
-  }, [editingPrompt, activeTab, data, addingPosition, updateSelectedIndex, showToast, setAddingPosition, setView, setEditingPrompt, insertPromptInList, updatePromptInList, dataStagePrompt]);
+  }, [editingPrompt, activeTab, previousView, data, addingPosition, updateSelectedIndex, showToast, setAddingPosition, setView, setEditingPrompt, insertPromptInList, updatePromptInList, dataStagePrompt, setActiveTab]);
 
   const cancelEdit = useCallback(() => {
     setAddingPosition(null);
-    setView('list');
+    setView(previousView === 'globalSearch' ? 'globalSearch' : 'list');
     setEditingPrompt(null);
-  }, [setAddingPosition, setView, setEditingPrompt]);
+    if (previousView === 'globalSearch') setPreviousView('list');
+  }, [setAddingPosition, setView, setEditingPrompt, previousView]);
 
   const openEditor = useCallback((prompt: Prompt) => {
+    setPreviousView(view);
     setEditingPrompt(prompt);
     setView('editor');
-  }, [setEditingPrompt, setView]);
+  }, [setEditingPrompt, setView, view]);
 
   const stagePrompt = useCallback(() => {
     const prompt = currentList[selectedIndex];
@@ -225,5 +266,14 @@ export function usePrompts({
     branchFilterEnabled,
     toggleBranchFilter,
     currentBranch,
+    globalSearchQuery,
+    setGlobalSearchQuery,
+    globalSearchType,
+    setGlobalSearchType,
+    globalSearchResults,
+    isGlobalSearchLoading,
+    openGlobalSearch,
+    cancelGlobalSearch,
   };
 }
+

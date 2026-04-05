@@ -85,6 +85,53 @@ export async function loadPrompts(cwd: string): Promise<PromptStorageData> {
   };
 }
 
+export interface GlobalSearchResult extends Prompt {
+  projectName: string;
+}
+
+export async function searchGlobalPrompts(query: string, type: 'prompt' | 'note'): Promise<GlobalSearchResult[]> {
+  try {
+    const files = await fs.readdir(STORAGE_DIR);
+    const yamlFiles = files.filter(f => f.endsWith('.yml'));
+    
+    const results: GlobalSearchResult[] = [];
+    
+    for (const file of yamlFiles) {
+      const filePath = path.join(STORAGE_DIR, file);
+      try {
+        const content = await fs.readFile(filePath, 'utf-8');
+        const data = yaml.load(content) as any;
+        if (!data) continue;
+        
+        const projectName = file.startsWith('prompts-') 
+          ? file.replace(/^prompts-/, '').replace(/-[a-f0-9]{8}\.yml$/, '')
+          : file.replace(/\.yml$/, '');
+        
+        const categories = type === 'prompt' ? ['main', 'archive'] : ['notes', 'archive'];
+        
+        for (const cat of categories) {
+          const list = data[cat];
+          if (Array.isArray(list)) {
+            for (const item of list) {
+              if (item && typeof item.text === 'string' && (item.type || (cat === 'notes' ? 'note' : 'prompt')) === type) {
+                if (item.text.toLowerCase().includes(query.toLowerCase())) {
+                  results.push({ ...item, type: item.type || type, projectName });
+                }
+              }
+            }
+          }
+        }
+      } catch (err) {
+        // Ignore files that can't be read or parsed
+      }
+    }
+    
+    return results;
+  } catch (err) {
+    return [];
+  }
+}
+
 export async function savePrompts(cwd: string, data: PromptStorageData): Promise<void> {
   const filePath = getStoragePath(cwd);
   const commonPath = getCommonStoragePath();

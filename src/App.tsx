@@ -6,6 +6,7 @@ import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { SearchInput } from './components/SearchInput';
 import { PromptList } from './components/PromptList';
+import { GlobalSearchView } from './components/GlobalSearchView';
 import { SettingsView } from './components/SettingsView';
 import { loadPrompts, savePrompts } from './storage';
 import { usePrompts } from './hooks/usePrompts';
@@ -90,6 +91,14 @@ export const App = ({
     branchFilterEnabled,
     toggleBranchFilter,
     currentBranch,
+    globalSearchQuery,
+    setGlobalSearchQuery,
+    globalSearchType,
+    setGlobalSearchType,
+    globalSearchResults,
+    isGlobalSearchLoading,
+    openGlobalSearch,
+    cancelGlobalSearch,
     copyToClipboard,
   } = usePrompts({ cwd, loadPromptsFn, savePromptsFn, debounceMs });
 
@@ -237,6 +246,7 @@ export const App = ({
     undo,
     redo,
     moveItemInList,
+    openGlobalSearch,
   });
 
   if (isLoading) {
@@ -285,6 +295,27 @@ export const App = ({
       />
     );
   }
+
+  if (view === 'globalSearch') {
+    return (
+      <Box flexDirection="column" width="100%" minHeight={terminalSize.rows}>
+        <GlobalSearchView 
+          query={globalSearchQuery}
+          setQuery={setGlobalSearchQuery}
+          type={globalSearchType}
+          setType={setGlobalSearchType}
+          results={globalSearchResults}
+          selectedIndex={selectedIndex}
+          updateSelectedIndex={updateSelectedIndex}
+          isLoading={isGlobalSearchLoading}
+          onSelect={(result) => openEditor(result)}
+          onCancel={cancelGlobalSearch}
+          terminalSize={terminalSize}
+        />
+      </Box>
+    );
+  }
+
 
   return (
     <Box flexDirection="column" width="100%" minHeight={terminalSize.rows}>
