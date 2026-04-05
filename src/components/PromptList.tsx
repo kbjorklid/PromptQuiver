@@ -14,6 +14,7 @@ interface PromptListProps {
   lastCopiedId: string | null;
   terminalSize: { columns: number; rows: number };
   initialViewportSize?: number;
+  isSearching?: boolean;
 }
 
 export const PromptList: React.FC<PromptListProps> = ({
@@ -23,12 +24,14 @@ export const PromptList: React.FC<PromptListProps> = ({
   lastCopiedId,
   terminalSize,
   initialViewportSize,
+  isSearching = false,
 }) => {
   const { start, end } = useViewport({
-    totalItems: currentList.length,
+    list: currentList,
     selectedIndex,
     terminalRows: terminalSize.rows,
     initialViewportSize,
+    isSearching,
   });
 
   if (currentList.length === 0) {
@@ -97,6 +100,7 @@ export const PromptList: React.FC<PromptListProps> = ({
           </Box>
         );
       })}
+      <Box flexGrow={1} minHeight={0} />
     </Box>
   );
 };

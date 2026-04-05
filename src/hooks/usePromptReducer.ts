@@ -116,10 +116,12 @@ export function promptReducer(state: PromptState, action: PromptAction): PromptS
           [targetTab]: actualTargetList,
         };
       } else {
+        let promptToInsert = prompt;
         if (to === 'archive') {
-          toList.unshift(prompt);
+          promptToInsert = { ...prompt, staged: false };
+          toList.unshift(promptToInsert);
         } else {
-          toList.push(prompt);
+          toList.push(promptToInsert);
         }
         nextPresent = {
           ...state.present,

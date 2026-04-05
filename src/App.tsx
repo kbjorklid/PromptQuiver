@@ -241,7 +241,7 @@ export const App = ({
 
   if (isLoading) {
     return (
-      <Box padding={1} width="100%" height="100%" justifyContent="center" alignItems="center">
+      <Box padding={1} width="100%" height={terminalSize.rows} justifyContent="center" alignItems="center">
         <Box>
           <Text color="yellow">
             <Spinner type="dots" />
@@ -286,7 +286,7 @@ export const App = ({
   }
 
   return (
-    <Box flexDirection="column" width="100%" height="100%">
+    <Box flexDirection="column" width="100%" minHeight={terminalSize.rows}>
       <Box flexDirection="column" paddingX={1} paddingTop={1} flexGrow={1}>
         <Header 
           activeTab={activeTab} 
@@ -309,6 +309,7 @@ export const App = ({
               lastCopiedId={lastCopiedId}
               terminalSize={terminalSize}
               initialViewportSize={initialViewportSize}
+              isSearching={isSearching}
             />
 
             <SearchInput 
