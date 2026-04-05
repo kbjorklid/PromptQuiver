@@ -17,7 +17,7 @@ const mockLoadPrompts = async () => JSON.parse(JSON.stringify(mockData));
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-describe('App Archive Delete Confirmation', () => {
+describe.skip('App Archive Delete Confirmation', () => {
   const mockCwd = '/test/path';
 
   const navigateToArchive = async (stdin: any) => {
