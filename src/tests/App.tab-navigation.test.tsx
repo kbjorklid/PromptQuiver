@@ -4,6 +4,7 @@ import './setup';
 import { App } from '../App';
 import { describe, test, expect, mock } from 'bun:test';
 import type { PromptStorageData } from '../storage';
+import { AppPage } from './pageObjects/AppPage';
 
 const mockCwd = '/test/cwd';
 
@@ -29,28 +30,27 @@ describe('App Tab Navigation', () => {
 
   test('navigation with number keys maps to visible tabs', async () => {
     const loadPromptsFn = mock(async () => mockData);
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} viewportSize={5} />);
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} viewportSize={5} />));
 
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await app.waitForTextToAppear('Main Prompt');
 
     // Initially on Prompt (index 1)
-    expect(lastFrame()).toContain('Main Prompt');
+    app.expectContent('Main Prompt');
 
     // Press '2'
     // orderedTabs should be ['main', 'canned', 'snippets', 'archive', 'settings'] (notes is hidden)
     // '2' should map to 'canned'
-    stdin.write('2');
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await app.switchTabByNumber(2);
+    await app.waitForTextToAppear('Canned Prompt');
     
-    const frame = lastFrame();
-    expect(frame).toContain('Canned Prompt');
+    app.expectContent('Canned Prompt');
     // It should NOT contain 'Note Content' because notes is hidden and '2' shouldn't go there
-    expect(frame).not.toContain('Note Content');
+    app.expectNotContent('Note Content');
 
     // Press '1' to go back to Prompt
-    stdin.write('1');
-    await new Promise(resolve => setTimeout(resolve, 100));
-    expect(lastFrame()).toContain('Main Prompt');
+    await app.switchTabByNumber(1);
+    await app.waitForTextToAppear('Main Prompt');
+    app.expectContent('Main Prompt');
   });
 
   test('navigation with number keys with multiple hidden tabs', async () => {
@@ -74,25 +74,25 @@ describe('App Tab Navigation', () => {
     };
 
     const loadPromptsFn = mock(async () => multiHiddenData);
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} viewportSize={5} />);
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} viewportSize={5} />));
 
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await app.waitForTextToAppear('Main Prompt');
 
     // Visible tabs: Prompt (1), Snippets (2), Settings (3)
     
     // Press '2' -> should go to Snippets
-    stdin.write('2');
-    await new Promise(resolve => setTimeout(resolve, 100));
-    expect(lastFrame()).toContain('test'); // Snippet name
+    await app.switchTabByNumber(2);
+    await app.waitForTextToAppear('test'); // Snippet name
+    app.expectContent('test');
 
     // Press '3' -> should go to Settings
-    stdin.write('3');
-    await new Promise(resolve => setTimeout(resolve, 100));
-    expect(lastFrame()).toContain('Tab Visibility'); // Settings view indicator
+    await app.switchTabByNumber(3);
+    await app.waitForTextToAppear('Tab Visibility'); // Settings view indicator
+    app.expectContent('Tab Visibility');
 
     // Press '1' -> back to Prompt
-    stdin.write('1');
-    await new Promise(resolve => setTimeout(resolve, 100));
-    expect(lastFrame()).toContain('Main Prompt');
+    await app.switchTabByNumber(1);
+    await app.waitForTextToAppear('Main Prompt');
+    app.expectContent('Main Prompt');
   });
 });

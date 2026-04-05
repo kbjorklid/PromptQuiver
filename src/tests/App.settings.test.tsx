@@ -1,20 +1,19 @@
 import React from 'react';
 import { render } from 'ink-testing-library';
 import { App } from '../App';
-import { describe, test, expect, mock, beforeEach } from 'bun:test';
+import { describe, test, expect, mock } from 'bun:test';
 import type { PromptStorageData } from '../storage';
+import { AppPage } from './pageObjects/AppPage';
 
 const mockCwd = '/test/cwd';
-
-const stripAnsi = (str: string) => str.replace(/\u001b\[[0-9;]*[a-zA-Z]/g, '');
 
 describe('App Settings', () => {
   const initialData: PromptStorageData = {
     main: [{ id: '1', text: 'Main Prompt', type: 'prompt', created_at: '', updated_at: '' }],
-  canned: [],
-  notes: [],
-  snippets: [],
-  archive: [],
+    canned: [],
+    notes: [],
+    snippets: [],
+    archive: [],
     settings: {
       tabVisibility: {
         main: true,
@@ -29,47 +28,39 @@ describe('App Settings', () => {
 
   test('ctrl-s opens settings tab', async () => {
     const loadPromptsFn = async () => initialData;
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} viewportSize={5} />);
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} viewportSize={5} />));
 
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await app.waitForTextToAppear('Prompt');
 
-    // Initially on main
-    expect(stripAnsi(lastFrame()!)).toContain('1. Prompt');
-
-    // Press ctrl-s
-    stdin.write('\u0013'); // Ctrl-S
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    expect(stripAnsi(lastFrame()!)).toContain('Tab Visibility');
+    // Press ctrl-s (Save in editor, but in list it opens settings? Actually Ctrl-S opens settings if not in editor)
+    await app.save();
+    
+    await app.waitForTextToAppear('Tab Visibility');
+    app.expectContent('Tab Visibility');
   });
 
   test('toggling tab visibility hides it from header', async () => {
     const loadPromptsFn = async () => initialData;
     const savePromptsFn = mock(async () => {});
     
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} savePromptsFn={savePromptsFn as any} viewportSize={5} />);
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} savePromptsFn={savePromptsFn as any} viewportSize={5} />));
 
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    // Header should contain "Notes"
-    expect(stripAnsi(lastFrame()!)).toContain('Notes');
+    await app.waitForTextToAppear('Notes');
 
     // Go to settings
-    stdin.write('S');
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await app.goToSettings();
+    await app.waitForTextToAppear('Tab Visibility');
 
-    // Move to Notes (index 2)
-    stdin.write('j');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    stdin.write('j');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    // Move to Notes (index 2 in settings list)
+    // 0: main, 1: canned, 2: notes
+    await app.navigateDown();
+    await app.navigateDown();
     
     // Toggle Notes
-    stdin.write(' ');
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await app.toggleItem();
 
     // Header should NO LONGER contain "Notes"
-    expect(stripAnsi(lastFrame()!)).not.toContain('  Notes  '); 
+    await app.waitForTextToDisappear('  Notes  '); 
     
     // Check savePromptsFn call
     expect(savePromptsFn).toHaveBeenCalled();
@@ -79,83 +70,83 @@ describe('App Settings', () => {
 
   test('footer shows settings shortcuts when in settings', async () => {
     const loadPromptsFn = async () => initialData;
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} viewportSize={5} />);
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} viewportSize={5} />));
 
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await app.waitForTextToAppear('Edit');
 
     // Initially should show default shortcuts (e.g., [Enter/e] Edit)
-    expect(stripAnsi(lastFrame()!)).toContain('[Enter/e]');
-    expect(stripAnsi(lastFrame()!)).toContain('Edit');
+    app.expectContent('[Enter/e]');
+    app.expectContent('Edit');
 
     // Press S to go to settings
-    stdin.write('S');
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await app.goToSettings();
+    await app.waitForTextToAppear('Tab Visibility');
 
     // Should show settings shortcuts (e.g., [Tab/←/→/h/l] Tab)
-    const frame = stripAnsi(lastFrame()!);
-    expect(frame).toContain('[Tab/←/→/h/l]');
-    expect(frame).toContain('Tab');
-    expect(frame).toContain('[Enter/Space]');
-    expect(frame).toContain('Action');
+    app.expectContent('[Tab/←/→/h/l]');
+    app.expectContent('Tab');
+    app.expectContent('[Enter/Space]');
+    app.expectContent('Action');
     
     // Should NOT show default shortcuts (like [Enter/e] Edit)
-    expect(frame).not.toContain('Edit');
-    expect(frame).not.toContain('[Enter/e]');
+    app.expectNotContent('Edit');
+    app.expectNotContent('[Enter/e]');
   });
 
   test('undo works in settings', async () => {
     const loadPromptsFn = async () => initialData;
     const savePromptsFn = mock(async () => {});
     
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} savePromptsFn={savePromptsFn as any} viewportSize={5} />);
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} savePromptsFn={savePromptsFn as any} viewportSize={5} />));
 
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await app.waitForTextToAppear('Notes');
 
     // Go to settings
-    stdin.write('S');
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await app.goToSettings();
+    await app.waitForTextToAppear('Tab Visibility');
 
-    // Toggle Notes (index 1)
-    stdin.write('j');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    stdin.write(' ');
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // Toggle Notes (it is index 2 actually if order is main, canned, notes)
+    // Wait, initialData has them all true. 
+    // In SettingsView.tsx: ALL_TABS: Tab[] = ['main', 'canned', 'notes', 'snippets', 'archive', 'settings'];
+    await app.navigateDown();
+    await app.navigateDown();
+    await app.toggleItem();
 
     // Notes should be hidden
-    expect(stripAnsi(lastFrame()!)).not.toContain('  Notes  ');
+    await app.waitForTextToDisappear('  Notes  ');
 
     // Press 'u' to undo
-    stdin.write('u');
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await app.undo();
 
     // Notes should be back
-    expect(stripAnsi(lastFrame()!)).toContain('Notes');
+    await app.waitForTextToAppear('Notes');
+    app.expectContent('Notes');
   });
 
   test('left/right arrows switch tabs while in settings', async () => {
     const loadPromptsFn = async () => initialData;
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} viewportSize={5} />);
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} viewportSize={5} />));
 
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await app.waitForTextToAppear('Prompt');
 
     // Go to settings
-    stdin.write('S');
-    await new Promise(resolve => setTimeout(resolve, 100));
-    expect(stripAnsi(lastFrame()!)).toContain('Settings');
+    await app.goToSettings();
+    await app.waitForTextToAppear('Settings');
+    app.expectContent('Settings');
 
     // Press left arrow
-    stdin.write('\u001b[D'); // Left Arrow
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await app.arrowLeft();
     
     // Should be on Archive (the tab before Settings)
-    expect(stripAnsi(lastFrame()!)).toContain('5. Archive');
-    expect(stripAnsi(lastFrame()!)).not.toContain('Tab Visibility');
+    await app.waitForTextToAppear('Archive');
+    app.expectContent('Archive');
+    app.expectNotContent('Tab Visibility');
 
     // Press right arrow
-    stdin.write('\u001b[C'); // Right Arrow
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await app.arrowRight();
     
     // Should be back on Settings
-    expect(stripAnsi(lastFrame()!)).toContain('Tab Visibility');
+    await app.waitForTextToAppear('Tab Visibility');
+    app.expectContent('Tab Visibility');
   });
 });

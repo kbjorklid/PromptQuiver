@@ -3,6 +3,7 @@ import { render } from 'ink-testing-library';
 import { expect, test, describe } from "bun:test";
 import { App } from '../App';
 import type { PromptStorageData } from '../storage';
+import { AppPage } from './pageObjects/AppPage';
 
 const defaultSettings = {
   tabVisibility: {
@@ -38,53 +39,46 @@ describe('App Component', () => {
   const mockCwd = '/test/path';
 
   test('renders loading state initially and then content', async () => {
-    const { lastFrame } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />));
     
-    // Wait for useEffect to finish
-    await new Promise(resolve => setTimeout(resolve, 50));
+    // Wait for content to appear
+    await app.waitForTextToAppear('Prompt 1');
     
-    const frame = lastFrame();
-    expect(frame).toContain('Prompt');
-    expect(frame).toContain('Notes');
-    expect(frame).toContain('Archive');
-    expect(frame).toContain('Prompt 1');
+    app.expectContent('Prompt');
+    app.expectContent('Notes');
+    app.expectContent('Archive');
+    app.expectContent('Prompt 1');
   });
 
   test('switches tabs with Tab key', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
-    await new Promise(resolve => setTimeout(resolve, 50));
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />));
+    await app.waitForTextToAppear('Prompt 1');
     
     // Initially on Prompt (Main)
-    expect(lastFrame()).toContain('Prompt 1');
+    app.expectContent('Prompt 1');
     
     // Press Tab to Notes (now requires 2 tabs: Canned, then Notes)
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    expect(lastFrame()).toContain('Note 1');
-    expect(lastFrame()).not.toContain('Prompt 1');
+    await app.nextTab();
+    await app.nextTab();
+    
+    await app.waitForTextToAppear('Note 1');
+    app.expectNotContent('Prompt 1');
 
     // Go to Archive
-    stdin.write('5');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    expect(lastFrame()).toContain('Archived 1');
-    expect(lastFrame()).not.toContain('Note 1');
+    await app.switchTab('archive');
+    await app.waitForTextToAppear('Archived 1');
+    app.expectNotContent('Note 1');
   });
 
   test('navigates list with arrow keys', async () => {
-    const { stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
-    await new Promise(resolve => setTimeout(resolve, 50));
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />));
+    await app.waitForTextToAppear('Prompt 1');
     
     // Just verify it doesn't crash on navigation
-    stdin.write('\u001B[B'); // Down arrow
-    await new Promise(resolve => setTimeout(resolve, 20));
-    stdin.write('\u001B[A'); // Up arrow
-    await new Promise(resolve => setTimeout(resolve, 20));
-    stdin.write('j');
-    await new Promise(resolve => setTimeout(resolve, 20));
-    stdin.write('k');
-    await new Promise(resolve => setTimeout(resolve, 20));
+    await app.arrowDown();
+    await app.arrowUp();
+    await app.navigateDown();
+    await app.navigateUp();
   });
 
   test('renders empty state', async () => {
@@ -96,9 +90,9 @@ describe('App Component', () => {
       snippets: [],
       settings: defaultSettings,
     });
-    const { lastFrame } = render(<App cwd={mockCwd} loadPromptsFn={emptyLoad} viewportSize={5} />);
-    await new Promise(resolve => setTimeout(resolve, 50));
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={emptyLoad} viewportSize={5} />));
+    await app.waitForTextToAppear('No items yet');
     
-    expect(lastFrame()).toContain('No items yet');
+    app.expectContent('No items yet');
   });
 });

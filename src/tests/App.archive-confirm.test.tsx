@@ -2,6 +2,7 @@ import React from 'react';
 import { render } from 'ink-testing-library';
 import { expect, test, describe } from "bun:test";
 import { App } from '../App';
+import { AppPage } from './pageObjects/AppPage';
 
 const mockData = {
   main: [],
@@ -15,93 +16,73 @@ const mockData = {
 
 const mockLoadPrompts = async () => JSON.parse(JSON.stringify(mockData));
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-describe.skip('App Archive Delete Confirmation', () => {
+describe('App Archive Delete Confirmation', () => {
   const mockCwd = '/test/path';
 
-  const navigateToArchive = async (stdin: any) => {
-    // Switch to notes
-    stdin.write('\t');
-    await delay(100);
-    // Switch to canned
-    stdin.write('\t');
-    await delay(100);
-    // Switch to snippets
-    stdin.write('\t');
-    await delay(100);
-    // Switch to archive
-    stdin.write('\t');
-    await delay(100);
-  };
-
   test('Pressing d in archive should show confirmation dialog', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
-    await delay(100);
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />));
+    await app.waitForTextToAppear('Archive');
     
-    await navigateToArchive(stdin);
-    expect(lastFrame()).toContain('Archived Prompt');
+    await app.switchTab('archive');
+    await app.waitForTextToAppear('Archived Prompt');
 
     // Press 'd' to delete
-    stdin.write('d');
-    await delay(100);
+    await app.deletePrompt();
     
-    expect(lastFrame()).toContain('Permanently delete this prompt?');
-    expect(lastFrame()).toContain('Yes');
-    expect(lastFrame()).toContain('No');
+    await app.waitForTextToAppear('Permanently delete this prompt?');
+    app.expectContent('Yes');
+    app.expectContent('No');
   });
 
   test('Confirming deletion with Yes should remove the prompt', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
-    await delay(100);
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />));
+    await app.waitForTextToAppear('Archive');
     
-    await navigateToArchive(stdin);
+    await app.switchTab('archive');
+    await app.waitForTextToAppear('Archived Prompt');
     
-    stdin.write('d');
-    await delay(100);
+    await app.deletePrompt();
+    await app.waitForTextToAppear('Permanently delete this prompt?');
 
     // Yes is default, press Enter
-    stdin.write('\r');
-    await delay(100);
-
-    expect(lastFrame()).not.toContain('Archived Prompt');
-    expect(lastFrame()).toContain('Deleted');
+    await app.confirm();
+    
+    await app.waitForTextToDisappear('Archived Prompt');
+    app.expectContent('Deleted');
   });
 
   test('Cancelling deletion with No should keep the prompt', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
-    await delay(100);
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />));
+    await app.waitForTextToAppear('Archive');
     
-    await navigateToArchive(stdin);
+    await app.switchTab('archive');
+    await app.waitForTextToAppear('Archived Prompt');
     
-    stdin.write('d');
-    await delay(100);
+    await app.deletePrompt();
+    await app.waitForTextToAppear('Permanently delete this prompt?');
 
     // Select 'No' (Right arrow)
-    stdin.write('\u001b[C'); 
-    await delay(100);
+    await app.arrowRight();
+    await app.confirm();
 
-    stdin.write('\r'); // Enter
-    await delay(100);
-
-    expect(lastFrame()).toContain('Archived Prompt');
-    expect(lastFrame()).not.toContain('Deleted');
+    await app.waitForTextToAppear('Archived Prompt');
+    app.expectNotContent('Deleted');
   });
 
   test('Escape should also cancel the deletion', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
-    await delay(100);
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />));
+    await app.waitForTextToAppear('Archive');
     
-    await navigateToArchive(stdin);
+    await app.switchTab('archive');
+    await app.waitForTextToAppear('Archived Prompt');
     
-    stdin.write('d');
-    await delay(100);
+    await app.deletePrompt();
+    await app.waitForTextToAppear('Permanently delete this prompt?');
 
-    stdin.write('\u001b'); // Escape
-    await delay(100);
+    await app.cancel();
 
-    expect(lastFrame()).toContain('Archived Prompt');
-    expect(lastFrame()).not.toContain('Permanently delete this prompt?');
+    await app.waitForTextToAppear('Archived Prompt');
+    app.expectNotContent('Permanently delete this prompt?');
   });
 });
 

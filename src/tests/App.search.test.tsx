@@ -2,6 +2,7 @@ import React from 'react';
 import { render } from 'ink-testing-library';
 import { expect, test, describe } from "bun:test";
 import { App } from '../App';
+import { AppPage } from './pageObjects/AppPage';
 
 const mockData = {
   main: [
@@ -21,75 +22,67 @@ describe('App Search', () => {
   const mockCwd = '/test/path';
 
   test('filters prompts by search query', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />));
     
-    // Wait for useEffect to finish
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await app.waitForTextToAppear('Prompt Alpha');
     
     // Initially all prompts are shown
-    let frame = lastFrame();
-    expect(frame).toContain('Prompt Alpha');
-    expect(frame).toContain('Prompt Beta');
-    expect(frame).toContain('Something else');
+    app.expectContent('Prompt Alpha');
+    app.expectContent('Prompt Beta');
+    app.expectContent('Something else');
 
     // Press / to enter search mode
-    stdin.write('/');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await app.startSearch();
     
     // Type 'Prompt'
-    stdin.write('Prompt');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await app.type('Prompt');
     
-    frame = lastFrame();
-    expect(frame).toContain('Prompt Alpha');
-    expect(frame).toContain('Prompt Beta');
-    expect(frame).not.toContain('Something else');
+    await app.waitForTextToDisappear('Something else');
+    app.expectContent('Prompt Alpha');
+    app.expectContent('Prompt Beta');
+    app.expectNotContent('Something else');
 
     // Refine to 'Alpha'
-    stdin.write(' Alpha');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await app.type(' Alpha');
     
-    frame = lastFrame();
-    expect(frame).toContain('Prompt Alpha');
-    expect(frame).not.toContain('Prompt Beta');
-    expect(frame).not.toContain('Something else');
+    await app.waitForTextToDisappear('Prompt Beta');
+    app.expectContent('Prompt Alpha');
+    app.expectNotContent('Prompt Beta');
+    app.expectNotContent('Something else');
 
     // Press Enter to confirm (should keep filter)
-    stdin.write('\r');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await app.confirm();
     
-    frame = lastFrame();
-    expect(frame).toContain('Prompt Alpha');
-    expect(frame).not.toContain('Prompt Beta');
-    expect(frame).not.toContain('Something else');
+    await app.wait(50);
+    app.expectContent('Prompt Alpha');
+    app.expectNotContent('Prompt Beta');
+    app.expectNotContent('Something else');
 
     // Press Esc to clear filter
-    stdin.write('\u001B');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await app.cancel();
     
-    frame = lastFrame();
-    expect(frame).toContain('Prompt Alpha');
-    expect(frame).toContain('Prompt Beta');
-    expect(frame).toContain('Something else');
+    await app.waitForTextToAppear('Something else');
+    app.expectContent('Prompt Alpha');
+    app.expectContent('Prompt Beta');
+    app.expectContent('Something else');
   });
 
   test('enters and exits search mode with / and Esc', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
-    await new Promise(resolve => setTimeout(resolve, 50));
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />));
+    await app.waitForTextToAppear('Prompt Alpha');
 
     // Press / to enter search mode
-    stdin.write('/');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await app.startSearch();
     
     // Type unique string
-    stdin.write('UNIQUE_SEARCH');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    expect(lastFrame()).toContain('UNIQUE_SEARCH');
+    await app.type('UNIQUE_SEARCH');
+    await app.waitForTextToAppear('UNIQUE_SEARCH');
+    app.expectContent('UNIQUE_SEARCH');
 
     // Press Esc to exit search mode and clear query
-    stdin.write('\u001B');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await app.cancel();
     
-    expect(lastFrame()).not.toContain('UNIQUE_SEARCH');
+    await app.waitForTextToDisappear('UNIQUE_SEARCH');
+    app.expectNotContent('UNIQUE_SEARCH');
   });
 });

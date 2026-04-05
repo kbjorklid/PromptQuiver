@@ -1,9 +1,9 @@
 import React from 'react';
 import { render } from 'ink-testing-library';
-import { expect, test, describe, spyOn, beforeEach, afterEach, vi } from "bun:test";
+import { expect, test, describe, vi } from "bun:test";
 import './setup';
 import { App } from '../App';
-import * as storage from '../storage';
+import { AppPage } from './pageObjects/AppPage';
 
 vi.mock('clipboardy', () => ({
   default: {
@@ -35,194 +35,188 @@ describe('App Advanced Logic (Iteration 4)', () => {
   const mockCwd = '/test/path';
 
   test('Stage Prompt (s) marks with 🎯 and copies', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
-    await new Promise(resolve => setTimeout(resolve, 50));
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />));
+    await app.waitForTextToAppear('Prompt 1');
+    await app.wait(100);
     
-    expect(lastFrame()).toContain('Prompt 1');
-    expect(lastFrame()).toContain('▶'); // Visual cue
+    app.expectContent('Prompt 1');
+    app.expectContent('▶'); // Visual cue
     
     // Stage Prompt 1
-    stdin.write('s');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    // In AppPage I should add stagePrompt
+    await app.write('s');
+    await app.waitForTextToAppear('🎯');
     
-    expect(lastFrame()).toContain('🎯');
-    expect(lastFrame()).toContain('Staged and copied to clipboard');
+    app.expectContent('🎯');
+    app.expectContent('Staged and copied to clipboard');
     
     // Move to Prompt 2 and stage it
-    stdin.write('j');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    stdin.write('s');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await app.navigateDown();
+    await app.write('s');
     
-    expect(lastFrame()).toContain('Prompt 2');
+    await app.waitForTextToAppear('Prompt 2');
     // Now Prompt 2 should have 🎯
     // Prompt 1 should be gone from main because it was staged and we staged another one
-    expect(lastFrame()).not.toContain('Prompt 1');
+    app.expectNotContent('Prompt 1');
     
     // Check archive
     // Switch tabs to archive
-    stdin.write('5');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    expect(lastFrame()).toContain('Prompt 1');
+    await app.switchTab('archive');
+    await app.waitForTextToAppear('Prompt 1');
+    app.expectContent('Prompt 1');
   });
 
   test('Staging a Canned Prompt clears others but is not marked staged', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
-    await new Promise(resolve => setTimeout(resolve, 50));
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />));
+    await app.waitForTextToAppear('Prompt 1');
     
     // 1. Stage Prompt 1 in Main
-    stdin.write('s');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    expect(lastFrame()).toContain('🎯');
+    await app.write('s');
+    await app.waitForTextToAppear('🎯');
+    app.expectContent('🎯');
     
-    // 2. Switch to Canned tab (Tab twice: Main -> Notes -> Canned)
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-
-    expect(lastFrame()).toContain('Canned 1');
+    // 2. Switch to Canned tab
+    await app.switchTab('canned');
+    await app.waitForTextToAppear('Canned 1');
+    app.expectContent('Canned 1');
     
     // 3. Press 's' on a canned prompt
-    stdin.write('s');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await app.write('s');
     
     // Should show 📋 (last copied) but NOT 🎯 (staged)
-    expect(lastFrame()).toContain('📋');
-    expect(lastFrame()).not.toContain('🎯');
-    expect(lastFrame()).toContain('Copied to clipboard (other staged items archived)');
+    await app.waitForTextToAppear('📋');
+    app.expectContent('📋');
+    app.expectNotContent('🎯');
+    app.expectContent('Copied to clipboard (other staged items archived)');
     
     // 4. Switch back to Main and verify Prompt 1 is gone
-    stdin.write('1');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    expect(lastFrame()).not.toContain('Prompt 1');
-    expect(lastFrame()).toContain('Prompt 2');
+    await app.switchTab('main');
+    await app.waitForTextToDisappear('Prompt 1');
+    app.expectNotContent('Prompt 1');
+    app.expectContent('Prompt 2');
   });
 
   test('Undo (u) multiple operations', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
-    await new Promise(resolve => setTimeout(resolve, 50));
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />));
+    await app.waitForTextToAppear('Prompt 1');
     
     // 1. Archive index 0
-    stdin.write('d');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await app.archivePrompt();
+    await app.waitForTextToDisappear('Prompt 1');
+
     // 2. Archive index 0 (was index 1)
-    stdin.write('d');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await app.archivePrompt();
+    await app.waitForTextToDisappear('Prompt 2');
     
-    expect(lastFrame()).toContain('0 prompts');
+    app.expectContent('0 prompts');
     
     // Undo 2
-    stdin.write('u');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    expect(lastFrame()).toContain('Prompt 2');
-    expect(lastFrame()).not.toContain('Prompt 1');
+    await app.undo();
+    await app.waitForTextToAppear('Prompt 2');
+    app.expectNotContent('Prompt 1');
     
     // Undo 1
-    stdin.write('u');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    expect(lastFrame()).toContain('Prompt 1');
-    expect(lastFrame()).toContain('Prompt 2');
+    await app.undo();
+    await app.waitForTextToAppear('Prompt 1');
+    app.expectContent('Prompt 1');
+    app.expectContent('Prompt 2');
   });
 
   test('Redo (Ctrl+y) multiple operations', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
-    await new Promise(resolve => setTimeout(resolve, 50));
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />));
+    await app.waitForTextToAppear('Prompt 1');
     
     // Archive both
-    stdin.write('d');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    stdin.write('d');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await app.archivePrompt();
+    await app.waitForTextToDisappear('Prompt 1');
+    await app.archivePrompt();
+    await app.waitForTextToDisappear('Prompt 2');
     
     // Undo both
-    stdin.write('u');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    stdin.write('u');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    expect(lastFrame()).toContain('Prompt 1');
+    await app.undo();
+    await app.waitForTextToAppear('Prompt 2');
+    await app.undo();
+    await app.waitForTextToAppear('Prompt 1');
+    app.expectContent('Prompt 1');
     
     // Redo 1
-    stdin.write('\u0019'); // Ctrl+y
-    await new Promise(resolve => setTimeout(resolve, 50));
-    expect(lastFrame()).not.toContain('Prompt 1');
-    expect(lastFrame()).toContain('Prompt 2');
+    await app.redo();
+    await app.waitForTextToDisappear('Prompt 1');
+    app.expectContent('Prompt 2');
     
     // Redo 2
-    stdin.write('\u0019');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    expect(lastFrame()).toContain('0 prompts');
+    await app.redo();
+    await app.waitForTextToDisappear('Prompt 2');
+    app.expectContent('0 prompts');
   });
 
   test('Undo (u) after permanent delete (X)', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
-    await new Promise(resolve => setTimeout(resolve, 50));
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />));
+    await app.waitForTextToAppear('Prompt 1');
     
     // Switch to archive
-    stdin.write('5');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await app.switchTab('archive');
+    await app.waitForTextToAppear('Archived 1');
     
     // Permanent delete
-    stdin.write('d');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await app.deletePrompt();
+    await app.waitForTextToAppear('Permanently delete this prompt?');
     
     // Confirm deletion (Enter)
-    stdin.write('\r');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await app.confirm();
     
-    expect(lastFrame()).not.toContain('Archived 1');
+    await app.waitForTextToDisappear('Archived 1');
     
     // Undo
-    stdin.write('u');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    expect(lastFrame()).toContain('Archived 1');
+    await app.undo();
+    await app.waitForTextToAppear('Archived 1');
+    app.expectContent('Archived 1');
   });
 
   test('History is cleared when a new operation is performed after undo', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
-    await new Promise(resolve => setTimeout(resolve, 50));
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />));
+    await app.waitForTextToAppear('Prompt 1');
     
     // 1. Archive Prompt 1
-    stdin.write('d');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await app.archivePrompt();
+    await app.waitForTextToDisappear('Prompt 1');
     
     // 2. Undo
-    stdin.write('u');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    expect(lastFrame()).toContain('Prompt 1');
+    await app.undo();
+    await app.waitForTextToAppear('Prompt 1');
+    app.expectContent('Prompt 1');
     
-    // 3. Perform a different operation: Delete Prompt 1 (X) from main? 
-    // Wait, X is only for archive. Let's move Prompt 1 to archive again but at index 0.
-    stdin.write('d');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    // 3. Perform a different operation: Archive again
+    await app.archivePrompt();
+    await app.waitForTextToDisappear('Prompt 1');
     
     // 4. Try to redo the first archive? Redo stack should be empty.
-    stdin.write('\u0019');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await app.redo();
     // Nothing should change from the state after step 3.
-    expect(lastFrame()).not.toContain('Prompt 1');
+    app.expectNotContent('Prompt 1');
   });
 
   test('Saving in Editor is undoable', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
-    await new Promise(resolve => setTimeout(resolve, 50));
+    const app = new AppPage(render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />));
+    await app.waitForTextToAppear('Prompt 1');
     
     // Edit first prompt
-    stdin.write('e');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await app.editPrompt();
+    await app.waitForTextToAppear('Editor');
     
     // Type new text
-    stdin.write(' Updated');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await app.type(' Updated');
+    app.expectContent('Prompt 1 Updated');
     
     // Save (Ctrl+s)
-    stdin.write('\u0013');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await app.save();
     
-    expect(lastFrame()).toContain('Prompt 1 Updated');
+    await app.waitForTextToAppear('Prompt 1 Updated');
     
     // Undo
-    stdin.write('u');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    expect(lastFrame()).toContain('Prompt 1');
-    expect(lastFrame()).not.toContain('Prompt 1 Updated');
+    await app.undo();
+    await app.waitForTextToAppear('Prompt 1');
+    app.expectContent('Prompt 1');
+    app.expectNotContent('Prompt 1 Updated');
   });
 });
