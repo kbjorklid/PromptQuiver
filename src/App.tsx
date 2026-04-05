@@ -14,6 +14,7 @@ import { expandSnippets } from './utils/snippetExpansion';
 import { useAppKeyboard } from './hooks/useAppKeyboard';
 import { useModal } from './hooks/useModal';
 import { ConfirmDialog } from './components/ConfirmDialog';
+import { CLAUDE_COMMANDS } from './utils/claudeCommands';
 
 const useTerminalSize = () => {
   const [size, setSize] = useState({
@@ -103,6 +104,7 @@ export const App = ({
       settings: true,
     },
     slashCommands: [],
+    enableClaudeCommands: false,
   };
   const tabVisibility = (data.settings || defaultSettings).tabVisibility;
   const orderedTabs = allTabs.filter(tab => tabVisibility[tab]);
@@ -252,6 +254,12 @@ export const App = ({
 
   if (view === 'editor' && editingPrompt) {
     const canStage = activeTab !== 'snippets' && activeTab !== 'notes';
+    const baseSlashCommands = data.settings?.slashCommands || [];
+    const mergedSlashCommands = Array.from(new Set([
+      ...baseSlashCommands,
+      ...(data.settings?.enableClaudeCommands ? CLAUDE_COMMANDS : [])
+    ]));
+
     return (
       <EditorView
         key={editingPrompt.id}
@@ -272,7 +280,7 @@ export const App = ({
         onCancel={cancelEdit}
         snippets={data.snippets}
         canned={data.canned}
-        slashCommands={data.settings?.slashCommands || []}
+        slashCommands={mergedSlashCommands}
       />
     );
   }

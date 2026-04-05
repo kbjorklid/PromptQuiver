@@ -17,6 +17,7 @@ const DEFAULT_SETTINGS: Settings = {
     settings: true,
   },
   slashCommands: [],
+  enableClaudeCommands: false,
 };
 
 const DEFAULT_DATA: PromptStorageData = {
@@ -49,7 +50,8 @@ const ensureSettings = (settings: any): Settings => {
   if (!settings || typeof settings !== 'object') return DEFAULT_SETTINGS;
   const tabVisibility = { ...DEFAULT_SETTINGS.tabVisibility, ...(settings.tabVisibility || {}) };
   const slashCommands = Array.isArray(settings.slashCommands) ? settings.slashCommands : [];
-  return { tabVisibility, slashCommands };
+  const enableClaudeCommands = typeof settings.enableClaudeCommands === 'boolean' ? settings.enableClaudeCommands : false;
+  return { tabVisibility, slashCommands, enableClaudeCommands };
 };
 
 export async function loadPrompts(cwd: string): Promise<PromptStorageData> {

@@ -37,7 +37,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [editingValue, setEditingValue] = useState('');
 
   const slashCommands = settings.slashCommands || [];
-  const totalItems = ALL_TABS.length + slashCommands.length + 1; // +1 for "Add New"
+  const totalItems = ALL_TABS.length + 1 + slashCommands.length + 1; // +1 for claude toggle, +1 for "Add New"
 
   const isEditingValueValid = slashCommandRegex.test(editingValue);
 
@@ -78,9 +78,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           };
           onUpdateSettings({ ...settings, tabVisibility: newVisibility as Record<Tab, boolean> }, true);
         }
+      } else if (selectedIndex === ALL_TABS.length) {
+        onUpdateSettings({ ...settings, enableClaudeCommands: !settings.enableClaudeCommands }, true);
       } else {
         // Slash command action
-        const slashIdx = selectedIndex - ALL_TABS.length;
+        const slashIdx = selectedIndex - ALL_TABS.length - 1;
         if (slashIdx === slashCommands.length) {
           // Add new
           setEditingIndex(-1);
@@ -93,8 +95,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           }
         }
       }
-    } else if (input === 'd' && selectedIndex >= ALL_TABS.length) {
-      const slashIdx = selectedIndex - ALL_TABS.length;
+    } else if (input === 'd' && selectedIndex > ALL_TABS.length) {
+      const slashIdx = selectedIndex - ALL_TABS.length - 1;
       if (slashIdx < slashCommands.length) {
         const newSlashCommands = [...slashCommands];
         newSlashCommands.splice(slashIdx, 1);
@@ -126,7 +128,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       // Update selected index to match the new position of the command if it was moved due to sort
       if (editingIndex === -1 || editingIndex !== null) {
           const newIdx = newSlashCommands.indexOf(cmdWithoutSlash);
-          if (newIdx !== -1) setSelectedIndex(ALL_TABS.length + newIdx);
+          if (newIdx !== -1) setSelectedIndex(ALL_TABS.length + 1 + newIdx);
       }
     }
   };
@@ -151,7 +153,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   };
 
   const renderSlashItem = (cmd: string, index: number) => {
-    const actualIndex = ALL_TABS.length + index;
+    const actualIndex = ALL_TABS.length + 1 + index;
     const isSelected = actualIndex === selectedIndex && editingIndex === null;
     const isEditing = editingIndex === index;
     
@@ -178,7 +180,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   };
 
   const renderAddNewSlash = () => {
-    const actualIndex = ALL_TABS.length + slashCommands.length;
+    const actualIndex = ALL_TABS.length + 1 + slashCommands.length;
     const isSelected = actualIndex === selectedIndex && editingIndex === null;
     const isAdding = editingIndex === -1;
 
@@ -204,6 +206,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   // Build the list of all items to render
   const allItems = [
     ...ALL_TABS.map((tab, i) => ({ type: 'tab', tab, index: i, key: `tab-${tab}` })),
+    { type: 'claudeToggle', key: 'claude-toggle' },
     ...slashCommands.map((cmd, i) => ({ type: 'slash', cmd, index: i, key: `slash-${cmd}` })),
     { type: 'addNew', key: 'add-new' }
   ];
@@ -230,7 +233,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
           const elements = [];
           
-          if (item.type === 'slash' && (item as any).index === 0) {
+          if (item.type === 'claudeToggle') {
+            elements.push(
+              <SectionTitle key="integrations-title">Integrations</SectionTitle>
+            );
+          } else if (item.type === 'slash' && (item as any).index === 0) {
             elements.push(
               <SectionTitle key="slash-commands-title">Slash Commands</SectionTitle>
             );
@@ -242,6 +249,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
           if (item.type === 'tab') {
             elements.push(renderTabItem((item as any).tab, (item as any).index));
+          } else if (item.type === 'claudeToggle') {
+            const isSelected = i === selectedIndex;
+            const isEnabled = settings.enableClaudeCommands || false;
+            elements.push(
+              <SelectableRow key="claude-toggle" isSelected={isSelected}>
+                <Indicator isSelected={isSelected} />
+                <Box width={3}>
+                  <Badge color={isEnabled ? 'green' : 'red'}>
+                    {isEnabled ? '[x]' : '[ ]'}
+                  </Badge>
+                </Box>
+                <Text color="white">Enable Claude Code Suggestions</Text>
+              </SelectableRow>
+            );
           } else if (item.type === 'slash') {
             elements.push(renderSlashItem((item as any).cmd, (item as any).index));
           } else if (item.type === 'addNew') {

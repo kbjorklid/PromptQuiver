@@ -44,7 +44,7 @@ test('Slash Command: Settings > Autocomplete', async () => {
   expect(stripAnsi(lastFrame()!)).toContain('Tab Visibility');
 
   // Switch to Slash Commands section (down arrow multiple times)
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 7; i++) {
     stdin.write('j');
     await new Promise(resolve => setTimeout(resolve, 20));
   }
