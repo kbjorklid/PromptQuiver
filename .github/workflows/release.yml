@@ -32,11 +32,13 @@ jobs:
           bun build --compile index.tsx --target bun-darwin-arm64 --outfile dist/quiver-macos-arm64
           bun build --compile index.tsx --target bun-windows-x64 --outfile dist/quiver-windows-x64.exe
 
-      - name: Create Release
+      - name: Create or Update Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create ${{ github.ref_name }} \
             --title "Release ${{ github.ref_name }}" \
             --generate-notes \
-            dist/*
+            dist/* || \
+          gh release upload ${{ github.ref_name }} \
+            dist/* --clobber
