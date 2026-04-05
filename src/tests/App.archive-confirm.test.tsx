@@ -18,18 +18,18 @@ describe('App Archive Delete Confirmation', () => {
 
   test('Pressing d in archive should show confirmation dialog', async () => {
     const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
     
     // Switch to Archive tab (orderedTabs: main, canned, snippets, archive, settings -> tab 4)
     // Wait, by default all tabs are visible. 1.Main, 2.Notes, 3.Canned, 4.Snippets, 5.Archive
     stdin.write('5');
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
     
     expect(lastFrame()).toContain('Archived Prompt');
 
     // Press 'd' to delete
     stdin.write('d');
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
     
     expect(lastFrame()).toContain('Permanently delete this prompt?');
     expect(lastFrame()).toContain('Yes');
@@ -38,17 +38,17 @@ describe('App Archive Delete Confirmation', () => {
 
   test('Confirming deletion with Yes should remove the prompt', async () => {
     const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
     
     stdin.write('5');
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
     
     stdin.write('d');
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
 
     // Yes is default, press Enter
     stdin.write('\r');
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
 
     expect(lastFrame()).not.toContain('Archived Prompt');
     expect(lastFrame()).toContain('Deleted');
@@ -56,20 +56,20 @@ describe('App Archive Delete Confirmation', () => {
 
   test('Cancelling deletion with No should keep the prompt', async () => {
     const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
     
     stdin.write('5');
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
     
     stdin.write('d');
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
 
     // Select 'No' (Right arrow)
     stdin.write('\u001b[C'); 
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
 
     stdin.write('\r'); // Enter
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
 
     expect(lastFrame()).toContain('Archived Prompt');
     expect(lastFrame()).not.toContain('Deleted');
@@ -77,16 +77,16 @@ describe('App Archive Delete Confirmation', () => {
 
   test('Escape should also cancel the deletion', async () => {
     const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
     
     stdin.write('5');
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
     
     stdin.write('d');
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
 
     stdin.write('\u001b'); // Escape
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
 
     expect(lastFrame()).toContain('Archived Prompt');
     expect(lastFrame()).not.toContain('Permanently delete this prompt?');
