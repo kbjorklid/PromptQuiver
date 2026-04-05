@@ -110,4 +110,55 @@ describe('UncontrolledMultilineInput', () => {
     expect(stripAnsi(lastFrame() || '').includes('L2')).toBe(true);
     expect(stripAnsi(lastFrame() || '').includes('L3')).toBe(false);
   });
+
+  test('Ctrl+Left moves back one word', async () => {
+    const onCursorChange = vi.fn();
+    const { stdin } = render(
+      <UncontrolledMultilineInput 
+        initialValue="hello world" 
+        onCursorChange={onCursorChange} 
+      />
+    );
+
+    // ANSI sequence for Ctrl+Left: \u001b[1;5D
+    stdin.write('\u001b[1;5D');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    // Should be at index 6 (start of "world")
+    expect(onCursorChange).toHaveBeenCalledWith(6);
+
+    stdin.write('\u001b[1;5D');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    // Should be at index 0 (start of "hello")
+    expect(onCursorChange).toHaveBeenCalledWith(0);
+  });
+
+  test('Ctrl+Right moves forward one word', async () => {
+    const onCursorChange = vi.fn();
+    const { stdin } = render(
+      <UncontrolledMultilineInput 
+        initialValue="hello world" 
+        onCursorChange={onCursorChange} 
+      />
+    );
+
+    // Initial cursor at end (11). Move to start.
+    for(let i=0; i<11; i++) stdin.write('\u001b[D'); 
+    await new Promise(resolve => setTimeout(resolve, 50));
+    onCursorChange.mockClear();
+
+    // ANSI sequence for Ctrl+Right: \u001b[1;5C
+    stdin.write('\u001b[1;5C');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    // Should be at index 5 (after "hello")
+    expect(onCursorChange).toHaveBeenCalledWith(5);
+
+    stdin.write('\u001b[1;5C');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    // Should be at index 11 (after "world")
+    expect(onCursorChange).toHaveBeenCalledWith(11);
+  });
 });

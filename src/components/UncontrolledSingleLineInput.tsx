@@ -1,6 +1,56 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
 
+function moveCursorWordLeft(text: string, cursor: number): number {
+  if (cursor === 0) return 0;
+  let newCursor = cursor;
+
+  // Skip whitespace to the left
+  while (newCursor > 0 && /\s/.test(text[newCursor - 1])) {
+    newCursor--;
+  }
+
+  if (newCursor === 0) return 0;
+
+  const isAlphanumeric = /[\w]/.test(text[newCursor - 1]);
+  if (isAlphanumeric) {
+    while (newCursor > 0 && /[\w]/.test(text[newCursor - 1])) {
+      newCursor--;
+    }
+  } else {
+    while (newCursor > 0 && !/[\w]/.test(text[newCursor - 1]) && !/\s/.test(text[newCursor - 1])) {
+      newCursor--;
+    }
+  }
+
+  return newCursor;
+}
+
+function moveCursorWordRight(text: string, cursor: number): number {
+  if (cursor >= text.length) return text.length;
+  let newCursor = cursor;
+
+  // Skip whitespace to the right
+  while (newCursor < text.length && /\s/.test(text[newCursor])) {
+    newCursor++;
+  }
+
+  if (newCursor >= text.length) return text.length;
+
+  const isAlphanumeric = /[\w]/.test(text[newCursor]);
+  if (isAlphanumeric) {
+    while (newCursor < text.length && /[\w]/.test(text[newCursor])) {
+      newCursor++;
+    }
+  } else {
+    while (newCursor < text.length && !/[\w]/.test(text[newCursor]) && !/\s/.test(text[newCursor])) {
+      newCursor++;
+    }
+  }
+
+  return newCursor;
+}
+
 export interface UncontrolledSingleLineInputProps {
   initialValue: string;
   onChange?: (value: string) => void;
@@ -46,12 +96,18 @@ export function UncontrolledSingleLineInput({
     let cursorChanged = false;
 
     if (key.leftArrow) {
-      if (newCursor > 0) {
+      if (key.ctrl) {
+        newCursor = moveCursorWordLeft(newValue, newCursor);
+        cursorChanged = true;
+      } else if (newCursor > 0) {
         newCursor = Math.max(0, newCursor - 1);
         cursorChanged = true;
       }
     } else if (key.rightArrow) {
-      if (newCursor < newValue.length) {
+      if (key.ctrl) {
+        newCursor = moveCursorWordRight(newValue, newCursor);
+        cursorChanged = true;
+      } else if (newCursor < newValue.length) {
         newCursor = Math.min(newValue.length, newCursor + 1);
         cursorChanged = true;
       }
