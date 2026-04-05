@@ -19,10 +19,10 @@ const mockData: PromptStorageData = {
     { id: '1', text: 'First Prompt', type: 'prompt', created_at: '', updated_at: '' },
     { id: '2', text: 'Second Prompt', type: 'prompt', created_at: '', updated_at: '' },
   ],
-  notes: [],
-  archive: [],
   canned: [],
+  notes: [],
   snippets: [],
+  archive: [],
   settings: {
     tabVisibility: {
       main: true,

@@ -11,19 +11,19 @@ function moveCursorWordLeft(text: string, cursor: number): number {
   let newCursor = cursor;
 
   // Skip whitespace to the left
-  while (newCursor > 0 && /\s/.test(text[newCursor - 1])) {
+  while (newCursor > 0 && /\s/.test(text[newCursor - 1] || '')) {
     newCursor--;
   }
 
   if (newCursor === 0) return 0;
 
-  const isAlphanumeric = /[\w]/.test(text[newCursor - 1]);
+  const isAlphanumeric = /[\w]/.test(text[newCursor - 1] || '');
   if (isAlphanumeric) {
-    while (newCursor > 0 && /[\w]/.test(text[newCursor - 1])) {
+    while (newCursor > 0 && /[\w]/.test(text[newCursor - 1] || '')) {
       newCursor--;
     }
   } else {
-    while (newCursor > 0 && !/[\w]/.test(text[newCursor - 1]) && !/\s/.test(text[newCursor - 1])) {
+    while (newCursor > 0 && !/[\w]/.test(text[newCursor - 1] || '') && !/\s/.test(text[newCursor - 1] || '')) {
       newCursor--;
     }
   }
@@ -36,19 +36,19 @@ function moveCursorWordRight(text: string, cursor: number): number {
   let newCursor = cursor;
 
   // Skip whitespace to the right
-  while (newCursor < text.length && /\s/.test(text[newCursor])) {
+  while (newCursor < text.length && /\s/.test(text[newCursor] || '')) {
     newCursor++;
   }
 
   if (newCursor >= text.length) return text.length;
 
-  const isAlphanumeric = /[\w]/.test(text[newCursor]);
+  const isAlphanumeric = /[\w]/.test(text[newCursor] || '');
   if (isAlphanumeric) {
-    while (newCursor < text.length && /[\w]/.test(text[newCursor])) {
+    while (newCursor < text.length && /[\w]/.test(text[newCursor] || '')) {
       newCursor++;
     }
   } else {
-    while (newCursor < text.length && !/[\w]/.test(text[newCursor]) && !/\s/.test(text[newCursor])) {
+    while (newCursor < text.length && !/[\w]/.test(text[newCursor] || '') && !/\s/.test(text[newCursor] || '')) {
       newCursor++;
     }
   }
@@ -64,6 +64,7 @@ export interface UncontrolledMultilineInputProps {
   rows?: number;
   width?: number;
   focus?: boolean;
+  readOnly?: boolean;
 }
 
 export interface UncontrolledMultilineInputRef {
@@ -77,7 +78,8 @@ export const UncontrolledMultilineInput = forwardRef<UncontrolledMultilineInputR
   onInterceptKey,
   rows,
   width,
-  focus = true
+  focus = true,
+  readOnly = false
 }, ref) => {
   const [value, setValue] = useState(initialValue);
   const valueRef = useRef(initialValue);
@@ -86,6 +88,7 @@ export const UncontrolledMultilineInput = forwardRef<UncontrolledMultilineInputR
 
   useImperativeHandle(ref, () => ({
     insertText: (text: string, start: number, end: number) => {
+      if (readOnly) return;
       const currentVal = valueRef.current;
       const before = currentVal.slice(0, start);
       const after = currentVal.slice(end);
@@ -204,26 +207,28 @@ export const UncontrolledMultilineInput = forwardRef<UncontrolledMultilineInputR
         newCursor = Math.min(newValue.length, newCursor + 1);
         cursorChanged = true;
       }
-    } else if (key.backspace || key.delete) {
-      // Map BOTH to backward delete to fix issues on Windows where Backspace acts as Delete
-      if (newCursor > 0) {
-        newValue = newValue.slice(0, newCursor - 1) + newValue.slice(newCursor);
-        newCursor--;
+    } else if (!readOnly) {
+      if (key.backspace || key.delete) {
+        // Map BOTH to backward delete to fix issues on Windows where Backspace acts as Delete
+        if (newCursor > 0) {
+          newValue = newValue.slice(0, newCursor - 1) + newValue.slice(newCursor);
+          newCursor--;
+          changed = true;
+          cursorChanged = true;
+        }
+      } else if (key.return) {
+        newValue = newValue.slice(0, newCursor) + "\n" + newValue.slice(newCursor);
+        newCursor++;
+        changed = true;
+        cursorChanged = true;
+      } else if (input && !key.ctrl && !key.meta && !key.escape && !key.tab) {
+        // Normalize \r or \r\n to \n
+        const normalizedInput = input.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+        newValue = newValue.slice(0, newCursor) + normalizedInput + newValue.slice(newCursor);
+        newCursor += normalizedInput.length;
         changed = true;
         cursorChanged = true;
       }
-    } else if (key.return) {
-      newValue = newValue.slice(0, newCursor) + "\n" + newValue.slice(newCursor);
-      newCursor++;
-      changed = true;
-      cursorChanged = true;
-    } else if (input && !key.ctrl && !key.meta && !key.escape && !key.tab) {
-      // Normalize \r or \r\n to \n
-      const normalizedInput = input.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-      newValue = newValue.slice(0, newCursor) + normalizedInput + newValue.slice(newCursor);
-      newCursor += normalizedInput.length;
-      changed = true;
-      cursorChanged = true;
     }
 
     if (changed || cursorChanged) {
@@ -243,7 +248,7 @@ export const UncontrolledMultilineInput = forwardRef<UncontrolledMultilineInputR
   }, { isActive: focus });
 
   const renderValue = () => {
-    if (!focus) {
+    if (!focus || readOnly) {
       return value;
     }
 

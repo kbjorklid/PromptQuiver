@@ -13,6 +13,7 @@ export interface EditorViewProps {
   initialName?: string;
   isSnippet?: boolean;
   canStage?: boolean;
+  readOnly?: boolean;
   onSave: (text: string, name?: string, shouldStage?: boolean) => void;
   onCancel: () => void;
   terminalSize: { rows: number; columns: number };
@@ -28,6 +29,7 @@ export function EditorView({
   initialName = '', 
   isSnippet = false, 
   canStage = false,
+  readOnly = false,
   onSave, 
   onCancel, 
   terminalSize,
@@ -78,6 +80,13 @@ export function EditorView({
 
   useInput((input, key) => {
     if (showConfirm) return;
+
+    if (readOnly) {
+      if (key.escape) {
+        onCancel();
+      }
+      return;
+    }
 
     if (isEditingName) {
       if (key.return || key.downArrow || key.tab) {
@@ -152,7 +161,7 @@ export function EditorView({
     <Box flexDirection="column" padding={1} width="100%" height="100%">
       <Box marginBottom={1} flexDirection="column">
         <Box justifyContent="space-between">
-          <Text bold color="blue">Editor {isSnippet ? '(Snippet)' : ''}</Text>
+          <Text bold color="blue">{readOnly ? 'Viewer' : 'Editor'} {isSnippet ? '(Snippet)' : ''}</Text>
         </Box>
         {isSnippet && (
            <Box flexDirection="column" marginTop={1}>
@@ -192,10 +201,11 @@ export function EditorView({
           onInterceptKey={handleInterceptKey}
           rows={editorRows}
           focus={!showConfirm && !isEditingName}
+          readOnly={readOnly}
         />
       </Box>
 
-      {mentionQuery === null && (
+      {!readOnly && mentionQuery === null && (
         <Box paddingX={1} marginBottom={1}>
           <Text color="gray">
             <Text bold color="cyan">@</Text> File{isSnippet ? '' : <Text> | <Text bold color="cyan">$</Text> Snippet (expand) | <Text bold color="cyan">$$</Text> Snippet (var)</Text>} | <Text bold color="cyan">/</Text> Slash Command
@@ -204,7 +214,11 @@ export function EditorView({
       )}
 
       <Box marginTop={1} minHeight={1}>
-        {mentionQuery !== null ? (
+        {readOnly ? (
+          <Box justifyContent="space-between" width="100%">
+            <Text color="gray">[Esc] Back</Text>
+          </Box>
+        ) : mentionQuery !== null ? (
           <Box flexDirection="column">
             {searchResults.length === 0 ? (
               <Text color="gray">No {getMentionTypeName(mentionType)} found matching "{mentionQuery}"</Text>

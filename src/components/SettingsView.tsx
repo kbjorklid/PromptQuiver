@@ -13,12 +13,12 @@ interface SettingsViewProps {
   terminalSize: { columns: number; rows: number };
 }
 
-const ALL_TABS: Tab[] = ['main', 'notes', 'canned', 'snippets', 'archive', 'settings'];
+const ALL_TABS: Tab[] = ['main', 'canned', 'notes', 'snippets', 'archive', 'settings'];
 
 const tabLabels: Record<Tab, string> = {
   main: '1. Prompt',
-  notes: '2. Notes',
-  canned: '3. Canned',
+  canned: '2. Canned',
+  notes: '3. Notes',
   snippets: '4. Snippets',
   archive: '5. Archive',
   settings: 'Settings',

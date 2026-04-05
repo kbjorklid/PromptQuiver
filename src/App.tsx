@@ -93,12 +93,12 @@ export const App = ({
     copyToClipboard,
   } = usePrompts({ cwd, loadPromptsFn, savePromptsFn, debounceMs });
 
-  const allTabs: Tab[] = ['main', 'notes', 'canned', 'snippets', 'archive', 'settings'];
+  const allTabs: Tab[] = ['main', 'canned', 'notes', 'snippets', 'archive', 'settings'];
   const defaultSettings: Settings = {
     tabVisibility: {
       main: true,
-      notes: true,
       canned: true,
+      notes: true,
       snippets: true,
       archive: true,
       settings: true,
@@ -267,6 +267,7 @@ export const App = ({
         initialName={editingPrompt.name}
         isSnippet={activeTab === 'snippets'}
         canStage={canStage}
+        readOnly={activeTab === 'archive'}
         terminalSize={terminalSize}
         onSave={(text, name, shouldStage) => {
           saveEditedPrompt(text, name, shouldStage);

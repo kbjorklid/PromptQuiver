@@ -11,10 +11,10 @@ const stripAnsi = (str: string) => str.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '').rep
 test('Slash Command: Settings > Autocomplete', async () => {
   const initialData: PromptStorageData = {
     main: [{ id: "1", text: "Fix this", type: "prompt" as const, created_at: "", updated_at: "" }],
-    notes: [],
-    archive: [],
-    canned: [],
-    snippets: [],
+  canned: [],
+  notes: [],
+  snippets: [],
+  archive: [],
     settings: {
       tabVisibility: {
         main: true,

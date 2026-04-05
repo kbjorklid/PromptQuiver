@@ -8,7 +8,9 @@ const mockData = {
   main: [
     { id: '1', text: 'Prompt 1\nLine 2\nLine 3', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' },
   ],
+  canned: [],
   notes: [],
+  snippets: [],
   archive: [],
 };
 
@@ -50,7 +52,6 @@ describe('App UI (Iteration 5)', () => {
   test('Shows deletion toast with undo hint', async () => {
     const dataWithArchive = {
       main: [],
-      notes: [],
       archive: [{ id: 'arch', text: 'Archived', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' }]
     };
     const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={(async () => dataWithArchive) as any} viewportSize={5} />);

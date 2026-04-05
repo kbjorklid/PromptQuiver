@@ -33,10 +33,10 @@ describe('App Snippets', () => {
     ];
     const loadPromptsFn = async (): Promise<PromptStorageData> => ({
       main: [{ id: '1', text: 'Hello', type: 'prompt' as const, created_at: '', updated_at: '' }],
-      notes: [],
-      archive: [],
       canned: [],
+      notes: [],
       snippets: snippets,
+      archive: [],
       settings: defaultSettings,
     });
     

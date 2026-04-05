@@ -11,10 +11,10 @@ const stripAnsi = (str: string) => str.replace(/\u001b\[[0-9;]*[a-zA-Z]/g, '');
 describe('App Settings', () => {
   const initialData: PromptStorageData = {
     main: [{ id: '1', text: 'Main Prompt', type: 'prompt', created_at: '', updated_at: '' }],
-    notes: [],
-    archive: [],
-    canned: [],
-    snippets: [],
+  canned: [],
+  notes: [],
+  snippets: [],
+  archive: [],
     settings: {
       tabVisibility: {
         main: true,
@@ -58,7 +58,9 @@ describe('App Settings', () => {
     stdin.write('S');
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    // Move to Notes (index 1)
+    // Move to Notes (index 2)
+    stdin.write('j');
+    await new Promise(resolve => setTimeout(resolve, 50));
     stdin.write('j');
     await new Promise(resolve => setTimeout(resolve, 50));
     

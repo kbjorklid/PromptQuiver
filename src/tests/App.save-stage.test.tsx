@@ -9,10 +9,10 @@ const mockPrompts = {
   main: [
     { id: '1', text: 'Prompt 1', type: 'prompt', created_at: '2023-01-01T00:00:00Z', updated_at: '2023-01-01T00:00:00Z' },
   ],
-  notes: [],
-  archive: [],
   canned: [],
+  notes: [],
   snippets: [],
+  archive: [],
   settings: {
     tabVisibility: {
       main: true,
@@ -93,8 +93,8 @@ describe('App Save and Stage Shortcut', () => {
 
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    // Go to notes tab (usually 2nd tab)
-    stdin.write('2');
+    // Go to notes tab (usually 3rd tab)
+    stdin.write('3');
     await new Promise(resolve => setTimeout(resolve, 50));
 
     // Press 'e' to edit

@@ -195,14 +195,14 @@ export function promptReducer(state: PromptState, action: PromptAction): PromptS
       const nextPresent: PromptStorageData = { ...state.present };
       
       // Clone lists we will modify
-      const sourceTabs: (keyof Omit<PromptStorageData, 'settings'>)[] = ['main', 'notes', 'canned', 'snippets', 'archive'];
+      const sourceTabs: (keyof Omit<PromptStorageData, 'settings'>)[] = ['main', 'canned', 'notes', 'snippets', 'archive'];
       sourceTabs.forEach(t => {
         nextPresent[t] = state.present[t] ? [...state.present[t]] : [];
       });
 
       if (isStaging) {
         // Move other staged prompts to archive
-        const moveFromTabs: Tab[] = ['main', 'notes', 'canned', 'snippets'];
+        const moveFromTabs: Tab[] = ['main', 'canned', 'notes', 'snippets'];
         moveFromTabs.forEach(t => {
           const list = nextPresent[t] as Prompt[];
           for (let i = list.length - 1; i >= 0; i--) {

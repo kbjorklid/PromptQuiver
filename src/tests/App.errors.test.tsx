@@ -35,10 +35,10 @@ describe('App Error Paths', () => {
   test('shows toast when clipboard.writeSync fails during Yank (y)', async () => {
     const mockData: PromptStorageData = {
       main: [{ id: '1', text: 'Prompt 1', type: 'prompt', created_at: '', updated_at: '' }],
-      notes: [],
-      archive: [],
-      canned: [],
-      snippets: [],
+  canned: [],
+  notes: [],
+  snippets: [],
+  archive: [],
       settings: defaultSettings,
     };
     const loadPromptsFn = vi.fn().mockResolvedValue(mockData);

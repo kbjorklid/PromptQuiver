@@ -5,8 +5,8 @@ import { App } from '../App';
 
 const mockData = {
   main: [],
-  notes: [],
   canned: [],
+  notes: [],
   snippets: [],
   archive: [
     { id: '1', text: 'Archived Prompt', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' },

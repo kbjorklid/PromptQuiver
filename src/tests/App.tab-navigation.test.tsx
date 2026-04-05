@@ -10,10 +10,10 @@ const mockCwd = '/test/cwd';
 describe('App Tab Navigation', () => {
   const mockData: PromptStorageData = {
     main: [{ id: '1', text: 'Main Prompt', type: 'prompt', created_at: '', updated_at: '' }],
-    notes: [{ id: '2', text: 'Note Content', type: 'note', created_at: '', updated_at: '' }],
-    archive: [],
     canned: [{ id: 'c1', text: 'Canned Prompt', type: 'prompt', created_at: '', updated_at: '' }],
+    notes: [],
     snippets: [],
+    archive: [],
     settings: {
       tabVisibility: {
         main: true,
@@ -22,7 +22,8 @@ describe('App Tab Navigation', () => {
         snippets: true,
         archive: true,
         settings: true,
-      }
+      },
+      slashCommands: [],
     }
   };
 
@@ -67,7 +68,8 @@ describe('App Tab Navigation', () => {
           snippets: true,
           archive: false,
           settings: true,
-        }
+        },
+        slashCommands: [],
       }
     };
 

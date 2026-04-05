@@ -7,7 +7,9 @@ const mockData = {
   main: [
     { id: '1', text: 'Original Text', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' },
   ],
+  canned: [],
   notes: [],
+  snippets: [],
   archive: [],
 };
 

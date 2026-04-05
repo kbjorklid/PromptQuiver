@@ -24,10 +24,10 @@ const defaultSettings = {
 
 const mockData: PromptStorageData = {
   main: [createPrompt('1', 'P1'), createPrompt('2', 'P2')],
-  notes: [createPrompt('3', 'N1', 'note')],
-  archive: [],
   canned: [],
+  notes: [createPrompt('3', 'N1', 'note')],
   snippets: [],
+  archive: [],
   settings: defaultSettings,
 };
 

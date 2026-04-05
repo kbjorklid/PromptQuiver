@@ -9,7 +9,9 @@ const mockData = {
     { id: '2', text: 'Prompt Beta', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' },
     { id: '3', text: 'Something else', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' },
   ],
+  canned: [],
   notes: [],
+  snippets: [],
   archive: [],
 };
 

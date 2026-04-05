@@ -26,6 +26,7 @@ const mockData = {
   archive: [
     { id: '3', text: 'Archived 1', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' },
   ],
+  snippets: [],
 };
 
 const mockLoadPrompts = async () => JSON.parse(JSON.stringify(mockData));
@@ -59,16 +60,9 @@ describe('App Advanced Logic (Iteration 4)', () => {
     expect(lastFrame()).not.toContain('Prompt 1');
     
     // Check archive
-    // Switch tabs to archive (4 times Tab)
-    stdin.write('\t');
+    // Switch tabs to archive
+    stdin.write('5');
     await new Promise(resolve => setTimeout(resolve, 50));
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    
     expect(lastFrame()).toContain('Prompt 1');
   });
 
@@ -84,9 +78,7 @@ describe('App Advanced Logic (Iteration 4)', () => {
     // 2. Switch to Canned tab (Tab twice: Main -> Notes -> Canned)
     stdin.write('\t');
     await new Promise(resolve => setTimeout(resolve, 50));
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    
+
     expect(lastFrame()).toContain('Canned 1');
     
     // 3. Press 's' on a canned prompt
@@ -98,17 +90,9 @@ describe('App Advanced Logic (Iteration 4)', () => {
     expect(lastFrame()).not.toContain('🎯');
     expect(lastFrame()).toContain('Copied to clipboard (other staged items archived)');
     
-    // 4. Switch back to Main and verify Prompt 1 is gone (moved to archive)
-    // Canned -> Snippets -> Archive -> Settings -> Main (4 tabs)
-    stdin.write('\t');
+    // 4. Switch back to Main and verify Prompt 1 is gone
+    stdin.write('1');
     await new Promise(resolve => setTimeout(resolve, 50));
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    
     expect(lastFrame()).not.toContain('Prompt 1');
     expect(lastFrame()).toContain('Prompt 2');
   });
@@ -124,7 +108,7 @@ describe('App Advanced Logic (Iteration 4)', () => {
     stdin.write('d');
     await new Promise(resolve => setTimeout(resolve, 50));
     
-    expect(lastFrame()).toContain('No items yet');
+    expect(lastFrame()).toContain('0 prompts');
     
     // Undo 2
     stdin.write('u');
@@ -165,24 +149,15 @@ describe('App Advanced Logic (Iteration 4)', () => {
     // Redo 2
     stdin.write('\u0019');
     await new Promise(resolve => setTimeout(resolve, 50));
-    expect(lastFrame()).toContain('No items yet');
+    expect(lastFrame()).toContain('0 prompts');
   });
 
   test('Undo (u) after permanent delete (X)', async () => {
     const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
-    // Switch to notes
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    // Switch to canned
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    // Switch to snippets
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
     // Switch to archive
-    stdin.write('\t');
+    stdin.write('5');
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Permanent delete

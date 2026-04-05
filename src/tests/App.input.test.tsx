@@ -11,10 +11,12 @@ const mockData = {
     { id: '2', text: 'Prompt 2', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' },
   ],
   notes: [],
+  canned: [],
+  snippets: [],
   archive: [
     { id: '3', text: 'Archived 1', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' },
   ],
-};
+  };
 
 const mockLoadPrompts = async () => JSON.parse(JSON.stringify(mockData));
 

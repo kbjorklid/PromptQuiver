@@ -57,18 +57,16 @@ describe('App Component', () => {
     // Initially on Prompt (Main)
     expect(lastFrame()).toContain('Prompt 1');
     
-    // Press Tab once to Notes
+    // Press Tab to Notes (now requires 2 tabs: Canned, then Notes)
+    stdin.write('\t');
+    await new Promise(resolve => setTimeout(resolve, 50));
     stdin.write('\t');
     await new Promise(resolve => setTimeout(resolve, 50));
     expect(lastFrame()).toContain('Note 1');
     expect(lastFrame()).not.toContain('Prompt 1');
 
-    // Press Tab twice more to Canned then Snippets then Archive
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    stdin.write('\t');
+    // Go to Archive
+    stdin.write('5');
     await new Promise(resolve => setTimeout(resolve, 50));
     expect(lastFrame()).toContain('Archived 1');
     expect(lastFrame()).not.toContain('Note 1');
@@ -91,8 +89,8 @@ describe('App Component', () => {
 
   test('renders empty state', async () => {
     const emptyLoad = async () => ({ 
-      main: [], 
-      notes: [], 
+      main: [],
+      notes: [],
       archive: [],
       canned: [],
       snippets: [],

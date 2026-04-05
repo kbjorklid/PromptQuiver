@@ -23,10 +23,10 @@ describe('App Branch Tracking', () => {
         { id: '1', text: 'Prompt 1', type: 'prompt', branch: 'main', created_at: '2023-01-01', updated_at: '2023-01-01' },
         { id: '2', text: 'Prompt 2', type: 'prompt', branch: 'feature-x', created_at: '2023-01-01', updated_at: '2023-01-01' },
       ],
-      notes: [],
-      archive: [],
-      canned: [],
-      snippets: [],
+  canned: [],
+  notes: [],
+  snippets: [],
+  archive: [],
       settings: {
         tabVisibility: {
           main: true,

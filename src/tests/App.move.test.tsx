@@ -35,9 +35,9 @@ describe('App Move Mode', () => {
     notes: [
       { id: 'n1', text: 'Note 1', type: 'note', created_at: '', updated_at: '' },
     ],
-    archive: [],
     canned: [],
     snippets: [],
+    archive: [],
     settings: defaultSettings,
   };
 

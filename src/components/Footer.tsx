@@ -61,7 +61,7 @@ export const Footer: React.FC<FooterProps> = ({
       <>
         <Box><Text bold>[Tab/h/l]</Text><Text color="gray"> Tab</Text></Box>
         {hasItems && <Box><Text bold>[↑/↓/j/k]</Text><Text color="gray"> Nav</Text></Box>}
-        {hasItems && <Box><Text bold>[Enter/e]</Text><Text color="gray"> Edit</Text></Box>}
+        {hasItems && <Box><Text bold>[Enter/e]</Text><Text color="gray"> {activeTab === 'archive' ? 'View' : 'Edit'}</Text></Box>}
         {activeTab !== 'archive' && hasItems && (
           <Box><Text bold>[m]</Text><Text color="gray"> Move</Text></Box>
         )}

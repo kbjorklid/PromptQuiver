@@ -20,10 +20,12 @@ const mockData = {
     { id: '2', text: 'Prompt 2', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' },
   ],
   notes: [],
+  canned: [],
+  snippets: [],
   archive: [
     { id: '3', text: 'Archived 1', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' },
   ],
-};
+  };
 
 const mockLoadPrompts = async () => JSON.parse(JSON.stringify(mockData));
 
@@ -43,17 +45,8 @@ describe('App CRUD Operations', () => {
     expect(frame).not.toContain('Prompt 1');
     expect(frame).toContain('Prompt 2');
     
-    // Switch to notes
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    // Switch to canned
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    // Switch to snippets
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
     // Switch to archive
-    stdin.write('\t');
+    stdin.write('5');
     await new Promise(resolve => setTimeout(resolve, 50));
     expect(lastFrame()).toContain('Prompt 1');
     expect(lastFrame()).toContain('Archived 1');
@@ -63,17 +56,8 @@ describe('App CRUD Operations', () => {
     const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
-    // Switch to notes
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    // Switch to canned
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    // Switch to snippets
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
     // Switch to archive
-    stdin.write('\t');
+    stdin.write('5');
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Select Archived 1 (index 0)
@@ -94,17 +78,8 @@ describe('App CRUD Operations', () => {
     const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
-    // Switch to notes
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    // Switch to canned
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    // Switch to snippets
-    stdin.write('\t');
-    await new Promise(resolve => setTimeout(resolve, 50));
     // Switch to archive
-    stdin.write('\t');
+    stdin.write('5');
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Select Archived 1, press 'd'

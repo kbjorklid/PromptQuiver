@@ -48,9 +48,6 @@ describe("Storage", () => {
           updated_at: new Date().toISOString(),
         }
       ],
-      notes: [],
-      archive: [],
-      snippets: [],
       canned: [
         {
           id: "4",
@@ -60,6 +57,9 @@ describe("Storage", () => {
           updated_at: new Date().toISOString(),
         }
       ],
+      notes: [],
+      snippets: [],
+      archive: [],
       settings: {
         tabVisibility: {
           main: true,
@@ -96,10 +96,10 @@ describe("Storage", () => {
 
     const data = {
       main: [],
-      notes: [],
-      archive: [],
-      snippets: [],
       canned: [{ id: "5", text: "Canned 2", type: "prompt" as const, created_at: "now", updated_at: "now" }],
+      notes: [],
+      snippets: [],
+      archive: [],
       settings: {
         tabVisibility: {
           main: true,
@@ -109,7 +109,6 @@ describe("Storage", () => {
           archive: true,
           settings: true,
         },
-        slashCommands: [],
       },
     };
 
@@ -127,9 +126,9 @@ describe("Storage", () => {
     const data = {
       main: [{ id: "2", text: "Hello", type: "prompt" as const, created_at: "now", updated_at: "now" }],
       notes: [{ id: "3", text: "Note", type: "note" as const, created_at: "now", updated_at: "now" }],
-      archive: [],
-      snippets: [],
       canned: [{ id: "6", text: "Canned 3", type: "prompt" as const, created_at: "now", updated_at: "now" }],
+      snippets: [],
+      archive: [],
       settings: {
         tabVisibility: {
           main: true,
@@ -139,7 +138,6 @@ describe("Storage", () => {
           archive: true,
           settings: true,
         },
-        slashCommands: [],
       },
     };
 

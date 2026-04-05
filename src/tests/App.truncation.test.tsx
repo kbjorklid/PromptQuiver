@@ -13,7 +13,9 @@ const mockData = {
       updated_at: '2023-01-01' 
     },
   ],
+  canned: [],
   notes: [],
+  snippets: [],
   archive: [],
 };
 

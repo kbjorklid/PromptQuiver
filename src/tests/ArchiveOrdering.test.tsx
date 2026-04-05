@@ -13,11 +13,11 @@ describe('Archive ordering', () => {
         { id: '1', text: 'Prompt 1', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' },
         { id: '2', text: 'Prompt 2', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' },
       ],
-      notes: [],
       archive: [
         { id: '3', text: 'Old Archive', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' },
       ],
       canned: [],
+      notes: [],
       snippets: [],
       settings: {
         tabVisibility: {
@@ -63,12 +63,12 @@ describe('Archive ordering', () => {
     const initialData: PromptStorageData = {
       main: [],
       notes: [],
+      canned: [],
+      snippets: [],
       archive: [
         { id: '1', text: 'Archived 1', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' },
         { id: '2', text: 'Archived 2', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' },
       ],
-      canned: [],
-      snippets: [],
       settings: {
         tabVisibility: {
           main: true,

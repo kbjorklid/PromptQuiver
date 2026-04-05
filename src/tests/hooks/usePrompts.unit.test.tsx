@@ -20,10 +20,10 @@ const mockData: PromptStorageData = {
   main: [
     { id: '1', text: 'Prompt 1', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' },
   ],
-  notes: [],
-  archive: [],
   canned: [],
+  notes: [],
   snippets: [],
+  archive: [],
   settings: defaultSettings,
 };
 
@@ -98,8 +98,12 @@ describe('usePrompts Hook (Unit)', () => {
           { id: '1', text: 'Apple', type: 'prompt', created_at: 'now', updated_at: 'now' },
           { id: '2', text: 'Banana', type: 'prompt', created_at: 'now', updated_at: 'now' },
         ],
-        notes: [], archive: [], canned: [], snippets: [], settings: defaultSettings
-      }),
+  canned: [],
+  notes: [],
+  snippets: [],
+  archive: [],
+          settings: defaultSettings
+        }),
       savePromptsFn: async () => {},
     });
     
@@ -120,7 +124,10 @@ describe('usePrompts Hook (Unit)', () => {
       loadPromptsFn: async () => ({
         main: [{ id: '1', text: 'P1', type: 'prompt', created_at: 'now', updated_at: 'now' }],
         notes: [{ id: '2', text: 'N1', type: 'note', created_at: 'now', updated_at: 'now' }],
-        archive: [], canned: [], snippets: [], settings: defaultSettings
+        canned: [],
+        snippets: [],
+        archive: [],
+        settings: defaultSettings
       }),
       savePromptsFn: async () => {},
     });
@@ -145,8 +152,12 @@ describe('usePrompts Hook (Unit)', () => {
           { id: '1', text: 'P1', type: 'prompt', created_at: 'now', updated_at: 'now' },
           { id: '2', text: 'P2', type: 'prompt', created_at: 'now', updated_at: 'now' },
         ],
-        notes: [], archive: [], canned: [], snippets: [], settings: defaultSettings
-      }),
+  canned: [],
+  notes: [],
+  snippets: [],
+  archive: [],
+          settings: defaultSettings
+        }),
       savePromptsFn: async () => {},
     });
     
@@ -164,8 +175,12 @@ describe('usePrompts Hook (Unit)', () => {
       cwd: '/test',
       loadPromptsFn: async () => ({
         main: [{ id: '1', text: 'P1', type: 'prompt', created_at: 'now', updated_at: 'now' }],
-        notes: [], archive: [], canned: [], snippets: [], settings: defaultSettings
-      }),
+  canned: [],
+  notes: [],
+  snippets: [],
+  archive: [],
+          settings: defaultSettings
+        }),
       savePromptsFn: async () => {},
     });
     
@@ -182,8 +197,12 @@ describe('usePrompts Hook (Unit)', () => {
       cwd: '/test',
       loadPromptsFn: async () => ({
         main: [{ id: '1', text: 'P1', type: 'prompt', created_at: 'now', updated_at: 'now' }],
-        notes: [], archive: [], canned: [], snippets: [], settings: defaultSettings
-      }),
+  canned: [],
+  notes: [],
+  snippets: [],
+  archive: [],
+          settings: defaultSettings
+        }),
       savePromptsFn: async () => {},
     });
     
@@ -201,7 +220,12 @@ describe('usePrompts Hook (Unit)', () => {
     const { result } = renderHook(usePrompts, {
       cwd: '/test',
       loadPromptsFn: async () => ({
-        main: [], notes: [], archive: [], canned: [], snippets: [], settings: defaultSettings
+        main: [],
+        notes: [],
+        archive: [],
+        canned: [],
+        snippets: [],
+        settings: defaultSettings,
       }),
       savePromptsFn: async () => {},
     });
@@ -223,8 +247,12 @@ describe('usePrompts Hook (Unit)', () => {
       cwd: '/test',
       loadPromptsFn: async () => ({
         main: [{ id: '1', text: 'P1', type: 'prompt', created_at: 'now', updated_at: 'now' }],
-        notes: [], archive: [], canned: [], snippets: [], settings: defaultSettings
-      }),
+  canned: [],
+  notes: [],
+  snippets: [],
+  archive: [],
+          settings: defaultSettings
+        }),
       savePromptsFn: async () => {},
     });
 

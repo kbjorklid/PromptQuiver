@@ -8,8 +8,8 @@ describe('App Stage Visibility', () => {
     main: [{ id: '1', text: 'Main Prompt', type: 'prompt', staged: false, created_at: '', updated_at: '' }],
     notes: [{ id: '2', text: 'Note Prompt', type: 'note', created_at: '', updated_at: '' }],
     snippets: [{ id: '3', text: 'Snippet', type: 'prompt', name: 'snip', created_at: '', updated_at: '' }],
-    archive: [],
     canned: [],
+    archive: [],
     settings: {
       tabVisibility: {
         main: true,
@@ -32,8 +32,8 @@ describe('App Stage Visibility', () => {
     // Wait for load
     await new Promise(r => setTimeout(r, 100));
 
-    // Switch to Notes (Tab 2)
-    stdin.write('2');
+    // Switch to Notes (Tab 3)
+    stdin.write('3');
     await new Promise(r => setTimeout(r, 100));
 
     expect(lastFrame()).toContain('Note Prompt');

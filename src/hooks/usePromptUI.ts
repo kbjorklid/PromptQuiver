@@ -16,7 +16,7 @@ export function usePromptUI(data: PromptStorageData, branchFilterEnabled: boolea
   const currentList = useMemo(() => {
     if (activeTab === 'settings') return [];
     let fullList = data[activeTab] as Prompt[] || [];
-    if (branchFilterEnabled && currentBranch && activeTab !== 'canned') {
+    if (branchFilterEnabled && currentBranch && activeTab !== 'canned' && activeTab !== 'snippets') {
       fullList = fullList.filter(p => !p.branch || p.branch === currentBranch);
     }
     return searchQuery 

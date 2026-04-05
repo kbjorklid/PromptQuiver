@@ -14,10 +14,10 @@ describe('Archive Staging', () => {
       main: [
         { id: '1', text: 'Staged Prompt', type: 'prompt', staged: true, created_at: '2023-01-01', updated_at: '2023-01-01' },
       ],
-      notes: [],
-      canned: [],
-      snippets: [],
-      archive: [],
+  canned: [],
+  notes: [],
+  snippets: [],
+  archive: [],
       settings: {
         tabVisibility: {
           main: true,
