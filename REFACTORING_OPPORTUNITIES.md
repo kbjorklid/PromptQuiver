@@ -31,6 +31,7 @@ This document outlines the highest-impact refactoring opportunities identified i
 
 ## 4. Minor Cleanup (Dead Code & Efficiency)
 
-- [ ] **Context:** `src/hooks/usePrompts.ts`
-- [ ] **Problem:** While already partially refactored, `usePrompts` still acts as a complex orchestrator for toasts, clipboard operations, and state transitions, making it slightly bloated.
-- [ ] **Recommendation:** Decouple clipboard operations (`clipboardy.writeSync`) and toast notifications into a unified `useAppFeedback` utility hook. Also, audit `src/utils/` for any legacy functions that could be consolidated into the newer hook-based architecture.
+- [x] **Context:** `src/hooks/usePrompts.ts`
+- [x] **Problem:** While already partially refactored, `usePrompts` still acts as a complex orchestrator for toasts, clipboard operations, and state transitions, making it slightly bloated.
+- [x] **Recommendation:** Decouple clipboard operations (`clipboardy.writeSync`) and toast notifications into a unified `useAppFeedback` utility hook. Also, audit `src/utils/` for any legacy functions that could be consolidated into the newer hook-based architecture.
+- [x] **Benefit:** Decoupled clipboard and toast logic into a reusable hook, improving separation of concerns.

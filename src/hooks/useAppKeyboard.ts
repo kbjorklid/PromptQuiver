@@ -1,5 +1,5 @@
 import { useInput, useApp } from 'ink';
-import { Tab } from './types';
+import type { Tab, View } from './types';
 
 interface AppKeyboardProps {
   view: 'list' | 'editor';
@@ -91,8 +91,9 @@ export const useAppKeyboard = ({
     // 2. Global Shortcuts (Tab switching, Settings, Exit)
     if (/^[1-9]$/.test(input)) {
       const tabIndex = parseInt(input) - 1;
-      if (tabIndex < orderedTabs.length) {
-        setActiveTab(orderedTabs[tabIndex]);
+      const nextTab = orderedTabs[tabIndex];
+      if (nextTab) {
+        setActiveTab(nextTab);
       }
       return;
     }

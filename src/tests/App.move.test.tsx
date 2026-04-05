@@ -13,6 +13,18 @@ vi.mock('clipboardy', () => ({
 
 const stripAnsi = (str: string) => str.replace(/\u001b\[[0-9;]*[a-zA-Z]/g, '');
 
+const defaultSettings = {
+  tabVisibility: {
+    main: true,
+    notes: true,
+    canned: true,
+    snippets: true,
+    archive: true,
+    settings: true,
+  },
+  slashCommands: [],
+};
+
 describe('App Move Mode', () => {
   const mockData: PromptStorageData = {
     main: [
@@ -24,6 +36,9 @@ describe('App Move Mode', () => {
       { id: 'n1', text: 'Note 1', type: 'note', created_at: '', updated_at: '' },
     ],
     archive: [],
+    canned: [],
+    snippets: [],
+    settings: defaultSettings,
   };
 
   const mockLoad = vi.fn().mockResolvedValue(mockData);

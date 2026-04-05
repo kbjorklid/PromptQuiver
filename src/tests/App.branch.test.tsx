@@ -25,6 +25,19 @@ describe('App Branch Tracking', () => {
       ],
       notes: [],
       archive: [],
+      canned: [],
+      snippets: [],
+      settings: {
+        tabVisibility: {
+          main: true,
+          notes: true,
+          canned: true,
+          snippets: true,
+          archive: true,
+          settings: true,
+        },
+        slashCommands: [],
+      },
     };
     mockLoadPrompts = async () => JSON.parse(JSON.stringify(mockData));
     vi.clearAllMocks();

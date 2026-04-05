@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Text, useInput } from 'ink';
-import { Tab, Settings } from '../hooks/types';
+import type { Tab, Settings } from '../hooks/types';
 import { UncontrolledSingleLineInput } from './UncontrolledSingleLineInput';
 import { SelectableRow } from './ui/SelectableRow';
 import { Indicator } from './ui/Indicator';
@@ -70,13 +70,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       setSelectedIndex(Math.min(totalItems - 1, selectedIndex + 1));
     } else if (key.return || input === ' ') {
       if (selectedIndex < ALL_TABS.length) {
-        // Toggle tab visibility
         const tab = ALL_TABS[selectedIndex];
-        const newVisibility = {
-          ...settings.tabVisibility,
-          [tab]: !settings.tabVisibility[tab],
-        };
-        onUpdateSettings({ ...settings, tabVisibility: newVisibility }, true);
+        if (tab) {
+          const newVisibility = {
+            ...settings.tabVisibility,
+            [tab as string]: !settings.tabVisibility[tab],
+          };
+          onUpdateSettings({ ...settings, tabVisibility: newVisibility as Record<Tab, boolean> }, true);
+        }
       } else {
         // Slash command action
         const slashIdx = selectedIndex - ALL_TABS.length;
@@ -86,8 +87,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           setEditingValue('/');
         } else {
           // Edit existing
-          setEditingIndex(slashIdx);
-          setEditingValue('/' + slashCommands[slashIdx]);
+          if (slashIdx < slashCommands.length) {
+            setEditingIndex(slashIdx);
+            setEditingValue('/' + slashCommands[slashIdx]);
+          }
         }
       }
     } else if (input === 'd' && selectedIndex >= ALL_TABS.length) {
@@ -210,10 +213,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   return (
     <Box flexDirection="column" paddingX={1} flexGrow={1}>
       <Box flexDirection="column" marginBottom={1}>
-        <Text bold color="cyan" borderStyle="single" paddingX={1}> Settings </Text>
+        <Box borderStyle="single" paddingX={1} borderColor="cyan">
+          <Text bold color="cyan"> Settings </Text>
+        </Box>
       </Box>
 
-      {viewportOffset > 0 && <Text dimColor align="center" key="more-up">↑ more ↑</Text>}
+      {viewportOffset > 0 && <Box justifyContent="center"><Text dimColor key="more-up">↑ more ↑</Text></Box>}
 
       <Box flexDirection="column">
         {viewportOffset <= 0 && (
@@ -225,7 +230,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
           const elements = [];
           
-          if (item.type === 'slash' && item.index === 0) {
+          if (item.type === 'slash' && (item as any).index === 0) {
             elements.push(
               <SectionTitle key="slash-commands-title">Slash Commands</SectionTitle>
             );
@@ -247,7 +252,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         })}
       </Box>
 
-      {viewportOffset + availableHeight < totalItems && <Text dimColor align="center" key="more-down">↓ more ↓</Text>}
+      {viewportOffset + availableHeight < totalItems && <Box justifyContent="center"><Text dimColor key="more-down">↓ more ↓</Text></Box>}
 
       {editingIndex !== null && !isEditingValueValid && editingValue.length > 1 && (
          <Box paddingX={1} marginTop={1}>

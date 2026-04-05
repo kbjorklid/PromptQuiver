@@ -37,6 +37,18 @@ const mockData = {
     { id: '4', text: 'Canned 1', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' },
   ],
   archive: [],
+  snippets: [],
+  settings: {
+    tabVisibility: {
+      main: true,
+      notes: true,
+      canned: true,
+      snippets: true,
+      archive: true,
+      settings: true,
+    },
+    slashCommands: [],
+  },
 };
 
 const mockLoadPrompts = async () => mockData;
@@ -102,7 +114,18 @@ describe('App Canned Tab', () => {
       snippets: [],
       canned: [
         { id: 'save-test', text: 'To be saved', type: 'prompt' as const, created_at: 'now', updated_at: 'now' }
-      ]
+      ],
+      settings: {
+        tabVisibility: {
+          main: true,
+          notes: true,
+          canned: true,
+          snippets: true,
+          archive: true,
+          settings: true,
+        },
+        slashCommands: [],
+      },
     };
 
     await savePrompts(localMockCwd, data);

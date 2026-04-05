@@ -3,6 +3,7 @@ import { render } from 'ink-testing-library';
 import { expect, test, describe, mock } from "bun:test";
 import { App } from '../App';
 import * as clipboardy from 'clipboardy';
+import type { PromptStorageData } from '../storage/paths';
 
 // Mock clipboardy
 mock.module('clipboardy', () => ({
@@ -11,6 +12,18 @@ mock.module('clipboardy', () => ({
   },
 }));
 
+const defaultSettings = {
+  tabVisibility: {
+    main: true,
+    notes: true,
+    canned: true,
+    snippets: true,
+    archive: true,
+    settings: true,
+  },
+  slashCommands: [],
+};
+
 describe('App Snippets', () => {
   const mockCwd = '/test/path';
 
@@ -18,15 +31,16 @@ describe('App Snippets', () => {
     const snippets = [
       { id: 's1', name: 'ask', text: 'Ask me questions', type: 'prompt' as const, created_at: '', updated_at: '' }
     ];
-    const loadPromptsFn = async () => ({
+    const loadPromptsFn = async (): Promise<PromptStorageData> => ({
       main: [{ id: '1', text: 'Hello', type: 'prompt' as const, created_at: '', updated_at: '' }],
       notes: [],
       archive: [],
       canned: [],
-      snippets: snippets
+      snippets: snippets,
+      settings: defaultSettings,
     });
     
-    const savePromptsFn = mock(async () => {});
+    const savePromptsFn = mock<(cwd: string, data: PromptStorageData) => Promise<void>>(async () => {});
 
     const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn} savePromptsFn={savePromptsFn} viewportSize={5} />);
     
@@ -36,8 +50,8 @@ describe('App Snippets', () => {
     // Press '4' to switch to Snippets tab
     stdin.write('4');
     await new Promise(resolve => setTimeout(resolve, 50));
-    expect(lastFrame()).toContain('Snippets');
-    expect(lastFrame()).toContain('ask');
+    expect(lastFrame() || '').toContain('Snippets');
+    expect(lastFrame() || '').toContain('ask');
 
     // Press '1' to go back to Main
     stdin.write('1');
@@ -56,31 +70,33 @@ describe('App Snippets', () => {
     await new Promise(resolve => setTimeout(resolve, 50));
 
     // Menu should show "ask"
-    expect(lastFrame()).toContain('ask');
+    expect(lastFrame() || '').toContain('ask');
 
     // Press Enter to expand
     stdin.write('\r');
     await new Promise(resolve => setTimeout(resolve, 50));
 
     // Check if expanded
-    expect(lastFrame()).toContain('Hello Ask me questions');
+    expect(lastFrame() || '').toContain('Hello Ask me questions');
 
     // Save
     stdin.write('\u0013'); // Ctrl+s
     await new Promise(resolve => setTimeout(resolve, 50));
 
     expect(savePromptsFn).toHaveBeenCalled();
-    const lastCall = savePromptsFn.mock.calls[savePromptsFn.mock.calls.length - 1];
-    expect(lastCall![1].main[0].text).toBe('Hello Ask me questions ');
+    const calls = savePromptsFn.mock.calls;
+    const lastCall = calls[calls.length - 1] as [string, PromptStorageData];
+    expect(lastCall[1].main[0]?.text).toBe('Hello Ask me questions ');
   });
 
   test('Snippet name validation', async () => {
-    const loadPromptsFn = async () => ({
+    const loadPromptsFn = async (): Promise<PromptStorageData> => ({
       main: [],
       notes: [],
       archive: [],
       canned: [],
-      snippets: []
+      snippets: [],
+      settings: defaultSettings,
     });
     
     const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn} viewportSize={5} />);
@@ -100,7 +116,7 @@ describe('App Snippets', () => {
     stdin.write('inv!');
     await new Promise(resolve => setTimeout(resolve, 50));
 
-    expect(lastFrame()).toContain('Invalid name!');
+    expect(lastFrame() || '').toContain('Invalid name!');
 
     // Type valid name (backspace "inv!" first)
     // In ink-testing-library, backspace is sometimes '\x7f' or we can use the 'backspace' property in a key object if we used useInput directly, 
@@ -128,19 +144,20 @@ describe('App Snippets', () => {
     await new Promise(resolve => setTimeout(resolve, 100));
 
     // Should be back in list and show the name
-    expect(lastFrame()).toContain('valid-name_123');
+    expect(lastFrame() || '').toContain('valid-name_123');
   });
 
   test('Copying expands snippets', async () => {
     const snippets = [
       { id: 's1', name: 'ask', text: 'Ask me questions', type: 'prompt' as const, created_at: '', updated_at: '' }
     ];
-    const loadPromptsFn = async () => ({
+    const loadPromptsFn = async (): Promise<PromptStorageData> => ({
       main: [{ id: '1', text: 'Prompt with $$ask and $$missing', type: 'prompt' as const, created_at: '', updated_at: '' }],
       notes: [],
       archive: [],
       canned: [],
-      snippets: snippets
+      snippets: snippets,
+      settings: defaultSettings,
     });
     
     const { stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn} viewportSize={5} />);
@@ -160,15 +177,16 @@ describe('App Snippets', () => {
     const snippets = [
       { id: 's1', name: 'ask', text: 'Ask me questions', type: 'prompt' as const, created_at: '', updated_at: '' }
     ];
-    const loadPromptsFn = async () => ({
+    const loadPromptsFn = async (): Promise<PromptStorageData> => ({
       main: [{ id: '1', text: 'Start', type: 'prompt' as const, created_at: '', updated_at: '' }],
       notes: [],
       archive: [],
       canned: [],
-      snippets: snippets
+      snippets: snippets,
+      settings: defaultSettings,
     });
     
-    const savePromptsFn = mock(async () => {});
+    const savePromptsFn = mock<(cwd: string, data: PromptStorageData) => Promise<void>>(async () => {});
 
     const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn} savePromptsFn={savePromptsFn} viewportSize={5} />);
     
@@ -188,14 +206,14 @@ describe('App Snippets', () => {
     await new Promise(resolve => setTimeout(resolve, 50));
 
     // Menu should show "ask"
-    expect(lastFrame()).toContain('ask');
+    expect(lastFrame() || '').toContain('ask');
 
     // Press Enter to select
     stdin.write('\r');
     await new Promise(resolve => setTimeout(resolve, 50));
 
     // Check if inserted variable
-    expect(lastFrame()).toContain('Start $$ask ');
+    expect(lastFrame() || '').toContain('Start $$ask ');
   });
 
   test('Snippets are NOT expanded when copied from the snippets tab', async () => {
@@ -203,12 +221,13 @@ describe('App Snippets', () => {
       { id: 's1', name: 'inner', text: 'Inner Content', type: 'prompt' as const, created_at: '', updated_at: '' },
       { id: 's2', name: 'outer', text: 'Outer with $$inner', type: 'prompt' as const, created_at: '', updated_at: '' }
     ];
-    const loadPromptsFn = async () => ({
+    const loadPromptsFn = async (): Promise<PromptStorageData> => ({
       main: [],
       notes: [],
       archive: [],
       canned: [],
-      snippets: snippets
+      snippets: snippets,
+      settings: defaultSettings,
     });
     
     (clipboardy as any).default.writeSync.mockClear();
@@ -238,12 +257,13 @@ describe('App Snippets', () => {
       { id: 's1', name: 'other', text: 'Other Snippet', type: 'prompt' as const, created_at: '', updated_at: '' },
       { id: 's2', name: 'current', text: 'Current', type: 'prompt' as const, created_at: '', updated_at: '' }
     ];
-    const loadPromptsFn = async () => ({
+    const loadPromptsFn = async (): Promise<PromptStorageData> => ({
       main: [],
       notes: [],
       archive: [],
       canned: [],
-      snippets: snippets
+      snippets: snippets,
+      settings: defaultSettings,
     });
     
     const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn} viewportSize={5} />);
@@ -263,7 +283,7 @@ describe('App Snippets', () => {
     await new Promise(resolve => setTimeout(resolve, 100));
 
     // Verify help text doesn't contain snippet hints
-    const frame = lastFrame();
+    const frame = lastFrame() || '';
     const plainFrame = frame.replace(/\u001b\[[0-9;]*m/g, '');
     expect(plainFrame).toContain('@ File');
     expect(plainFrame).not.toContain('$ Snippet (expand)');
@@ -278,13 +298,13 @@ describe('App Snippets', () => {
     await new Promise(resolve => setTimeout(resolve, 50));
 
     // Menu should NOT show "other"
-    expect(lastFrame()).not.toContain('other');
+    expect(lastFrame() || '').not.toContain('other');
     
     // Type " $" again for "$$"
     stdin.write('$');
     await new Promise(resolve => setTimeout(resolve, 50));
 
     // Menu should NOT show "other"
-    expect(lastFrame()).not.toContain('other');
+    expect(lastFrame() || '').not.toContain('other');
   });
 });

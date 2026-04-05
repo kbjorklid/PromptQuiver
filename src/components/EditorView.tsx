@@ -1,9 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { Box, Text, useInput } from 'ink';
+import type { Prompt } from '../storage';
 import { UncontrolledMultilineInput } from './UncontrolledMultilineInput';
 import { UncontrolledSingleLineInput } from './UncontrolledSingleLineInput';
 import type { UncontrolledMultilineInputRef } from './UncontrolledMultilineInput';
 import { useMentionAutocomplete } from '../hooks/useMentionAutocomplete';
+import type { MentionType } from '../hooks/useMentionAutocomplete';
 import { ConfirmDialog } from './ConfirmDialog';
 
 export interface EditorViewProps {

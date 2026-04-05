@@ -5,10 +5,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { useBranchFilter } from './useBranchFilter';
 import { usePromptUI } from './usePromptUI';
 import { usePromptData } from './usePromptData';
-import { Tab, View } from './types';
+import { useAppFeedback } from './useAppFeedback';
+import type { Tab, View, Toast } from './types';
 
-export type { Tab, View };
-export interface Toast { message: string }
+export type { Tab, View, Toast };
 
 export interface UsePromptsProps {
   cwd: string;
@@ -46,12 +46,13 @@ export function usePrompts({
     onSaveError,
   });
 
+  const { toast, showToast, copyToClipboard } = useAppFeedback();
+
   const {
     activeTab, setActiveTab, currentList, selectedIndex, updateSelectedIndex,
     view, setView, editingPrompt, setEditingPrompt, addingPosition, setAddingPosition,
     isSearching, setIsSearching, searchQuery, setSearchQuery,
     isMoving, setIsMoving, lastCopiedId, setLastCopiedId,
-    toast, showToast
   } = usePromptUI(data, branchFilterEnabled, currentBranch);
 
   const moveItemInList = useCallback((fromIndex: number, toIndex: number) => {
@@ -109,9 +110,10 @@ export function usePrompts({
 
   const saveEditedPrompt = useCallback((text: string, name?: string, shouldStage?: boolean) => {
     if (!editingPrompt) return;
+    if (activeTab === 'settings') return; // Should not happen
     
     const listName = activeTab;
-    const list = data[listName];
+    const list = data[listName] as Prompt[];
     let finalIndex = -1;
     
     if (addingPosition) {
@@ -207,6 +209,7 @@ export function usePrompts({
     setLastCopiedId,
     toast,
     showToast,
+    copyToClipboard,
     undo,
     redo,
     moveItemInList,

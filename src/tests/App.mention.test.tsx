@@ -16,7 +16,20 @@ test("App Mention > shows mention menu and inserts file", async () => {
   const loadPromptsFn = async () => ({
     main: [{ id: "1", text: "Hello", type: "prompt" as const, created_at: "", updated_at: "" }],
     notes: [],
-    archive: []
+    archive: [],
+    canned: [],
+    snippets: [],
+    settings: {
+      tabVisibility: {
+        main: true,
+        notes: true,
+        canned: true,
+        snippets: true,
+        archive: true,
+        settings: true,
+      },
+      slashCommands: [],
+    },
   });
   
   const savePromptsFn = mock(async () => {});

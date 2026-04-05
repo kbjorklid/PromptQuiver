@@ -8,7 +8,6 @@ import { SearchInput } from './components/SearchInput';
 import { PromptList } from './components/PromptList';
 import { SettingsView } from './components/SettingsView';
 import { loadPrompts, savePrompts } from './storage';
-import clipboardy from 'clipboardy';
 import { usePrompts } from './hooks/usePrompts';
 import type { Tab, Settings } from './hooks/types';
 import { expandSnippets } from './utils/snippetExpansion';
@@ -90,6 +89,7 @@ export const App = ({
     branchFilterEnabled,
     toggleBranchFilter,
     currentBranch,
+    copyToClipboard,
   } = usePrompts({ cwd, loadPromptsFn, savePromptsFn, debounceMs });
 
   const allTabs: Tab[] = ['main', 'notes', 'canned', 'snippets', 'archive', 'settings'];
@@ -124,13 +124,10 @@ export const App = ({
     if (activeTab === 'notes') return;
     const prompt = currentList[selectedIndex];
     if (prompt) {
-      try {
-        const expandedText = activeTab === 'snippets' ? prompt.text : expandSnippets(prompt.text, data.snippets);
-        clipboardy.writeSync(expandedText);
+      // In handleCopy, if we are on 'snippets' tab, we don't expand snippets
+      const expandedText = activeTab === 'snippets' ? prompt.text : expandSnippets(prompt.text, data.snippets);
+      if (copyToClipboard(expandedText, 'Copied to clipboard')) {
         setLastCopiedId(prompt.id);
-        showToast('Copied to clipboard');
-      } catch (e) {
-        showToast('Failed to copy to clipboard');
       }
     }
   };
@@ -141,13 +138,9 @@ export const App = ({
     if (prompt) {
       if (activeTab === 'canned') {
         stagePrompt(); // Clears others via reducer
-        try {
-          const expandedText = expandSnippets(prompt.text, data.snippets);
-          clipboardy.writeSync(expandedText);
+        const expandedText = expandSnippets(prompt.text, data.snippets);
+        if (copyToClipboard(expandedText, 'Copied to clipboard (other staged items archived)')) {
           setLastCopiedId(prompt.id); // Show 📋
-          showToast('Copied to clipboard (other staged items archived)');
-        } catch (e) {
-          showToast('Clipboard error');
         }
         return;
       }
@@ -155,12 +148,11 @@ export const App = ({
       const wasStaged = prompt.staged;
       stagePrompt();
       if (!wasStaged) {
-        try {
-          const expandedText = activeTab === 'snippets' ? prompt.text : expandSnippets(prompt.text, data.snippets);
-          clipboardy.writeSync(expandedText);
+        // Here activeTab is NOT 'snippets' because of the early return above
+        const expandedText = expandSnippets(prompt.text, data.snippets);
+        if (copyToClipboard(expandedText, 'Staged and copied to clipboard')) {
           setLastCopiedId(null);
-          showToast('Staged and copied to clipboard');
-        } catch (e) {
+        } else {
           showToast('Staged (clipboard error)');
         }
       } else {
@@ -271,12 +263,9 @@ export const App = ({
         onSave={(text, name, shouldStage) => {
           saveEditedPrompt(text, name, shouldStage);
           if (shouldStage) {
-            try {
-              const expandedText = activeTab === 'snippets' ? text : expandSnippets(text, data.snippets);
-              clipboardy.writeSync(expandedText);
+            const expandedText = activeTab === 'snippets' ? text : expandSnippets(text, data.snippets);
+            if (copyToClipboard(expandedText)) {
               setLastCopiedId(null);
-            } catch (e) {
-              showToast(shouldStage ? 'Saved and Staged (clipboard error)' : 'Saved (clipboard error)');
             }
           }
         }}

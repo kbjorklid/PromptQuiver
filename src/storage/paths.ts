@@ -2,7 +2,7 @@ import path from 'path';
 import os from 'os';
 import crypto from 'crypto';
 
-import { Settings } from '../hooks/types';
+import type { Settings } from '../hooks/types';
 
 export interface Prompt {
   id: string;

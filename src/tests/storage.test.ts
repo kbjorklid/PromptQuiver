@@ -50,6 +50,7 @@ describe("Storage", () => {
       ],
       notes: [],
       archive: [],
+      snippets: [],
       canned: [
         {
           id: "4",
@@ -58,7 +59,18 @@ describe("Storage", () => {
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         }
-      ]
+      ],
+      settings: {
+        tabVisibility: {
+          main: true,
+          notes: true,
+          canned: true,
+          snippets: true,
+          archive: true,
+          settings: true,
+        },
+        slashCommands: [],
+      },
     };
 
     await savePrompts(mockCwd, data);
@@ -86,7 +98,19 @@ describe("Storage", () => {
       main: [],
       notes: [],
       archive: [],
-      canned: [{ id: "5", text: "Canned 2", type: "prompt" as const, created_at: "now", updated_at: "now" }]
+      snippets: [],
+      canned: [{ id: "5", text: "Canned 2", type: "prompt" as const, created_at: "now", updated_at: "now" }],
+      settings: {
+        tabVisibility: {
+          main: true,
+          notes: true,
+          canned: true,
+          snippets: true,
+          archive: true,
+          settings: true,
+        },
+        slashCommands: [],
+      },
     };
 
     await savePrompts(mockCwd, data);
@@ -104,7 +128,19 @@ describe("Storage", () => {
       main: [{ id: "2", text: "Hello", type: "prompt" as const, created_at: "now", updated_at: "now" }],
       notes: [{ id: "3", text: "Note", type: "note" as const, created_at: "now", updated_at: "now" }],
       archive: [],
-      canned: [{ id: "6", text: "Canned 3", type: "prompt" as const, created_at: "now", updated_at: "now" }]
+      snippets: [],
+      canned: [{ id: "6", text: "Canned 3", type: "prompt" as const, created_at: "now", updated_at: "now" }],
+      settings: {
+        tabVisibility: {
+          main: true,
+          notes: true,
+          canned: true,
+          snippets: true,
+          archive: true,
+          settings: true,
+        },
+        slashCommands: [],
+      },
     };
 
     await savePrompts(mockCwd, data);

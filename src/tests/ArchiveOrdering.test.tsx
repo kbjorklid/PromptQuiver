@@ -18,7 +18,18 @@ describe('Archive ordering', () => {
         { id: '3', text: 'Old Archive', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' },
       ],
       canned: [],
-      snippets: []
+      snippets: [],
+      settings: {
+        tabVisibility: {
+          main: true,
+          notes: true,
+          canned: true,
+          snippets: true,
+          archive: true,
+          settings: true,
+        },
+        slashCommands: [],
+      },
     };
 
     const loadPromptsFn = async () => initialData;
@@ -57,7 +68,18 @@ describe('Archive ordering', () => {
         { id: '2', text: 'Archived 2', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' },
       ],
       canned: [],
-      snippets: []
+      snippets: [],
+      settings: {
+        tabVisibility: {
+          main: true,
+          notes: true,
+          canned: true,
+          snippets: true,
+          archive: true,
+          settings: true,
+        },
+        slashCommands: [],
+      },
     };
 
     const loadPromptsFn = async () => initialData;

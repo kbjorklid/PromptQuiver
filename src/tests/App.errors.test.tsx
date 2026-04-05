@@ -2,7 +2,8 @@ import React from 'react';
 import { render } from 'ink-testing-library';
 import { App } from '../App';
 import { expect, test, describe, vi } from 'bun:test';
-import clipboardy from 'clipboardy';
+import type { PromptStorageData } from '../storage/paths';
+import type { Settings } from '../hooks/types';
 
 // Define a variable to control the mock behavior
 let shouldThrow = false;
@@ -18,12 +19,27 @@ vi.mock('clipboardy', () => ({
   },
 }));
 
+const defaultSettings: Settings = {
+  tabVisibility: {
+    main: true,
+    notes: true,
+    canned: true,
+    snippets: true,
+    archive: true,
+    settings: true,
+  },
+  slashCommands: [],
+};
+
 describe('App Error Paths', () => {
   test('shows toast when clipboard.writeSync fails during Yank (y)', async () => {
-    const mockData = {
+    const mockData: PromptStorageData = {
       main: [{ id: '1', text: 'Prompt 1', type: 'prompt', created_at: '', updated_at: '' }],
       notes: [],
-      archive: []
+      archive: [],
+      canned: [],
+      snippets: [],
+      settings: defaultSettings,
     };
     const loadPromptsFn = vi.fn().mockResolvedValue(mockData);
     
@@ -45,10 +61,13 @@ describe('App Error Paths', () => {
   });
 
   test('shows toast when clipboard.writeSync fails during Stage (s)', async () => {
-    const mockData = {
+    const mockData: PromptStorageData = {
       main: [{ id: '1', text: 'Prompt 1', type: 'prompt', created_at: '', updated_at: '' }],
       notes: [],
-      archive: []
+      archive: [],
+      canned: [],
+      snippets: [],
+      settings: defaultSettings,
     };
     const loadPromptsFn = vi.fn().mockResolvedValue(mockData);
     

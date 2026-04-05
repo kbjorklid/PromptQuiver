@@ -2,10 +2,8 @@ import { useState, useEffect, useCallback, useReducer } from 'react';
 import type { Prompt, PromptStorageData } from '../storage';
 import { loadPrompts as defaultLoadPrompts, savePrompts as defaultSavePrompts } from '../storage';
 import { useAutoSave } from './useAutoSave';
-import { Tab } from './types';
+import type { Tab, Settings } from './types';
 import { promptReducer, INITIAL_PROMPT_STATE } from './usePromptReducer';
-
-import { Settings } from './types';
 
 export interface UsePromptDataProps {
   cwd: string;
@@ -80,10 +78,11 @@ export function usePromptData({
   const updatePromptInList = useCallback((tab: Tab, index: number, prompt: Prompt, immediateSave = false) => {
     dispatch({ type: 'UPDATE_PROMPT', tab, index, prompt });
     if (immediateSave) {
+      if (tab === 'settings') return;
       // We need to pass the updated data to triggerSave immediately.
       // Since dispatch is asynchronous in terms of when 'data' (state.present) updates,
       // we calculate the next data here if we want an immediate save.
-      const list = [...data[tab]];
+      const list = [...(data[tab] as Prompt[])];
       list[index] = prompt;
       const nextData = { ...data, [tab]: list };
       triggerSave(true, nextData);
@@ -93,7 +92,8 @@ export function usePromptData({
   const insertPromptInList = useCallback((tab: Tab, index: number, prompt: Prompt, immediateSave = false) => {
     dispatch({ type: 'INSERT_PROMPT', tab, index, prompt });
     if (immediateSave) {
-      const list = [...data[tab]];
+      if (tab === 'settings') return;
+      const list = [...(data[tab] as Prompt[])];
       list.splice(index, 0, prompt);
       const nextData = { ...data, [tab]: list };
       triggerSave(true, nextData);

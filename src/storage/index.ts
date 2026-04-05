@@ -4,8 +4,8 @@ import yaml from 'js-yaml';
 export * from './paths';
 import { STORAGE_DIR, getStoragePath, getCommonStoragePath } from './paths';
 import type { Prompt, PromptStorageData } from './paths';
+import type { Tab, Settings } from '../hooks/types';
 
-import { Tab, Settings } from '../hooks/types';
 
 const DEFAULT_SETTINGS: Settings = {
   tabVisibility: {

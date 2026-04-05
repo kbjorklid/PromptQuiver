@@ -82,7 +82,7 @@ export const Footer: React.FC<FooterProps> = ({
         ) : (
           hasItems && <Box><Text bold>[d]</Text><Text color="gray"> Archive</Text></Box>
         )}
-        {activeTab !== 'archive' && activeTab !== 'settings' && activeTab !== 'notes' && activeTab !== 'snippets' && hasItems && (
+        {activeTab !== 'archive' && activeTab !== 'notes' && activeTab !== 'snippets' && hasItems && (
           <Box><Text bold>[s]</Text><Text color="gray"> Stage</Text></Box>
         )}
         <Box><Text bold>[S]</Text><Text color="gray"> Settings</Text></Box>

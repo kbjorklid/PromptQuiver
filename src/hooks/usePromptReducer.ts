@@ -1,5 +1,5 @@
 import type { Prompt, PromptStorageData } from '../storage';
-import { Tab, Settings } from './types';
+import type { Tab, Settings } from './types';
 
 export type PromptAction =
   | { type: 'SET_DATA'; payload: PromptStorageData }
@@ -59,31 +59,33 @@ export function promptReducer(state: PromptState, action: PromptAction): PromptS
         future: [],
       };
 
-    case 'UNDO':
+    case 'UNDO': {
       if (state.past.length === 0) return state;
-      const previous = state.past[state.past.length - 1];
+      const previous = state.past[state.past.length - 1]!;
       const newPast = state.past.slice(0, state.past.length - 1);
       return {
         past: newPast,
         present: previous,
         future: [state.present, ...state.future],
       };
+    }
 
-    case 'REDO':
+    case 'REDO': {
       if (state.future.length === 0) return state;
-      const next = state.future[0];
+      const next = state.future[0]!;
       const newFuture = state.future.slice(1);
       return {
         past: [...state.past, state.present],
         present: next,
         future: newFuture,
       };
+    }
 
     case 'MOVE_ITEM_IN_LIST': {
       const { tab, fromIndex, toIndex } = action;
-      if (tab === 'archive') return state;
+      if (tab === 'archive' || tab === 'settings') return state;
       if (fromIndex === toIndex) return state;
-      const list = [...state.present[tab]];
+      const list = [...(state.present[tab] as Prompt[])];
       const movedItem = list.splice(fromIndex, 1)[0];
       if (!movedItem) return state;
       list.splice(toIndex, 0, movedItem);
@@ -97,15 +99,16 @@ export function promptReducer(state: PromptState, action: PromptAction): PromptS
 
     case 'MOVE_PROMPT': {
       const { from, to, index, targetTab } = action;
-      const fromList = [...state.present[from]];
-      const toList = [...state.present[to]];
+      if (from === 'settings' || to === 'settings') return state;
+      const fromList = [...(state.present[from] as Prompt[])];
+      const toList = [...(state.present[to] as Prompt[])];
       const [prompt] = fromList.splice(index, 1);
 
       if (!prompt) return state;
 
       let nextPresent: PromptStorageData;
-      if (from === 'archive' && targetTab) {
-        const actualTargetList = [...state.present[targetTab]];
+      if (from === 'archive' && targetTab && targetTab !== 'settings') {
+        const actualTargetList = [...(state.present[targetTab] as Prompt[])];
         actualTargetList.push(prompt);
         nextPresent = {
           ...state.present,
@@ -134,7 +137,8 @@ export function promptReducer(state: PromptState, action: PromptAction): PromptS
 
     case 'DELETE_PROMPT': {
       const { tab, index } = action;
-      const list = [...state.present[tab]];
+      if (tab === 'settings') return state;
+      const list = [...(state.present[tab] as Prompt[])];
       list.splice(index, 1);
 
       return {
@@ -146,7 +150,8 @@ export function promptReducer(state: PromptState, action: PromptAction): PromptS
 
     case 'UPDATE_PROMPT': {
       const { tab, index, prompt } = action;
-      const list = [...state.present[tab]];
+      if (tab === 'settings') return state;
+      const list = [...(state.present[tab] as Prompt[])];
       list[index] = prompt;
 
       return {
@@ -158,7 +163,8 @@ export function promptReducer(state: PromptState, action: PromptAction): PromptS
 
     case 'INSERT_PROMPT': {
       const { tab, index, prompt } = action;
-      const list = [...state.present[tab]];
+      if (tab === 'settings') return state;
+      const list = [...(state.present[tab] as Prompt[])];
       list.splice(index, 0, prompt);
 
       return {
@@ -196,9 +202,9 @@ export function promptReducer(state: PromptState, action: PromptAction): PromptS
         // Move other staged prompts to archive
         const moveFromTabs: Tab[] = ['main', 'notes', 'canned', 'snippets'];
         moveFromTabs.forEach(t => {
-          const list = nextPresent[t];
+          const list = nextPresent[t] as Prompt[];
           for (let i = list.length - 1; i >= 0; i--) {
-            const p = list[i];
+            const p = list[i]!;
             if (p.staged && p.id !== targetPrompt.id) {
               list.splice(i, 1);
               nextPresent.archive.unshift({ ...p, staged: false });
@@ -212,16 +218,18 @@ export function promptReducer(state: PromptState, action: PromptAction): PromptS
 
         // Stage the target (unless it's canned)
         if (!isCanned) {
-          const targetIdx = nextPresent[tab].findIndex(p => p.id === targetPrompt.id);
+          const list = nextPresent[tab] as Prompt[];
+          const targetIdx = list.findIndex(p => p.id === targetPrompt.id);
           if (targetIdx !== -1) {
-            nextPresent[tab][targetIdx] = { ...nextPresent[tab][targetIdx], staged: true };
+            list[targetIdx] = { ...list[targetIdx]!, staged: true };
           }
         }
       } else {
         // Just un-stage
-        const targetIdx = nextPresent[tab].findIndex(p => p.id === targetPrompt.id);
+        const list = nextPresent[tab] as Prompt[];
+        const targetIdx = list.findIndex(p => p.id === targetPrompt.id);
         if (targetIdx !== -1) {
-          nextPresent[tab][targetIdx] = { ...nextPresent[tab][targetIdx], staged: false };
+          list[targetIdx] = { ...list[targetIdx]!, staged: false };
         }
       }
 

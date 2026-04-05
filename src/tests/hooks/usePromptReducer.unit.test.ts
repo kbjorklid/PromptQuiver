@@ -10,12 +10,25 @@ const createPrompt = (id: string, text: string, type: 'prompt' | 'note' = 'promp
   updated_at: 'now',
 });
 
+const defaultSettings = {
+  tabVisibility: {
+    main: true,
+    notes: true,
+    canned: true,
+    snippets: true,
+    archive: true,
+    settings: true,
+  },
+  slashCommands: [],
+};
+
 const mockData: PromptStorageData = {
   main: [createPrompt('1', 'P1'), createPrompt('2', 'P2')],
   notes: [createPrompt('3', 'N1', 'note')],
   archive: [],
   canned: [],
   snippets: [],
+  settings: defaultSettings,
 };
 
 describe('promptReducer', () => {
@@ -37,7 +50,7 @@ describe('promptReducer', () => {
     const newState = promptReducer(state, { type: 'PUSH_STATE', payload: nextData });
     expect(newState.present).toEqual(nextData);
     expect(newState.past).toHaveLength(1);
-    expect(newState.past[0]).toEqual(state.present);
+    expect(newState.past[0]!).toEqual(state.present);
     expect(newState.future).toHaveLength(0);
   });
 
@@ -50,7 +63,7 @@ describe('promptReducer', () => {
     expect(state.present).toEqual(INITIAL_PROMPT_STATE.present);
     expect(state.past).toHaveLength(0);
     expect(state.future).toHaveLength(1);
-    expect(state.future[0]).toEqual(mockData);
+    expect(state.future[0]!).toEqual(mockData);
     
     // Redo
     state = promptReducer(state, { type: 'REDO' });
@@ -67,8 +80,8 @@ describe('promptReducer', () => {
       fromIndex: 0, 
       toIndex: 1 
     });
-    expect(newState.present.main[0].id).toBe('2');
-    expect(newState.present.main[1].id).toBe('1');
+    expect(newState.present.main[0]!.id).toBe('2');
+    expect(newState.present.main[1]!.id).toBe('1');
     expect(newState.past).toHaveLength(1);
   });
 
@@ -82,7 +95,7 @@ describe('promptReducer', () => {
     });
     expect(newState.present.main).toHaveLength(1);
     expect(newState.present.notes).toHaveLength(2);
-    expect(newState.present.notes[1].id).toBe('1');
+    expect(newState.present.notes[1]!.id).toBe('1');
   });
 
   test('MOVE_PROMPT from archive with targetTab', () => {
@@ -100,7 +113,7 @@ describe('promptReducer', () => {
     });
     expect(newState.present.archive).toHaveLength(0);
     expect(newState.present.main).toHaveLength(3);
-    expect(newState.present.main[2].id).toBe('4');
+    expect(newState.present.main[2]!.id).toBe('4');
   });
 
   test('DELETE_PROMPT', () => {
@@ -111,19 +124,19 @@ describe('promptReducer', () => {
       index: 0 
     });
     expect(newState.present.main).toHaveLength(1);
-    expect(newState.present.main[0].id).toBe('2');
+    expect(newState.present.main[0]!.id).toBe('2');
   });
 
   test('UPDATE_PROMPT', () => {
     const state = { ...INITIAL_PROMPT_STATE, present: mockData };
-    const updatedPrompt = { ...mockData.main[0], text: 'Updated' };
+    const updatedPrompt = { ...mockData.main[0]!, text: 'Updated' };
     const newState = promptReducer(state, { 
       type: 'UPDATE_PROMPT', 
       tab: 'main', 
       index: 0, 
       prompt: updatedPrompt 
     });
-    expect(newState.present.main[0].text).toBe('Updated');
+    expect(newState.present.main[0]!.text).toBe('Updated');
   });
 
   test('INSERT_PROMPT', () => {
@@ -136,7 +149,7 @@ describe('promptReducer', () => {
       prompt: newPrompt 
     });
     expect(newState.present.main).toHaveLength(3);
-    expect(newState.present.main[1].id).toBe('5');
+    expect(newState.present.main[1]!.id).toBe('5');
   });
 
   test('MOVE_ITEM_IN_LIST to same index does nothing', () => {

@@ -33,7 +33,9 @@ export function ConfirmDialog<T>({
     } else if (key.rightArrow) {
       setSelectedIndex(prev => Math.min(options.length - 1, prev + 1));
     } else if (key.return) {
-      onSelect(options[selectedIndex].value);
+      if (options[selectedIndex]) {
+        onSelect(options[selectedIndex].value);
+      }
     } else if (key.escape && onCancel) {
       onCancel();
     }

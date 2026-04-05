@@ -5,3 +5,7 @@ export interface Settings {
   tabVisibility: Record<Tab, boolean>;
   slashCommands?: string[];
 }
+
+export interface Toast {
+  message: string;
+}
