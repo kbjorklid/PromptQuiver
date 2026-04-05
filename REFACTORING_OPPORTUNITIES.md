@@ -1,55 +1,36 @@
 # Top 3 Refactoring Opportunities for Prompt Quiver
 
-This document outlines the highest-impact refactoring opportunities identified in the `Prompt Quiver` codebase to improve maintainability, testability, and architectural clarity.
+This document outlines the highest-impact refactoring opportunities identified in the `Prompt Quiver` codebase to improve maintainability, architectural clarity, and visual consistency.
 
-## 1. Decompose the `usePrompts` "God Hook"
+## 1. Centralize and Declarative Input Handling
 
-### Context
-`src/hooks/usePrompts.ts` (11.3 KB)
-
-### Problem
-The `usePrompts` hook has become a "God Hook," violating the Single Responsibility Principle. It currently manages:
-- **Core Data:** Loading and saving prompts.
-- **Undo/Redo History:** Managing the history and future stacks.
-- **UI State:** Active tab, selected indices, searching/moving modes, and toast messages.
-- **Operations Logic:** Complex logic for adding, moving, deleting, and editing prompts.
-- **Git Integration:** Branch filtering logic.
-
-### Recommendation
-Split `usePrompts` into smaller, specialized hooks:
-- `usePromptData`: Handles CRUD operations and persistence.
-- `useUndoRedo`: A generic hook for managing history/future state.
-- `usePromptUI`: Manages tab selection, list indices, and search/mode state.
-- `useBranchFilter`: Specifically handles Git branch detection and filtering.
+- [x] **Context:** `src/App.tsx`
+- [x] **Problem:** `App.tsx` contains a massive `useInput` hook (lines 160-258) with hardcoded logic for navigation, tab switching, and commands. This makes the main component bloated, shortcuts difficult to maintain/test, and it violates the Single Responsibility Principle.
+- [x] **Recommendation:** Extract keyboard handling into a custom hook (e.g., `useAppKeyboard`) or a command-registry pattern. Shortcuts should be defined declaratively (e.g., as a configuration object mapping keys to actions) and kept separate from the UI layout logic.
+- [x] **Benefit:** Significantly reduces `App.tsx` complexity, makes adding/modifying shortcuts trivial, and allows for clean isolation of navigation logic.
 
 ---
 
-## 2. Reducer-based State Management for Core Logic
+## 2. Reusable Modal/Dialog System
 
-### Context
-`src/hooks/usePrompts.ts`
-
-### Problem
-The application uses multiple `useState` calls to manage related pieces of state. The `pushState` function manually manages the `history` and `future` stacks alongside the current `data`. This approach is error-prone, makes atomic updates difficult, and complicates testing of complex state transitions (like undo/redo or moving items between lists).
-
-### Recommendation
-Implement a `useReducer` to manage the core application state (prompts and history).
-- Define a clear set of actions (e.g., `ADD_PROMPT`, `MOVE_PROMPT`, `UNDO`, `REDO`).
-- Centralize the logic for history management within the reducer.
-- **Benefit:** This makes the core logic pure, highly testable in isolation, and ensures that state transitions are predictable and atomic.
+- [x] **Context:** `src/components/EditorView.tsx`
+- [x] **Problem:** `EditorView` has its own implementation of a confirmation dialog (lines 40-75, 230-265) for saving and cancelling. This pattern is needed for other parts of the app (e.g., deleting a prompt, clearing archive) but currently requires duplicating both UI and logic.
+- [x] **Recommendation:** Create a reusable `Modal` or `ConfirmDialog` component and a `useModal` hook. This should centralize the "popup" logic (positioning, input capture, and rendering) and provide a consistent interface for any confirmation interaction.
+- [x] **Benefit:** Promotes code reuse (DRY), ensures UI consistency across all confirmation popups, and simplifies adding new "safety checks" throughout the application.
 
 ---
 
-## 3. Extract Autocomplete Logic from `EditorView`
+## 3. TUI Design System (Componentize UI Elements)
 
-### Context
-`src/components/EditorView.tsx` (12.4 KB)
+- [ ] **Context:** `src/components/Header.tsx`, `src/components/Footer.tsx`, `src/components/PromptList.tsx`, `src/components/SettingsView.tsx`
+- [ ] **Problem:** UI elements like Tabs, Buttons, Cards, and Status Bars are rendered using raw `Box` and `Text` components with repeated styling (colors, borders, padding). This makes it difficult to maintain a consistent visual "look and feel."
+- [ ] **Recommendation:** Create a library of base TUI components (e.g., `TabItem`, `IconButton`, `StatusBar`, `SelectableRow`) that encapsulate styling and common Ink-specific behaviors.
+- [ ] **Benefit:** Ensures visual consistency, drastically reduces styling boilerplate, and makes it easier to implement global "themes" or adjust the UI layout in the future.
 
-### Problem
-`EditorView.tsx` is the largest component in the project. It is currently bloated because it contains all the logic for the "Mention/Autocomplete" system (detecting `@`, `$`, and `$$` prefixes, performing fuzzy searches for files and snippets, and managing the selection in the autocomplete popup).
+---
 
-### Recommendation
-Extract this logic into a custom hook called `useMentionAutocomplete`.
-- The hook should take the current text and cursor position as input.
-- It should return the search results, the current selection index, and a function to apply the selected result to the text.
-- **Benefit:** This significantly reduces the complexity of `EditorView.tsx`, makes the autocomplete logic reusable for other input fields, and allows for thorough unit testing of the mention detection and search logic.
+## 4. Minor Cleanup (Dead Code & Efficiency)
+
+- [ ] **Context:** `src/hooks/usePrompts.ts`
+- [ ] **Problem:** While already partially refactored, `usePrompts` still acts as a complex orchestrator for toasts, clipboard operations, and state transitions, making it slightly bloated.
+- [ ] **Recommendation:** Decouple clipboard operations (`clipboardy.writeSync`) and toast notifications into a unified `useAppFeedback` utility hook. Also, audit `src/utils/` for any legacy functions that could be consolidated into the newer hook-based architecture.

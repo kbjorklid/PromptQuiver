@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Text, useInput, useApp } from 'ink';
+import { Box, Text, useApp } from 'ink';
 import Spinner from 'ink-spinner';
 import { EditorView } from './components/EditorView';
 import { Header } from './components/Header';
@@ -12,6 +12,9 @@ import clipboardy from 'clipboardy';
 import { usePrompts } from './hooks/usePrompts';
 import type { Tab, Settings } from './hooks/types';
 import { expandSnippets } from './utils/snippetExpansion';
+import { useAppKeyboard } from './hooks/useAppKeyboard';
+import { useModal } from './hooks/useModal';
+import { ConfirmDialog } from './components/ConfirmDialog';
 
 const useTerminalSize = () => {
   const [size, setSize] = useState({
@@ -50,6 +53,7 @@ export const App = ({
 }) => {
   const { exit } = useApp();
   const terminalSize = useTerminalSize();
+  const { isModalOpen, modalConfig, showModal, closeModal, handleSelect } = useModal();
   
   const {
     data,
@@ -175,7 +179,18 @@ export const App = ({
   const handleArchive = () => {
     if (currentList.length === 0) return;
     if (activeTab === 'archive') {
-      deletePrompt('archive', selectedIndex);
+      showModal({
+        title: 'Permanently delete this prompt?',
+        options: [
+          { label: ' Yes ', value: 'yes' },
+          { label: ' No ', value: 'no' }
+        ],
+        onSelect: (value) => {
+          if (value === 'yes') {
+            deletePrompt('archive', selectedIndex);
+          }
+        }
+      });
     } else {
       movePrompt(activeTab, 'archive', selectedIndex);
     }
@@ -194,103 +209,40 @@ export const App = ({
     }
   };
 
-  useInput((input, key) => {
-    if (view === 'editor') return;
+  const handleEndMove = () => {
+    setIsMoving(false);
+    showToast('Exit move mode');
+  };
 
-    if (isSearching) {
-      if (key.escape) {
-        setIsSearching(false);
-        setSearchQuery('');
-      } else if (key.return) {
-        setIsSearching(false);
-      }
-      return;
-    }
-
-    if (isMoving) {
-      if (key.escape || key.return || input === 'm') {
-        setIsMoving(false);
-        showToast('Exit move mode');
-      } else if (key.upArrow || input === 'k') {
-        moveItemInList(selectedIndex, selectedIndex - 1);
-      } else if (key.downArrow || input === 'j') {
-        moveItemInList(selectedIndex, selectedIndex + 1);
-      }
-      return;
-    }
-
-    // Tab shortcuts - ALWAYS allow
-    if (/^[1-9]$/.test(input)) {
-      const tabIndex = parseInt(input) - 1;
-      if (tabIndex < orderedTabs.length) {
-        setActiveTab(orderedTabs[tabIndex]);
-      }
-      return;
-    }
-
-    // Command Map for character inputs that should ALWAYS work
-    const globalCharCommands: Record<string, () => void> = {
-      'q': exit,
-      'S': () => setActiveTab('settings'),
-    };
-
-    if (globalCharCommands[input]) {
-      globalCharCommands[input]();
-      return;
-    }
-
-    if (key.ctrl && input === 's') {
-      setActiveTab('settings');
-      return;
-    }
-
-    // Global navigation keys - ALWAYS allow
-    if (key.tab) {
-      key.shift ? handlePrevTab() : handleNextTab();
-      return;
-    }
-
-    if (key.ctrl && input === 'y') return redo();
-    if (input === 'u') return undo();
-
-    // If in settings, don't handle other keys here (SettingsView will handle them)
-    if (activeTab === 'settings') {
-      if (key.rightArrow || input === 'l') return handleNextTab();
-      if (key.leftArrow || input === 'h') return handlePrevTab();
-      return;
-    }
-
-    // Special keys
-    if (key.upArrow) return updateSelectedIndex(Math.max(0, selectedIndex - 1));
-    if (key.downArrow) return updateSelectedIndex(Math.min(currentList.length - 1, selectedIndex + 1));
-    if (key.rightArrow) return handleNextTab();
-    if (key.leftArrow) return handlePrevTab();
-    if (key.return) return handleEdit();
-    if (key.escape && searchQuery) return setSearchQuery('');
-
-    // Command Map for character inputs
-    const charCommands: Record<string, () => void> = {
-      'k': () => updateSelectedIndex(Math.max(0, selectedIndex - 1)),
-      'j': () => updateSelectedIndex(Math.min(currentList.length - 1, selectedIndex + 1)),
-      'l': handleNextTab,
-      'h': handlePrevTab,
-      '/': () => setIsSearching(true),
-      'm': handleStartMove,
-      'd': handleArchive,
-      'r': handleRestore,
-      's': handleStage,
-      'y': handleCopy,
-      'e': handleEdit,
-      'a': () => activeTab !== 'archive' && addPrompt('after'),
-      'A': () => activeTab !== 'archive' && addPrompt('end'),
-      'i': () => activeTab !== 'archive' && addPrompt('before'),
-      'I': () => activeTab !== 'archive' && addPrompt('start'),
-      'b': toggleBranchFilter,
-    };
-
-    if (charCommands[input]) {
-      charCommands[input]();
-    }
+  useAppKeyboard({
+    view,
+    activeTab,
+    orderedTabs,
+    setActiveTab,
+    isSearching,
+    setIsSearching,
+    searchQuery,
+    setSearchQuery,
+    isMoving,
+    setIsMoving,
+    isModalOpen,
+    selectedIndex,
+    updateSelectedIndex,
+    itemCount: currentList.length,
+    handleNextTab,
+    handlePrevTab,
+    handleEdit,
+    handleArchive,
+    handleRestore,
+    handleStartMove,
+    handleEndMove,
+    handleStage,
+    handleCopy,
+    addPrompt,
+    toggleBranchFilter,
+    undo,
+    redo,
+    moveItemInList,
   });
 
   if (isLoading) {
@@ -382,6 +334,17 @@ export const App = ({
         terminalSize={terminalSize}
         itemCount={currentList.length}
       />
+
+      {isModalOpen && modalConfig && (
+        <ConfirmDialog
+          title={modalConfig.title}
+          message={modalConfig.message}
+          options={modalConfig.options}
+          onSelect={handleSelect}
+          onCancel={closeModal}
+          terminalSize={terminalSize}
+        />
+      )}
     </Box>
   );
 };

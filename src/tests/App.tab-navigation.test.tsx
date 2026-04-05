@@ -28,9 +28,7 @@ describe('App Tab Navigation', () => {
 
   test('navigation with number keys maps to visible tabs', async () => {
     const loadPromptsFn = mock(async () => mockData);
-    const { lastFrame, stdin } = render(
-      <App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} />
-    );
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} viewportSize={5} />);
 
     await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -74,9 +72,7 @@ describe('App Tab Navigation', () => {
     };
 
     const loadPromptsFn = mock(async () => multiHiddenData);
-    const { lastFrame, stdin } = render(
-      <App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} />
-    );
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} viewportSize={5} />);
 
     await new Promise(resolve => setTimeout(resolve, 100));
 

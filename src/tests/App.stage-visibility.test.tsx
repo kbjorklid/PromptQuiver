@@ -27,9 +27,7 @@ describe('App Stage Visibility', () => {
   const savePromptsFn = async () => {};
 
   test('Stage hint [s] is NOT shown for notes', async () => {
-    const { lastFrame, stdin } = render(
-      <App cwd="/test" loadPromptsFn={loadPromptsFn} savePromptsFn={savePromptsFn} />
-    );
+    const { lastFrame, stdin } = render(<App cwd="/test" loadPromptsFn={loadPromptsFn} savePromptsFn={savePromptsFn} viewportSize={5} />);
 
     // Wait for load
     await new Promise(r => setTimeout(r, 100));
@@ -43,9 +41,7 @@ describe('App Stage Visibility', () => {
   });
 
   test('Stage hint [s] is NOT shown for snippets', async () => {
-    const { lastFrame, stdin } = render(
-      <App cwd="/test" loadPromptsFn={loadPromptsFn} savePromptsFn={savePromptsFn} />
-    );
+    const { lastFrame, stdin } = render(<App cwd="/test" loadPromptsFn={loadPromptsFn} savePromptsFn={savePromptsFn} viewportSize={5} />);
 
     // Wait for load
     await new Promise(r => setTimeout(r, 100));
@@ -59,9 +55,7 @@ describe('App Stage Visibility', () => {
   });
 
   test('Stage shortcut (s) does NOT work for notes', async () => {
-    const { lastFrame, stdin } = render(
-      <App cwd="/test" loadPromptsFn={loadPromptsFn} savePromptsFn={savePromptsFn} />
-    );
+    const { lastFrame, stdin } = render(<App cwd="/test" loadPromptsFn={loadPromptsFn} savePromptsFn={savePromptsFn} viewportSize={5} />);
 
     await new Promise(r => setTimeout(r, 100));
     stdin.write('2'); // Notes

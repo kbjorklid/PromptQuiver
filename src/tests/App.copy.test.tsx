@@ -18,7 +18,7 @@ describe('App Copy Shortcut', () => {
   const mockCwd = '/test/path';
 
   test('Copy shortcut (y) does not change state', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     stdin.write('y');

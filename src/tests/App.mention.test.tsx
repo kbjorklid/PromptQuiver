@@ -21,9 +21,7 @@ test("App Mention > shows mention menu and inserts file", async () => {
   
   const savePromptsFn = mock(async () => {});
 
-  const { lastFrame, stdin } = render(
-    <App cwd="/mock/dir" loadPromptsFn={loadPromptsFn} savePromptsFn={savePromptsFn} />
-  );
+  const { lastFrame, stdin } = render(<App cwd="/mock/dir" loadPromptsFn={loadPromptsFn} savePromptsFn={savePromptsFn} viewportSize={5} />);
 
   // Wait for load
   await new Promise(resolve => setTimeout(resolve, 100));

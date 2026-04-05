@@ -22,7 +22,7 @@ describe('App Component', () => {
   const mockCwd = '/test/path';
 
   test('renders loading state initially and then content', async () => {
-    const { lastFrame } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} />);
+    const { lastFrame } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
     
     // Wait for useEffect to finish
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -35,7 +35,7 @@ describe('App Component', () => {
   });
 
   test('switches tabs with Tab key', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Initially on Prompt (Main)
@@ -59,7 +59,7 @@ describe('App Component', () => {
   });
 
   test('navigates list with arrow keys', async () => {
-    const { stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} />);
+    const { stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Just verify it doesn't crash on navigation
@@ -75,7 +75,7 @@ describe('App Component', () => {
 
   test('renders empty state', async () => {
     const emptyLoad = async () => ({ main: [], notes: [], archive: [] });
-    const { lastFrame } = render(<App cwd={mockCwd} loadPromptsFn={emptyLoad} />);
+    const { lastFrame } = render(<App cwd={mockCwd} loadPromptsFn={emptyLoad} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     expect(lastFrame()).toContain('No items yet');

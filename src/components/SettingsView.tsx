@@ -181,6 +181,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
     return (
       <Box 
+          key="add-new-slash"
           paddingX={1} 
           backgroundColor={isSelected || isAdding ? '#334455' : undefined}
       >
@@ -205,9 +206,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
   // Build the list of all items to render
   const allItems = [
-    ...ALL_TABS.map((tab, i) => ({ type: 'tab', tab, index: i })),
-    ...slashCommands.map((cmd, i) => ({ type: 'slash', cmd, index: i })),
-    { type: 'addNew' }
+    ...ALL_TABS.map((tab, i) => ({ type: 'tab', tab, index: i, key: `tab-${tab}` })),
+    ...slashCommands.map((cmd, i) => ({ type: 'slash', cmd, index: i, key: `slash-${cmd}` })),
+    { type: 'addNew', key: 'add-new' }
   ];
 
   const visibleItems = allItems.slice(viewportOffset, viewportOffset + availableHeight);
@@ -218,7 +219,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         <Text bold color="cyan" borderStyle="single" paddingX={1}> Settings </Text>
       </Box>
 
-      {viewportOffset > 0 && <Text dimColor align="center">↑ more ↑</Text>}
+      {viewportOffset > 0 && <Text dimColor align="center" key="more-up">↑ more ↑</Text>}
 
       <Box flexDirection="column">
         {/* Render titles and items based on what's visible */}
@@ -226,7 +227,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         
         {/* Tab Visibility Section Title */}
         {viewportOffset <= 0 && (
-          <Box marginTop={0} marginBottom={0}>
+          <Box marginTop={0} marginBottom={0} key="tab-visibility-title">
              <Text bold underline>Tab Visibility</Text>
           </Box>
         )}
@@ -239,13 +240,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           // Show section title for Slash Commands if it's the first time it appears or if it's the first visible item and it's a slash command
           if (item.type === 'slash' && item.index === 0) {
             elements.push(
-              <Box key="slash-title" marginTop={1} marginBottom={0}>
+              <Box key="slash-commands-title" marginTop={1} marginBottom={0}>
                 <Text bold underline>Slash Commands</Text>
               </Box>
             );
           } else if (item.type === 'addNew' && slashCommands.length === 0) {
              elements.push(
-                <Box key="slash-title" marginTop={1} marginBottom={0}>
+                <Box key="slash-commands-title" marginTop={1} marginBottom={0}>
                   <Text bold underline>Slash Commands</Text>
                 </Box>
               );
@@ -259,11 +260,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             elements.push(renderAddNewSlash());
           }
 
-          return <React.Fragment key={i}>{elements}</React.Fragment>;
+          return <React.Fragment key={item.key}>{elements}</React.Fragment>;
         })}
       </Box>
 
-      {viewportOffset + availableHeight < totalItems && <Text dimColor align="center">↓ more ↓</Text>}
+      {viewportOffset + availableHeight < totalItems && <Text dimColor align="center" key="more-down">↓ more ↓</Text>}
 
       {editingIndex !== null && !isEditingValueValid && editingValue.length > 1 && (
          <Box paddingX={1} marginTop={1}>

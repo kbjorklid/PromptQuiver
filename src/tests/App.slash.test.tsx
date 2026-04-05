@@ -31,9 +31,7 @@ test('Slash Command: Settings > Autocomplete', async () => {
   const loadPromptsFn = async () => initialData;
   const savePromptsFn = mock(async () => {});
 
-  const { lastFrame, stdin } = render(
-    <App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} savePromptsFn={savePromptsFn as any} />
-  );
+  const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} savePromptsFn={savePromptsFn as any} viewportSize={5} />);
 
   // Wait for load
   await new Promise(resolve => setTimeout(resolve, 200));
@@ -45,12 +43,14 @@ test('Slash Command: Settings > Autocomplete', async () => {
   // Verify we are in settings
   expect(stripAnsi(lastFrame()!)).toContain('Tab Visibility');
 
-  // Switch to Slash Commands section (right arrow)
-  stdin.write('\x1b[C');
+  // Switch to Slash Commands section (down arrow multiple times)
+  for (let i = 0; i < 6; i++) {
+    stdin.write('j');
+    await new Promise(resolve => setTimeout(resolve, 20));
+  }
   await new Promise(resolve => setTimeout(resolve, 100));
   expect(stripAnsi(lastFrame()!)).toContain('Slash Commands');
-  expect(stripAnsi(lastFrame()!)).toContain('Manage custom slash commands');
-
+  
   // Select "Add New Command" and press Enter to start adding
   stdin.write('\r');
   await new Promise(resolve => setTimeout(resolve, 100));

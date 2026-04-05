@@ -29,9 +29,7 @@ describe('App Error Paths', () => {
     
     shouldThrow = true;
 
-    const { stdin, lastFrame } = render(
-      <App cwd="test-cwd" loadPromptsFn={loadPromptsFn} />
-    );
+    const { stdin, lastFrame } = render(<App cwd="test-cwd" loadPromptsFn={loadPromptsFn} viewportSize={5} />);
 
     // Wait for load
     await new Promise(resolve => setTimeout(resolve, 150));
@@ -56,9 +54,7 @@ describe('App Error Paths', () => {
     
     shouldThrow = true;
 
-    const { stdin, lastFrame } = render(
-      <App cwd="test-cwd" loadPromptsFn={loadPromptsFn} />
-    );
+    const { stdin, lastFrame } = render(<App cwd="test-cwd" loadPromptsFn={loadPromptsFn} viewportSize={5} />);
 
     // Wait for load
     await new Promise(resolve => setTimeout(resolve, 150));

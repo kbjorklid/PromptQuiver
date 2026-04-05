@@ -17,7 +17,7 @@ describe('App Edit Confirmation', () => {
   const mockCwd = '/test/path';
 
   test('Exiting with Escape when text is NOT changed should exit immediately', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 100));
     
     // Press 'e' to edit
@@ -37,7 +37,7 @@ describe('App Edit Confirmation', () => {
   });
 
   test('Exiting with Escape when text IS changed should show confirmation', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 100));
     
     // Press 'e' to edit
@@ -62,7 +62,7 @@ describe('App Edit Confirmation', () => {
   });
 
   test('Confirmation dialog: Yes saves changes', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 100));
     
     stdin.write('e');
@@ -85,7 +85,7 @@ describe('App Edit Confirmation', () => {
   });
 
   test('Confirmation dialog: No discards changes', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 100));
     
     stdin.write('e');
@@ -111,7 +111,7 @@ describe('App Edit Confirmation', () => {
   });
 
   test('Confirmation dialog: Cancel stays in editor', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 100));
     
     stdin.write('e');
@@ -138,7 +138,7 @@ describe('App Edit Confirmation', () => {
   });
 
   test('Ctrl+s saves directly without confirmation', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 100));
     
     stdin.write('e');

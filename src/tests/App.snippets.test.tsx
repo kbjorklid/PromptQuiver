@@ -28,9 +28,7 @@ describe('App Snippets', () => {
     
     const savePromptsFn = mock(async () => {});
 
-    const { lastFrame, stdin } = render(
-      <App cwd={mockCwd} loadPromptsFn={loadPromptsFn} savePromptsFn={savePromptsFn} />
-    );
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn} savePromptsFn={savePromptsFn} viewportSize={5} />);
     
     // Wait for load
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -85,9 +83,7 @@ describe('App Snippets', () => {
       snippets: []
     });
     
-    const { lastFrame, stdin } = render(
-      <App cwd={mockCwd} loadPromptsFn={loadPromptsFn} />
-    );
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn} viewportSize={5} />);
     
     await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -147,9 +143,7 @@ describe('App Snippets', () => {
       snippets: snippets
     });
     
-    const { stdin } = render(
-      <App cwd={mockCwd} loadPromptsFn={loadPromptsFn} />
-    );
+    const { stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn} viewportSize={5} />);
     
     await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -176,9 +170,7 @@ describe('App Snippets', () => {
     
     const savePromptsFn = mock(async () => {});
 
-    const { lastFrame, stdin } = render(
-      <App cwd={mockCwd} loadPromptsFn={loadPromptsFn} savePromptsFn={savePromptsFn} />
-    );
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn} savePromptsFn={savePromptsFn} viewportSize={5} />);
     
     await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -220,9 +212,7 @@ describe('App Snippets', () => {
     });
     
     (clipboardy as any).default.writeSync.mockClear();
-    const { stdin } = render(
-      <App cwd={mockCwd} loadPromptsFn={loadPromptsFn} />
-    );
+    const { stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn} viewportSize={5} />);
     
     await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -256,9 +246,7 @@ describe('App Snippets', () => {
       snippets: snippets
     });
     
-    const { lastFrame, stdin } = render(
-      <App cwd={mockCwd} loadPromptsFn={loadPromptsFn} />
-    );
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn} viewportSize={5} />);
     
     await new Promise(resolve => setTimeout(resolve, 100));
 

@@ -45,14 +45,14 @@ describe('App Canned Tab', () => {
   const mockCwd = `/test/path-${Math.random().toString(36).substring(7)}`;
 
   test('renders Canned tab in the header', async () => {
-    const { lastFrame } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} />);
+    const { lastFrame } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     expect(lastFrame()).toContain('Canned');
   });
 
   test('switches to Canned tab with Tab key', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Press Tab twice (from Prompt -> Notes -> Canned)
@@ -68,7 +68,7 @@ describe('App Canned Tab', () => {
     // Mock git branch to return 'feat/abc'
     const gitSpy = spyOn(gitUtils, 'getCurrentGitBranch').mockReturnValue('feat/abc');
     
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Toggle branch filter on (press 'b')

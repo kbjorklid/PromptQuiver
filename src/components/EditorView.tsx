@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { UncontrolledMultilineInput } from './UncontrolledMultilineInput';
 import { UncontrolledSingleLineInput } from './UncontrolledSingleLineInput';
 import type { UncontrolledMultilineInputRef } from './UncontrolledMultilineInput';
 import { useMentionAutocomplete } from '../hooks/useMentionAutocomplete';
+import { ConfirmDialog } from './ConfirmDialog';
 
 export interface EditorViewProps {
   initialText: string;
@@ -17,6 +18,8 @@ export interface EditorViewProps {
   canned?: Prompt[];
   slashCommands?: string[];
 }
+
+type ConfirmOption = 'yes' | 'no' | 'cancel';
 
 export function EditorView({ 
   initialText, 
@@ -36,7 +39,6 @@ export function EditorView({
   const inputRef = useRef<UncontrolledMultilineInputRef>(null);
 
   const [showConfirm, setShowConfirm] = useState(false);
-  const [confirmOption, setConfirmOption] = useState<'yes' | 'no' | 'cancel'>('yes');
 
   const {
     mentionQuery,
@@ -45,7 +47,6 @@ export function EditorView({
     selectedIndex,
     checkMention,
     handleInterceptKey,
-    closeAutocomplete
   } = useMentionAutocomplete({
     snippets,
     slashCommands,
@@ -63,26 +64,10 @@ export function EditorView({
     : (isSnippet ? 15 : 10);
   const editorRows = Math.max(5, terminalSize.rows - overhead);
 
-  const handleConfirmNavigation = (direction: 'left' | 'right') => {
-    if (direction === 'left') {
-      setConfirmOption(prev => {
-        if (prev === 'cancel') return 'no';
-        if (prev === 'no') return 'yes';
-        return 'yes';
-      });
-    } else {
-      setConfirmOption(prev => {
-        if (prev === 'yes') return 'no';
-        if (prev === 'no') return 'cancel';
-        return 'cancel';
-      });
-    }
-  };
-
-  const handleConfirmAction = () => {
-    if (confirmOption === 'yes') {
+  const handleConfirmAction = (option: ConfirmOption) => {
+    if (option === 'yes') {
       onSave(textRef.current, isSnippet ? name : undefined);
-    } else if (confirmOption === 'no') {
+    } else if (option === 'no') {
       onCancel();
     } else {
       setShowConfirm(false);
@@ -90,18 +75,7 @@ export function EditorView({
   };
 
   useInput((input, key) => {
-    if (showConfirm) {
-      if (key.leftArrow) {
-        handleConfirmNavigation('left');
-      } else if (key.rightArrow) {
-        handleConfirmNavigation('right');
-      } else if (key.return) {
-        handleConfirmAction();
-      } else if (key.escape) {
-        setShowConfirm(false);
-      }
-      return;
-    }
+    if (showConfirm) return;
 
     if (isEditingName) {
       if (key.return || key.downArrow || key.tab) {
@@ -127,7 +101,6 @@ export function EditorView({
     if (key.escape) {
       if (textRef.current !== initialText || name !== initialName) {
         setShowConfirm(true);
-        setConfirmOption('yes');
       } else {
         onCancel();
       }
@@ -260,37 +233,17 @@ export function EditorView({
       </Box>
 
       {showConfirm && (
-        <Box 
-          position="absolute" 
-          width={terminalSize.columns - 2} 
-          height={terminalSize.rows - 2}
-          alignItems="center"
-          justifyContent="center"
-        >
-          <Box 
-            flexDirection="column" 
-            borderStyle="double" 
-            borderColor="yellow" 
-            paddingX={2} 
-            paddingY={1}
-            backgroundColor="black"
-          >
-            <Box justifyContent="center">
-              <Text bold>Save changes?</Text>
-            </Box>
-            <Box marginTop={1} justifyContent="center">
-              <Box paddingX={1} backgroundColor={confirmOption === 'yes' ? 'blue' : undefined}>
-                <Text color={confirmOption === 'yes' ? 'white' : undefined}> Yes </Text>
-              </Box>
-              <Box paddingX={1} backgroundColor={confirmOption === 'no' ? 'blue' : undefined}>
-                <Text color={confirmOption === 'no' ? 'white' : undefined}> No </Text>
-              </Box>
-              <Box paddingX={1} backgroundColor={confirmOption === 'cancel' ? 'blue' : undefined}>
-                <Text color={confirmOption === 'cancel' ? 'white' : undefined}> Cancel </Text>
-              </Box>
-            </Box>
-          </Box>
-        </Box>
+        <ConfirmDialog
+          title="Save changes?"
+          options={[
+            { label: ' Yes ', value: 'yes' },
+            { label: ' No ', value: 'no' },
+            { label: ' Cancel ', value: 'cancel' }
+          ]}
+          onSelect={handleConfirmAction}
+          onCancel={() => setShowConfirm(false)}
+          terminalSize={terminalSize}
+        />
       )}
     </Box>
   );

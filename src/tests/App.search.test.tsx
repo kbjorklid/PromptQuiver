@@ -19,7 +19,7 @@ describe('App Search', () => {
   const mockCwd = '/test/path';
 
   test('filters prompts by search query', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
     
     // Wait for useEffect to finish
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -72,7 +72,7 @@ describe('App Search', () => {
   });
 
   test('enters and exits search mode with / and Esc', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
 
     // Press / to enter search mode

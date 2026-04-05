@@ -18,7 +18,7 @@ describe('App UI (Iteration 5)', () => {
   const mockCwd = '/test/path';
 
   test('Shows toast when copying to clipboard (y)', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     stdin.write('y');
@@ -28,7 +28,7 @@ describe('App UI (Iteration 5)', () => {
   });
 
   test('Shows toast when staging prompt (s)', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     stdin.write('s');
@@ -38,7 +38,7 @@ describe('App UI (Iteration 5)', () => {
   });
 
   test('Truncates prompt to 2 lines', async () => {
-    const { lastFrame } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} />);
+    const { lastFrame } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     const frame = lastFrame();
@@ -53,7 +53,7 @@ describe('App UI (Iteration 5)', () => {
       notes: [],
       archive: [{ id: 'arch', text: 'Archived', type: 'prompt', created_at: '2023-01-01', updated_at: '2023-01-01' }]
     };
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={(async () => dataWithArchive) as any} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={(async () => dataWithArchive) as any} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Switch to notes
@@ -73,12 +73,16 @@ describe('App UI (Iteration 5)', () => {
     stdin.write('d');
     await new Promise(resolve => setTimeout(resolve, 50));
     
+    // Confirm deletion (Enter)
+    stdin.write('\r');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
     expect(lastFrame()).toContain('Deleted');
     expect(lastFrame()).toContain("Press 'u' to undo (5s)");
   });
 
   test('cursor is rendered immediately after text in editor', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Press 'e' to edit

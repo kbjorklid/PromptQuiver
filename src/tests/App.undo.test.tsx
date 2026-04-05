@@ -34,7 +34,7 @@ describe('App Advanced Logic (Iteration 4)', () => {
   const mockCwd = '/test/path';
 
   test('Stage Prompt (s) marks with 🎯 and copies', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     expect(lastFrame()).toContain('Prompt 1');
@@ -73,7 +73,7 @@ describe('App Advanced Logic (Iteration 4)', () => {
   });
 
   test('Staging a Canned Prompt clears others but is not marked staged', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // 1. Stage Prompt 1 in Main
@@ -114,7 +114,7 @@ describe('App Advanced Logic (Iteration 4)', () => {
   });
 
   test('Undo (u) multiple operations', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // 1. Archive index 0
@@ -140,7 +140,7 @@ describe('App Advanced Logic (Iteration 4)', () => {
   });
 
   test('Redo (Ctrl+y) multiple operations', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Archive both
@@ -169,7 +169,7 @@ describe('App Advanced Logic (Iteration 4)', () => {
   });
 
   test('Undo (u) after permanent delete (X)', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Switch to notes
@@ -189,6 +189,10 @@ describe('App Advanced Logic (Iteration 4)', () => {
     stdin.write('d');
     await new Promise(resolve => setTimeout(resolve, 50));
     
+    // Confirm deletion (Enter)
+    stdin.write('\r');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
     expect(lastFrame()).not.toContain('Archived 1');
     
     // Undo
@@ -198,7 +202,7 @@ describe('App Advanced Logic (Iteration 4)', () => {
   });
 
   test('History is cleared when a new operation is performed after undo', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // 1. Archive Prompt 1
@@ -223,7 +227,7 @@ describe('App Advanced Logic (Iteration 4)', () => {
   });
 
   test('Saving in Editor is undoable', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Edit first prompt

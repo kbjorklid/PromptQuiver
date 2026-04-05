@@ -38,9 +38,7 @@ describe('App Branch Tracking', () => {
     (child_process.execSync as any).mockReturnValue('feature-new\n');
     const saveSpy = vi.fn().mockResolvedValue(undefined);
 
-    const { stdin } = render(
-      <App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} savePromptsFn={saveSpy} debounceMs={0} />
-    );
+    const { stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} savePromptsFn={saveSpy} debounceMs={0} viewportSize={5} />);
 
     // Wait for load
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -67,9 +65,7 @@ describe('App Branch Tracking', () => {
   test('toggles branch filter with "b" key', async () => {
     (child_process.execSync as any).mockReturnValue('feature-x\n');
     
-    const { lastFrame, stdin } = render(
-      <App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} savePromptsFn={vi.fn()} debounceMs={0} />
-    );
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} savePromptsFn={vi.fn()} debounceMs={0} viewportSize={5} />);
 
     // Wait for load
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -101,9 +97,7 @@ describe('App Branch Tracking', () => {
   test('shows all items if no current branch is detected, even if filter is enabled', async () => {
     (child_process.execSync as any).mockImplementation(() => { throw new Error('Not a git repo'); });
     
-    const { lastFrame, stdin } = render(
-      <App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} savePromptsFn={vi.fn()} debounceMs={0} />
-    );
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} savePromptsFn={vi.fn()} debounceMs={0} viewportSize={5} />);
 
     // Wait for load
     await new Promise(resolve => setTimeout(resolve, 50));

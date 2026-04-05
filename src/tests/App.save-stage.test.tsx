@@ -35,9 +35,7 @@ describe('App Save and Stage Shortcut', () => {
     const loadPromptsFn = async () => JSON.parse(JSON.stringify(mockPrompts));
     const savePromptsFn = async () => {};
 
-    const { stdin, lastFrame } = render(
-      <App cwd="/test" loadPromptsFn={loadPromptsFn} savePromptsFn={savePromptsFn} />
-    );
+    const { stdin, lastFrame } = render(<App cwd="/test" loadPromptsFn={loadPromptsFn} savePromptsFn={savePromptsFn} viewportSize={5} />);
 
     // Wait for load
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -67,9 +65,7 @@ describe('App Save and Stage Shortcut', () => {
     };
     const savePromptsFn = async () => {};
 
-    const { stdin, lastFrame } = render(
-      <App cwd="/test" loadPromptsFn={loadPromptsFn} savePromptsFn={savePromptsFn} />
-    );
+    const { stdin, lastFrame } = render(<App cwd="/test" loadPromptsFn={loadPromptsFn} savePromptsFn={savePromptsFn} viewportSize={5} />);
 
     await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -93,9 +89,7 @@ describe('App Save and Stage Shortcut', () => {
     };
     const savePromptsFn = async () => {};
 
-    const { stdin, lastFrame } = render(
-      <App cwd="/test" loadPromptsFn={loadPromptsFn} savePromptsFn={savePromptsFn} />
-    );
+    const { stdin, lastFrame } = render(<App cwd="/test" loadPromptsFn={loadPromptsFn} savePromptsFn={savePromptsFn} viewportSize={5} />);
 
     await new Promise(resolve => setTimeout(resolve, 100));
 

@@ -21,7 +21,7 @@ const mockLoadPrompts = async () => mockData;
 
 describe('App Truncation', () => {
   test('shows first two non-empty lines and trims them', async () => {
-    const { lastFrame } = render(<App cwd="/test" loadPromptsFn={mockLoadPrompts as any} />);
+    const { lastFrame } = render(<App cwd="/test" loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     const frame = lastFrame();

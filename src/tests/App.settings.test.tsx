@@ -29,9 +29,7 @@ describe('App Settings', () => {
 
   test('ctrl-s opens settings tab', async () => {
     const loadPromptsFn = async () => initialData;
-    const { lastFrame, stdin } = render(
-      <App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} />
-    );
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} viewportSize={5} />);
 
     await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -49,9 +47,7 @@ describe('App Settings', () => {
     const loadPromptsFn = async () => initialData;
     const savePromptsFn = mock(async () => {});
     
-    const { lastFrame, stdin } = render(
-      <App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} savePromptsFn={savePromptsFn as any} />
-    );
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} savePromptsFn={savePromptsFn as any} viewportSize={5} />);
 
     await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -81,9 +77,7 @@ describe('App Settings', () => {
 
   test('footer shows settings shortcuts when in settings', async () => {
     const loadPromptsFn = async () => initialData;
-    const { lastFrame, stdin } = render(
-      <App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} />
-    );
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} viewportSize={5} />);
 
     await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -111,9 +105,7 @@ describe('App Settings', () => {
     const loadPromptsFn = async () => initialData;
     const savePromptsFn = mock(async () => {});
     
-    const { lastFrame, stdin } = render(
-      <App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} savePromptsFn={savePromptsFn as any} />
-    );
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} savePromptsFn={savePromptsFn as any} viewportSize={5} />);
 
     await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -140,9 +132,7 @@ describe('App Settings', () => {
 
   test('left/right arrows switch tabs while in settings', async () => {
     const loadPromptsFn = async () => initialData;
-    const { lastFrame, stdin } = render(
-      <App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} />
-    );
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} viewportSize={5} />);
 
     await new Promise(resolve => setTimeout(resolve, 100));
 

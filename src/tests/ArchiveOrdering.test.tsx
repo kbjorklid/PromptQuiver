@@ -61,9 +61,7 @@ describe('Archive ordering', () => {
     };
 
     const loadPromptsFn = async () => initialData;
-    const { lastFrame, stdin } = render(
-      <App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} />
-    );
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} viewportSize={5} />);
 
     // Wait for loading
     await new Promise(resolve => setTimeout(resolve, 100));

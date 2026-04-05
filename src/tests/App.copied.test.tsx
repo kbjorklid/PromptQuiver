@@ -28,7 +28,7 @@ const mockSavePrompts = mock(() => Promise.resolve());
 
 describe('App Last Copied Icon', () => {
   test('shows clipboard icon when a prompt is yanked (y)', async () => {
-    const { lastFrame, stdin } = render(<App cwd="/test" loadPromptsFn={mockLoadPrompts} savePromptsFn={mockSavePrompts} />);
+    const { lastFrame, stdin } = render(<App cwd="/test" loadPromptsFn={mockLoadPrompts} savePromptsFn={mockSavePrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
 
     // Press 'y' to copy first prompt
@@ -40,7 +40,7 @@ describe('App Last Copied Icon', () => {
   });
 
   test('shows bullseye icon when a prompt is staged (s)', async () => {
-    const { lastFrame, stdin } = render(<App cwd="/test" loadPromptsFn={mockLoadPrompts} savePromptsFn={mockSavePrompts} />);
+    const { lastFrame, stdin } = render(<App cwd="/test" loadPromptsFn={mockLoadPrompts} savePromptsFn={mockSavePrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
 
     // Press 's' to stage first prompt

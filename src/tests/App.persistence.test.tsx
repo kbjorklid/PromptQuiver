@@ -19,14 +19,11 @@ describe('App Persistence', () => {
 
   test('calls savePromptsFn when a prompt is added', async () => {
     const saveSpy = jest.fn();
-    const { stdin } = render(
-      <App 
+    const { stdin } = render(<App 
         cwd={mockCwd} 
         loadPromptsFn={mockLoadPrompts} 
         savePromptsFn={saveSpy as any} 
-        debounceMs={0}
-      />
-    );
+        debounceMs={0} viewportSize={5} />);
     
     // Wait for initial load
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -55,14 +52,11 @@ describe('App Persistence', () => {
 
   test('calls savePromptsFn when a prompt is deleted', async () => {
     const saveSpy = jest.fn();
-    const { stdin } = render(
-      <App 
+    const { stdin } = render(<App 
         cwd={mockCwd} 
         loadPromptsFn={mockLoadPrompts} 
         savePromptsFn={saveSpy as any} 
-        debounceMs={0}
-      />
-    );
+        debounceMs={0} viewportSize={5} />);
     
     // Wait for initial load
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -86,6 +80,10 @@ describe('App Persistence', () => {
 
     // Permanent delete (d)
     stdin.write('d');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    // Confirm deletion (Enter)
+    stdin.write('\r');
     await new Promise(resolve => setTimeout(resolve, 100));
 
     expect(saveSpy).toHaveBeenCalled();

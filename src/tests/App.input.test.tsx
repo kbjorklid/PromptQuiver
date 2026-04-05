@@ -22,7 +22,7 @@ describe('App Keyboard Inputs', () => {
   const mockCwd = '/test/path';
 
   test('Navigation with hjkl keys', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Initial: Main tab, Prompt 1 selected
@@ -76,7 +76,7 @@ describe('App Keyboard Inputs', () => {
   });
 
   test('Tab and Shift-Tab for navigation', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Tab to Notes
@@ -91,7 +91,7 @@ describe('App Keyboard Inputs', () => {
   });
 
   test('Undo (u) and Redo (Ctrl+y)', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Delete a prompt (d)
@@ -112,7 +112,7 @@ describe('App Keyboard Inputs', () => {
 
   test('Stage Prompt (s) and Copy (y)', async () => {
     const writeSpy = spyOn(clipboardy, 'writeSync').mockImplementation(() => {});
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Copy (y)
@@ -142,7 +142,7 @@ describe('App Keyboard Inputs', () => {
   });
 
   test('Enter to edit', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     stdin.write('\r');
@@ -152,7 +152,7 @@ describe('App Keyboard Inputs', () => {
   });
 
   test('Escape to clear search query when not in search mode', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Enter search mode

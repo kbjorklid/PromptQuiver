@@ -31,7 +31,7 @@ describe('App CRUD Operations', () => {
   const mockCwd = '/test/path';
 
   test('archiving a prompt (d) from prompt tab', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Select first prompt
@@ -60,7 +60,7 @@ describe('App CRUD Operations', () => {
   });
 
   test('un-archiving a prompt (r) from archive', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Switch to notes
@@ -91,7 +91,7 @@ describe('App CRUD Operations', () => {
   });
 
   test('permanent delete (d) from archive', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Switch to notes
@@ -111,11 +111,15 @@ describe('App CRUD Operations', () => {
     stdin.write('d');
     await new Promise(resolve => setTimeout(resolve, 50));
     
+    // Confirm deletion (Enter)
+    stdin.write('\r');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
     expect(lastFrame()).not.toContain('Archived 1');
   });
 
   test('adding a prompt (a) after selected in prompt tab and saving', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Select index 0, press 'a'
@@ -138,7 +142,7 @@ describe('App CRUD Operations', () => {
   });
 
   test('editing a prompt (e) and cancelling', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Select index 0, press 'e'
@@ -170,7 +174,7 @@ describe('App CRUD Operations', () => {
   });
 
   test('adding a prompt (A) at end of main', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     stdin.write('A');
@@ -184,7 +188,7 @@ describe('App CRUD Operations', () => {
   });
 
   test('adding a prompt (i) before selected in main', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Select Prompt 2
@@ -202,7 +206,7 @@ describe('App CRUD Operations', () => {
   });
 
   test('adding a prompt (I) at beginning of main', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     stdin.write('I');
@@ -216,7 +220,7 @@ describe('App CRUD Operations', () => {
   });
 
   test('adding a note and ensuring it stays in the Notes tab', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Switch to notes
