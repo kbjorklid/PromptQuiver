@@ -11,6 +11,7 @@ interface FooterProps {
   branchFilterEnabled?: boolean;
   currentBranch?: string;
   terminalSize?: { columns: number; rows: number };
+  itemCount?: number;
 }
 
 const formatCwd = (cwd: string) => {
@@ -45,7 +46,8 @@ export const Footer: React.FC<FooterProps> = ({
   cwd, 
   branchFilterEnabled, 
   currentBranch,
-  terminalSize
+  terminalSize,
+  itemCount = 0
 }) => {
   const columns = terminalSize?.columns || 80;
   const formattedCwd = formatCwd(cwd);
@@ -55,6 +57,59 @@ export const Footer: React.FC<FooterProps> = ({
   const labelsWidth = 8 + 4 + 7; // "quiver: " (8) + "pwd: " (4) + "branch: " (7)
   const contentWidth = promptCountText.length + formattedCwd.length + (currentBranch?.length || 0) + 6; // +6 for margins
   const showLabels = columns > (contentWidth + labelsWidth);
+
+  const renderShortcuts = () => {
+    if (activeTab === 'settings') {
+      return (
+        <>
+          <Box><Text bold>[Tab]</Text><Text color="gray"> Tab</Text></Box>
+          <Box><Text bold>[↑/↓/j/k]</Text><Text color="gray"> Nav</Text></Box>
+          <Box><Text bold>[←/→/h/l]</Text><Text color="gray"> Section</Text></Box>
+          <Box><Text bold>[Enter/Space]</Text><Text color="gray"> Action</Text></Box>
+          <Box><Text bold>[Esc]</Text><Text color="gray"> Cancel</Text></Box>
+          <Box><Text bold>[d]</Text><Text color="gray"> Delete</Text></Box>
+          <Box><Text bold>[u/Ctrl+y]</Text><Text color="gray"> Undo/Redo</Text></Box>
+          <Box><Text bold>[q]</Text><Text color="gray"> Quit</Text></Box>
+        </>
+      );
+    }
+
+    const hasItems = itemCount > 0;
+
+    return (
+      <>
+        <Box><Text bold>[Tab/h/l]</Text><Text color="gray"> Tab</Text></Box>
+        {hasItems && <Box><Text bold>[↑/↓/j/k]</Text><Text color="gray"> Nav</Text></Box>}
+        {hasItems && <Box><Text bold>[Enter/e]</Text><Text color="gray"> Edit</Text></Box>}
+        {activeTab !== 'archive' && hasItems && (
+          <Box><Text bold>[m]</Text><Text color="gray"> Move</Text></Box>
+        )}
+        {activeTab !== 'notes' && hasItems && (
+          <Box><Text bold>[y]</Text><Text color="gray"> Yank</Text></Box>
+        )}
+        <Box><Text bold>[/]</Text><Text color="gray"> Filter</Text></Box>
+        {activeTab !== 'archive' && (
+          <Box><Text bold>[a/A/i/I]</Text><Text color="gray"> Add</Text></Box>
+        )}
+        {activeTab === 'archive' ? (
+          hasItems && (
+            <>
+              <Box><Text bold>[r]</Text><Text color="gray"> Restore</Text></Box>
+              <Box><Text bold>[d]</Text><Text color="gray"> Delete</Text></Box>
+            </>
+          )
+        ) : (
+          hasItems && <Box><Text bold>[d]</Text><Text color="gray"> Archive</Text></Box>
+        )}
+        {activeTab !== 'archive' && activeTab !== 'settings' && activeTab !== 'notes' && activeTab !== 'snippets' && hasItems && (
+          <Box><Text bold>[s]</Text><Text color="gray"> Stage</Text></Box>
+        )}
+        <Box><Text bold>[S]</Text><Text color="gray"> Settings</Text></Box>
+        <Box><Text bold>[u/Ctrl+y]</Text><Text color="gray"> Undo/Redo</Text></Box>
+        <Box><Text bold>[q]</Text><Text color="gray"> Quit</Text></Box>
+      </>
+    );
+  };
 
   return (
     <Box flexDirection="column">
@@ -72,33 +127,7 @@ export const Footer: React.FC<FooterProps> = ({
       )}
 
       <Box marginTop={1} paddingX={1} flexWrap="wrap" columnGap={2} marginBottom={1}>
-        <Box><Text bold>[Tab/h/l]</Text><Text color="gray"> Tab</Text></Box>
-        <Box><Text bold>[↑/↓/j/k]</Text><Text color="gray"> Nav</Text></Box>
-        <Box><Text bold>[Enter/e]</Text><Text color="gray"> Edit</Text></Box>
-        {activeTab !== 'archive' && (
-          <Box><Text bold>[m]</Text><Text color="gray"> Move</Text></Box>
-        )}
-        {activeTab !== 'notes' && (
-          <Box><Text bold>[y]</Text><Text color="gray"> Yank</Text></Box>
-        )}
-        <Box><Text bold>[/]</Text><Text color="gray"> Filter</Text></Box>
-        {activeTab !== 'archive' && (
-          <Box><Text bold>[a/A/i/I]</Text><Text color="gray"> Add</Text></Box>
-        )}
-        {activeTab === 'archive' ? (
-          <>
-            <Box><Text bold>[r]</Text><Text color="gray"> Restore</Text></Box>
-            <Box><Text bold>[d]</Text><Text color="gray"> Delete</Text></Box>
-          </>
-        ) : (
-          <Box><Text bold>[d]</Text><Text color="gray"> Archive</Text></Box>
-        )}
-        {activeTab !== 'archive' && activeTab !== 'settings' && (
-          <Box><Text bold>[s]</Text><Text color="gray"> Stage</Text></Box>
-        )}
-        <Box><Text bold>[S]</Text><Text color="gray"> Settings</Text></Box>
-        <Box><Text bold>[u/Ctrl+y]</Text><Text color="gray"> Undo/Redo</Text></Box>
-        <Box><Text bold>[q]</Text><Text color="gray"> Quit</Text></Box>
+        {renderShortcuts()}
       </Box>
 
       <Box width="100%" backgroundColor="darkCyan" paddingX={1}>

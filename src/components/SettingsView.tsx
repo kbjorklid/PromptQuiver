@@ -229,12 +229,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </Box>
       )}
 
-      <Box marginTop={2} borderStyle="single" borderColor="gray" paddingX={1} flexDirection="column">
-        <Text color="gray">Shortcuts:</Text>
-        <Text color="gray">  [↑/↓] Navigate | [←/→] Switch Section</Text>
-        <Text color="gray">  [Enter/Space] Toggle/Action | [Esc] Cancel edit</Text>
-        {activeSection === 'slashCommands' && editingIndex === null && <Text color="gray">  [d] Delete selected command</Text>}
-      </Box>
     </Box>
   );
 };

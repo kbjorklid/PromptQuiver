@@ -9,7 +9,8 @@ export interface EditorViewProps {
   initialText: string;
   initialName?: string;
   isSnippet?: boolean;
-  onSave: (text: string, name?: string) => void;
+  canStage?: boolean;
+  onSave: (text: string, name?: string, shouldStage?: boolean) => void;
   onCancel: () => void;
   terminalSize: { rows: number; columns: number };
   snippets?: Prompt[];
@@ -21,6 +22,7 @@ export function EditorView({
   initialText, 
   initialName = '', 
   isSnippet = false, 
+  canStage = false,
   onSave, 
   onCancel, 
   terminalSize,
@@ -132,9 +134,16 @@ export function EditorView({
       return;
     }
 
-    if (key.ctrl && input === 's') {
+    const isS = input.toLowerCase() === 's' || input === '\u0013';
+    if (key.ctrl && isS) {
       if (isNameValid) {
-        onSave(textRef.current, isSnippet ? name : undefined);
+        onSave(textRef.current, isSnippet ? name : undefined, false);
+      }
+    }
+
+    if (key.ctrl && (input.toLowerCase() === 'g' || input === '\u0007')) {
+      if (isNameValid && canStage) {
+        onSave(textRef.current, isSnippet ? name : undefined, true);
       }
     }
 
@@ -241,7 +250,7 @@ export function EditorView({
         ) : (
           <Box justifyContent="space-between" width="100%">
             <Text color="gray">
-              [Ctrl+s] Save | [Esc] Cancel {isSnippet ? '| [Tab] Edit Name' : ''}
+              [Ctrl+s] Save {canStage ? '| [Ctrl+g] Save & Stage ' : ''}| [Esc] Cancel {isSnippet ? '| [Tab] Edit Name' : ''}
             </Text>
             {isSnippet && !isNameValid && (
               <Text color="red">Invalid name! (use a-z, 0-9, -, _)</Text>

@@ -107,11 +107,12 @@ export function usePrompts({
     setView('editor');
   }, [activeTab, selectedIndex, refreshCurrentBranch, setAddingPosition, setEditingPrompt, setView]);
 
-  const saveEditedPrompt = useCallback((text: string, name?: string) => {
+  const saveEditedPrompt = useCallback((text: string, name?: string, shouldStage?: boolean) => {
     if (!editingPrompt) return;
     
     const listName = activeTab;
     const list = data[listName];
+    let finalIndex = -1;
     
     if (addingPosition) {
       const newPrompt = {
@@ -120,25 +121,25 @@ export function usePrompts({
         name: name,
         updated_at: new Date().toISOString(),
       };
-      let newIndex = 0;
       if (addingPosition.position === 'start') {
-        newIndex = 0;
+        finalIndex = 0;
         insertPromptInList(listName, 0, newPrompt, true);
       } else if (addingPosition.position === 'end') {
-        newIndex = list.length;
+        finalIndex = list.length;
         insertPromptInList(listName, list.length, newPrompt, true);
       } else if (addingPosition.position === 'before') {
-        newIndex = addingPosition.index;
+        finalIndex = addingPosition.index;
         insertPromptInList(listName, addingPosition.index, newPrompt, true);
       } else if (addingPosition.position === 'after') {
-        newIndex = list.length === 0 ? 0 : addingPosition.index + 1;
-        insertPromptInList(listName, newIndex, newPrompt, true);
+        finalIndex = list.length === 0 ? 0 : addingPosition.index + 1;
+        insertPromptInList(listName, finalIndex, newPrompt, true);
       }
-      updateSelectedIndex(newIndex);
-      showToast('Added');
+      updateSelectedIndex(finalIndex);
+      showToast(shouldStage ? 'Added and Staged' : 'Added');
     } else {
       const index = list.findIndex((p) => p.id === editingPrompt.id);
       if (index !== -1) {
+        finalIndex = index;
         const updatedPrompt = {
           ...editingPrompt,
           text: text,
@@ -146,13 +147,23 @@ export function usePrompts({
           updated_at: new Date().toISOString(),
         };
         updatePromptInList(listName, index, updatedPrompt, true);
-        showToast('Saved');
+        showToast(shouldStage ? 'Saved and Staged' : 'Saved');
       }
     }
+
+    if (shouldStage && finalIndex !== -1) {
+      // If already staged, STAGE_PROMPT would toggle it off.
+      // So we only call it if it's NOT already staged.
+      // For NEW prompts, editingPrompt.staged is undefined/false.
+      if (!editingPrompt.staged) {
+        dataStagePrompt(listName, finalIndex);
+      }
+    }
+
     setAddingPosition(null);
     setView('list');
     setEditingPrompt(null);
-  }, [editingPrompt, activeTab, data, addingPosition, updateSelectedIndex, showToast, setAddingPosition, setView, setEditingPrompt, insertPromptInList, updatePromptInList]);
+  }, [editingPrompt, activeTab, data, addingPosition, updateSelectedIndex, showToast, setAddingPosition, setView, setEditingPrompt, insertPromptInList, updatePromptInList, dataStagePrompt]);
 
   const cancelEdit = useCallback(() => {
     setAddingPosition(null);

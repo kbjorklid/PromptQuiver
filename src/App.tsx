@@ -10,7 +10,7 @@ import { SettingsView } from './components/SettingsView';
 import { loadPrompts, savePrompts } from './storage';
 import clipboardy from 'clipboardy';
 import { usePrompts } from './hooks/usePrompts';
-import type { Tab } from './hooks/usePrompts';
+import type { Tab, Settings } from './hooks/types';
 import { expandSnippets } from './utils/snippetExpansion';
 
 const useTerminalSize = () => {
@@ -132,6 +132,7 @@ export const App = ({
   };
 
   const handleStage = () => {
+    if (activeTab === 'notes' || activeTab === 'snippets' || activeTab === 'archive' || activeTab === 'settings') return;
     const prompt = currentList[selectedIndex];
     if (prompt) {
       if (activeTab === 'canned') {
@@ -249,6 +250,9 @@ export const App = ({
       return;
     }
 
+    if (key.ctrl && input === 'y') return redo();
+    if (input === 'u') return undo();
+
     // If in settings, don't handle other keys here (SettingsView will handle them)
     if (activeTab === 'settings') {
       return;
@@ -261,7 +265,6 @@ export const App = ({
     if (key.leftArrow) return handlePrevTab();
     if (key.return) return handleEdit();
     if (key.escape && searchQuery) return setSearchQuery('');
-    if (key.ctrl && input === 'y') return redo();
 
     // Command Map for character inputs
     const charCommands: Record<string, () => void> = {
@@ -270,7 +273,6 @@ export const App = ({
       'l': handleNextTab,
       'h': handlePrevTab,
       '/': () => setIsSearching(true),
-      'u': undo,
       'm': handleStartMove,
       'd': handleArchive,
       'r': handleRestore,
@@ -303,14 +305,27 @@ export const App = ({
   }
 
   if (view === 'editor' && editingPrompt) {
+    const canStage = activeTab !== 'snippets' && activeTab !== 'notes';
     return (
       <EditorView
         key={editingPrompt.id}
         initialText={editingPrompt.text}
         initialName={editingPrompt.name}
         isSnippet={activeTab === 'snippets'}
+        canStage={canStage}
         terminalSize={terminalSize}
-        onSave={saveEditedPrompt}
+        onSave={(text, name, shouldStage) => {
+          saveEditedPrompt(text, name, shouldStage);
+          if (shouldStage) {
+            try {
+              const expandedText = activeTab === 'snippets' ? text : expandSnippets(text, data.snippets);
+              clipboardy.writeSync(expandedText);
+              setLastCopiedId(null);
+            } catch (e) {
+              showToast(shouldStage ? 'Saved and Staged (clipboard error)' : 'Saved (clipboard error)');
+            }
+          }
+        }}
         onCancel={cancelEdit}
         snippets={data.snippets}
         canned={data.canned}
@@ -363,6 +378,7 @@ export const App = ({
         branchFilterEnabled={branchFilterEnabled} 
         currentBranch={currentBranch} 
         terminalSize={terminalSize}
+        itemCount={currentList.length}
       />
     </Box>
   );
