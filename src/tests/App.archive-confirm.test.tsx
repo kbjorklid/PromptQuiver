@@ -13,23 +13,31 @@ const mockData = {
 
 const mockLoadPrompts = async () => JSON.parse(JSON.stringify(mockData));
 
+// Helper to wait for UI updates in CI
+const waitForText = async (lastFrame: () => string | undefined, text: string, reverse = false) => {
+  for (let i = 0; i < 10; i++) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    const frame = lastFrame() || '';
+    if (reverse ? !frame.includes(text) : frame.includes(text)) {
+      break;
+    }
+  }
+};
+
 describe('App Archive Delete Confirmation', () => {
   const mockCwd = '/test/path';
 
   test('Pressing d in archive should show confirmation dialog', async () => {
     const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(resolve => setTimeout(resolve, 100));
     
-    // Switch to Archive tab (orderedTabs: main, canned, snippets, archive, settings -> tab 4)
-    // Wait, by default all tabs are visible. 1.Main, 2.Notes, 3.Canned, 4.Snippets, 5.Archive
     stdin.write('5');
-    await new Promise(resolve => setTimeout(resolve, 200));
-    
+    await waitForText(lastFrame, 'Archived Prompt');
     expect(lastFrame()).toContain('Archived Prompt');
 
     // Press 'd' to delete
     stdin.write('d');
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await waitForText(lastFrame, 'Permanently delete this prompt?');
     
     expect(lastFrame()).toContain('Permanently delete this prompt?');
     expect(lastFrame()).toContain('Yes');
@@ -38,17 +46,17 @@ describe('App Archive Delete Confirmation', () => {
 
   test('Confirming deletion with Yes should remove the prompt', async () => {
     const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(resolve => setTimeout(resolve, 100));
     
     stdin.write('5');
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await waitForText(lastFrame, 'Archived Prompt');
     
     stdin.write('d');
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await waitForText(lastFrame, 'Permanently delete this prompt?');
 
     // Yes is default, press Enter
     stdin.write('\r');
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await waitForText(lastFrame, 'Deleted');
 
     expect(lastFrame()).not.toContain('Archived Prompt');
     expect(lastFrame()).toContain('Deleted');
@@ -56,20 +64,21 @@ describe('App Archive Delete Confirmation', () => {
 
   test('Cancelling deletion with No should keep the prompt', async () => {
     const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(resolve => setTimeout(resolve, 100));
     
     stdin.write('5');
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await waitForText(lastFrame, 'Archived Prompt');
     
     stdin.write('d');
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await waitForText(lastFrame, 'Permanently delete this prompt?');
 
     // Select 'No' (Right arrow)
     stdin.write('\u001b[C'); 
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(resolve => setTimeout(resolve, 100));
 
     stdin.write('\r'); // Enter
-    await new Promise(resolve => setTimeout(resolve, 200));
+    // Wait for the modal to disappear
+    await waitForText(lastFrame, 'Permanently delete this prompt?', true);
 
     expect(lastFrame()).toContain('Archived Prompt');
     expect(lastFrame()).not.toContain('Deleted');
@@ -77,16 +86,16 @@ describe('App Archive Delete Confirmation', () => {
 
   test('Escape should also cancel the deletion', async () => {
     const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(resolve => setTimeout(resolve, 100));
     
     stdin.write('5');
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await waitForText(lastFrame, 'Archived Prompt');
     
     stdin.write('d');
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await waitForText(lastFrame, 'Permanently delete this prompt?');
 
     stdin.write('\u001b'); // Escape
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await waitForText(lastFrame, 'Permanently delete this prompt?', true);
 
     expect(lastFrame()).toContain('Archived Prompt');
     expect(lastFrame()).not.toContain('Permanently delete this prompt?');
