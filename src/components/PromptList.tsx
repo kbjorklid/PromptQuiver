@@ -69,7 +69,7 @@ export const PromptList: React.FC<PromptListProps> = ({
               isMoving={isMoving}
             >
               <Box marginRight={1} flexShrink={0}>
-                <Text color="gray" dimColor={isStaged}>{displayIndex}. </Text>
+                <Text color="gray">{displayIndex}. </Text>
                 <Indicator 
                   isSelected={isSelected} 
                   isMoving={isMoving} 
@@ -84,7 +84,7 @@ export const PromptList: React.FC<PromptListProps> = ({
                   <Text italic color="gray">Empty item</Text>
                 ) : (
                   displayLines.map((line, i) => (
-                    <Text key={i} wrap="truncate-end" color={itemColor} bold={isMoving && isSelected} dimColor={isStaged}>
+                    <Text key={i} wrap="truncate-end" color={itemColor} bold={isMoving && isSelected}>
                       {line}
                     </Text>
                   ))

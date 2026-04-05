@@ -140,7 +140,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     return (
       <SelectableRow key={tab} isSelected={isSelected}>
         <Indicator isSelected={isSelected} />
-        <Box width={3}>
+        <Box width={3} marginRight={1}>
           <Badge color={isVisible ? 'green' : 'red'}>
             {isVisible ? '[x]' : '[ ]'}
           </Badge>
@@ -239,11 +239,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             );
           } else if (item.type === 'slash' && (item as any).index === 0) {
             elements.push(
-              <SectionTitle key="slash-commands-title">Slash Commands</SectionTitle>
+              <SectionTitle key="slash-commands-title">Slash Command Suggestions</SectionTitle>
             );
           } else if (item.type === 'addNew' && slashCommands.length === 0) {
              elements.push(
-                <SectionTitle key="slash-commands-title">Slash Commands</SectionTitle>
+                <SectionTitle key="slash-commands-title">Slash Command Suggestions</SectionTitle>
               );
           }
 
@@ -255,7 +255,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             elements.push(
               <SelectableRow key="claude-toggle" isSelected={isSelected}>
                 <Indicator isSelected={isSelected} />
-                <Box width={3}>
+                <Box width={3} marginRight={1}>
                   <Badge color={isEnabled ? 'green' : 'red'}>
                     {isEnabled ? '[x]' : '[ ]'}
                   </Badge>

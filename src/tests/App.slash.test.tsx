@@ -49,7 +49,7 @@ test('Slash Command: Settings > Autocomplete', async () => {
     await new Promise(resolve => setTimeout(resolve, 20));
   }
   await new Promise(resolve => setTimeout(resolve, 100));
-  expect(stripAnsi(lastFrame()!)).toContain('Slash Commands');
+  expect(stripAnsi(lastFrame()!)).toContain('Slash Command Suggestions');
   
   // Select "Add New Command" and press Enter to start adding
   stdin.write('\r');
