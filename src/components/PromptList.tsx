@@ -2,6 +2,10 @@ import React from 'react';
 import { Box, Text } from 'ink';
 import type { Prompt } from '../storage/paths';
 import { useViewport } from '../hooks/useViewport';
+import { SelectableRow } from './ui/SelectableRow';
+import { Indicator } from './ui/Indicator';
+import { Divider } from './ui/Divider';
+import { Badge } from './ui/Badge';
 
 interface PromptListProps {
   currentList: Prompt[];
@@ -55,44 +59,40 @@ export const PromptList: React.FC<PromptListProps> = ({
         const itemColor = prompt.type === 'note' ? 'cyan' : (prompt.name ? 'magenta' : 'yellow');
         const displayIndex = (actualIndex + 1).toString().padStart(currentList.length.toString().length, ' ');
         
-        let backgroundColor: string | undefined = undefined;
-        if (isSelected) {
-          backgroundColor = isMoving ? '#445566' : '#334455';
-        }
-
         return (
           <Box 
             key={prompt.id} 
             flexDirection="column"
           >
-            <Box 
-              paddingX={1}
-              backgroundColor={backgroundColor}
+            <SelectableRow 
+              isSelected={isSelected}
+              isMoving={isMoving}
             >
               <Box marginRight={1} flexShrink={0}>
-                <Text color="gray" dim={isStaged}>{displayIndex}. </Text>
-                <Text color={itemColor} dim={isStaged}>
-                  {isSelected ? (isMoving ? '↕' : '▶') : ' '}
-                </Text>
-                {isLastCopied && <Text color="green"> 📋</Text>}
-                {isStaged && <Text color="red"> 🎯</Text>}
+                <Text color="gray" dimColor={isStaged}>{displayIndex}. </Text>
+                <Indicator 
+                  isSelected={isSelected} 
+                  isMoving={isMoving} 
+                  activeColor={itemColor}
+                  inactiveColor={itemColor}
+                />
+                {isLastCopied && <Badge color="green"> 📋</Badge>}
+                {isStaged && <Badge color="red"> 🎯</Badge>}
               </Box>
               <Box flexDirection="column" flexShrink={1}>
                 {displayLines.length === 0 ? (
                   <Text italic color="gray">Empty item</Text>
                 ) : (
                   displayLines.map((line, i) => (
-                    <Text key={i} wrap="truncate-end" color={itemColor} bold={isMoving && isSelected} dim={isStaged}>
+                    <Text key={i} wrap="truncate-end" color={itemColor} bold={isMoving && isSelected} dimColor={isStaged}>
                       {line}
                     </Text>
                   ))
                 )}
               </Box>
-            </Box>
+            </SelectableRow>
             {index < items.length - 1 && (
-              <Text color="gray" wrap="truncate-end">
-                {"─".repeat(terminalSize.columns || 80)}
-              </Text>
+              <Divider width={terminalSize.columns} />
             )}
           </Box>
         );

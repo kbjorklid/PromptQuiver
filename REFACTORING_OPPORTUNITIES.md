@@ -22,10 +22,10 @@ This document outlines the highest-impact refactoring opportunities identified i
 
 ## 3. TUI Design System (Componentize UI Elements)
 
-- [ ] **Context:** `src/components/Header.tsx`, `src/components/Footer.tsx`, `src/components/PromptList.tsx`, `src/components/SettingsView.tsx`
-- [ ] **Problem:** UI elements like Tabs, Buttons, Cards, and Status Bars are rendered using raw `Box` and `Text` components with repeated styling (colors, borders, padding). This makes it difficult to maintain a consistent visual "look and feel."
-- [ ] **Recommendation:** Create a library of base TUI components (e.g., `TabItem`, `IconButton`, `StatusBar`, `SelectableRow`) that encapsulate styling and common Ink-specific behaviors.
-- [ ] **Benefit:** Ensures visual consistency, drastically reduces styling boilerplate, and makes it easier to implement global "themes" or adjust the UI layout in the future.
+- [x] **Context:** `src/components/Header.tsx`, `src/components/Footer.tsx`, `src/components/PromptList.tsx`, `src/components/SettingsView.tsx`
+- [x] **Problem:** UI elements like Tabs, Buttons, Cards, and Status Bars are rendered using raw `Box` and `Text` components with repeated styling (colors, borders, padding). This makes it difficult to maintain a consistent visual "look and feel."
+- [x] **Recommendation:** Create a library of base TUI components (e.g., `TabItem`, `IconButton`, `StatusBar`, `SelectableRow`) that encapsulate styling and common Ink-specific behaviors.
+- [x] **Benefit:** Ensures visual consistency, drastically reduces styling boilerplate, and makes it easier to implement global "themes" or adjust the UI layout in the future.
 
 ---
 

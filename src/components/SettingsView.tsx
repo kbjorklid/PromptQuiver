@@ -2,6 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { Tab, Settings } from '../hooks/types';
 import { UncontrolledSingleLineInput } from './UncontrolledSingleLineInput';
+import { SelectableRow } from './ui/SelectableRow';
+import { Indicator } from './ui/Indicator';
+import { Badge } from './ui/Badge';
+import { SectionTitle } from './ui/SectionTitle';
 
 interface SettingsViewProps {
   settings: Settings;
@@ -129,19 +133,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     const isVisible = settings.tabVisibility[tab];
     
     return (
-      <Box key={tab} paddingX={1} backgroundColor={isSelected ? '#334455' : undefined}>
-        <Text color={isSelected ? 'white' : 'gray'}>
-          {isSelected ? '▶ ' : '  '}
-        </Text>
+      <SelectableRow key={tab} isSelected={isSelected}>
+        <Indicator isSelected={isSelected} />
         <Box width={3}>
-          <Text color={isVisible ? 'green' : 'red'}>
+          <Badge color={isVisible ? 'green' : 'red'}>
             {isVisible ? '[x]' : '[ ]'}
-          </Text>
+          </Badge>
         </Box>
-        <Text color={isSelected ? 'white' : 'white'}>
+        <Text color="white">
           {tabLabels[tab]}
         </Text>
-      </Box>
+      </SelectableRow>
     );
   };
 
@@ -151,10 +153,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     const isEditing = editingIndex === index;
     
     return (
-      <Box key={cmd} paddingX={1} backgroundColor={isSelected || isEditing ? '#334455' : undefined}>
-        <Text color={isSelected || isEditing ? 'white' : 'gray'}>
-          {isSelected || isEditing ? '▶ ' : '  '}
-        </Text>
+      <SelectableRow key={cmd} isSelected={isSelected || isEditing}>
+        <Indicator isSelected={isSelected || isEditing} />
         {isEditing ? (
           <UncontrolledSingleLineInput 
             initialValue={editingValue}
@@ -166,11 +166,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           />
         ) : (
           <Box>
-            <Text color={isSelected ? 'white' : 'white'}>/{cmd}</Text>
+            <Text color="white">/{cmd}</Text>
             {isSelected && <Text color="gray"> (Press Enter to edit, 'd' to delete)</Text>}
           </Box>
         )}
-      </Box>
+      </SelectableRow>
     );
   };
 
@@ -180,14 +180,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     const isAdding = editingIndex === -1;
 
     return (
-      <Box 
-          key="add-new-slash"
-          paddingX={1} 
-          backgroundColor={isSelected || isAdding ? '#334455' : undefined}
-      >
-        <Text color={isSelected || isAdding ? 'white' : 'gray'}>
-          {isSelected || isAdding ? '▶ ' : '  '}
-        </Text>
+      <SelectableRow key="add-new-slash" isSelected={isSelected || isAdding}>
+        <Indicator isSelected={isSelected || isAdding} />
         {isAdding ? (
           <UncontrolledSingleLineInput 
             initialValue={editingValue}
@@ -200,7 +194,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         ) : (
           <Text color="cyan">[Add New Command]</Text>
         )}
-      </Box>
+      </SelectableRow>
     );
   };
 
@@ -222,14 +216,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       {viewportOffset > 0 && <Text dimColor align="center" key="more-up">↑ more ↑</Text>}
 
       <Box flexDirection="column">
-        {/* Render titles and items based on what's visible */}
-        {/* We need to determine if titles should be shown */}
-        
-        {/* Tab Visibility Section Title */}
         {viewportOffset <= 0 && (
-          <Box marginTop={0} marginBottom={0} key="tab-visibility-title">
-             <Text bold underline>Tab Visibility</Text>
-          </Box>
+          <SectionTitle key="tab-visibility-title" marginTop={0}>Tab Visibility</SectionTitle>
         )}
         
         {allItems.map((item, i) => {
@@ -237,18 +225,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
           const elements = [];
           
-          // Show section title for Slash Commands if it's the first time it appears or if it's the first visible item and it's a slash command
           if (item.type === 'slash' && item.index === 0) {
             elements.push(
-              <Box key="slash-commands-title" marginTop={1} marginBottom={0}>
-                <Text bold underline>Slash Commands</Text>
-              </Box>
+              <SectionTitle key="slash-commands-title">Slash Commands</SectionTitle>
             );
           } else if (item.type === 'addNew' && slashCommands.length === 0) {
              elements.push(
-                <Box key="slash-commands-title" marginTop={1} marginBottom={0}>
-                  <Text bold underline>Slash Commands</Text>
-                </Box>
+                <SectionTitle key="slash-commands-title">Slash Commands</SectionTitle>
               );
           }
 

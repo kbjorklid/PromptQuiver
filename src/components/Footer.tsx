@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Text } from 'ink';
 import type { Tab, Toast } from '../hooks/usePrompts';
 import type { PromptStorageData } from '../storage';
+import { StatusItem } from './ui/StatusItem';
 
 interface FooterProps {
   activeTab: Tab;
@@ -19,25 +20,6 @@ const formatCwd = (cwd: string) => {
   if (parts.length <= 2) return cwd;
   return `.../${parts.slice(-2).join('/')}`;
 };
-
-const StatusItem = ({ 
-  label, 
-  value, 
-  color, 
-  bold, 
-  showLabel 
-}: { 
-  label: string; 
-  value: string | number; 
-  color: string; 
-  bold?: boolean; 
-  showLabel: boolean;
-}) => (
-  <Box marginRight={2}>
-    {showLabel && <Text color="white" dimColor>{label}</Text>}
-    <Text color={color} bold={bold}>{value}</Text>
-  </Box>
-);
 
 export const Footer: React.FC<FooterProps> = ({ 
   activeTab, 
