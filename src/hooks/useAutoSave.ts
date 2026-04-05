@@ -21,8 +21,8 @@ export function useAutoSave({
 }: UseAutoSaveProps) {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latestData = useRef(data);
+  const pendingData = useRef<PromptStorageData | null>(null);
   const isSaving = useRef(false);
-  const hasPendingSave = useRef(false);
 
   // Update latest data ref
   useEffect(() => {
@@ -31,12 +31,12 @@ export function useAutoSave({
 
   const performSave = useCallback(async (dataToSave: PromptStorageData) => {
     if (isSaving.current) {
-      hasPendingSave.current = true;
+      pendingData.current = dataToSave;
       return;
     }
 
     isSaving.current = true;
-    hasPendingSave.current = false;
+    pendingData.current = null;
     
     try {
       await savePromptsFn(cwd, dataToSave);
@@ -47,8 +47,8 @@ export function useAutoSave({
     } finally {
       isSaving.current = false;
       // If data changed while we were saving, trigger another save
-      if (hasPendingSave.current) {
-        performSave(latestData.current);
+      if (pendingData.current) {
+        performSave(pendingData.current);
       }
     }
   }, [cwd, savePromptsFn, onSaveError]);

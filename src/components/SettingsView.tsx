@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { Tab, Settings } from '../hooks/types';
+import { UncontrolledSingleLineInput } from './UncontrolledSingleLineInput';
 
 interface SettingsViewProps {
   settings: Settings;
@@ -19,71 +20,220 @@ const tabLabels: Record<Tab, string> = {
   settings: 'Settings',
 };
 
+type SettingsSection = 'tabVisibility' | 'slashCommands';
+
+const slashCommandRegex = /^\/[a-zA-Z0-9]+([:\-_][a-zA-Z0-9]+)*$/;
+
 export const SettingsView: React.FC<SettingsViewProps> = ({
   settings,
   onUpdateSettings,
   terminalSize,
 }) => {
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [activeSection, setActiveSection] = useState<SettingsSection>('tabVisibility');
+  const [tabSelectedIndex, setTabSelectedIndex] = useState(0);
+  const [slashSelectedIndex, setSlashSelectedIndex] = useState(0);
+  
+  const [editingIndex, setEditingIndex] = useState<number | null>(null); // null means not editing, -1 means adding new
+  const [editingValue, setEditingValue] = useState('');
+
+  const slashCommands = settings.slashCommands || [];
+  const isEditingValueValid = slashCommandRegex.test(editingValue);
 
   useInput((input, key) => {
+    if (editingIndex !== null) {
+        if (key.escape) {
+            setEditingIndex(null);
+            setEditingValue('');
+        }
+        return;
+    }
+
     if (key.upArrow || input === 'k') {
-      setSelectedIndex(Math.max(0, selectedIndex - 1));
+      if (activeSection === 'tabVisibility') {
+        setTabSelectedIndex(Math.max(0, tabSelectedIndex - 1));
+      } else {
+        setSlashSelectedIndex(Math.max(0, slashSelectedIndex - 1));
+      }
     } else if (key.downArrow || input === 'j') {
-      setSelectedIndex(Math.min(ALL_TABS.length - 1, selectedIndex + 1));
+      if (activeSection === 'tabVisibility') {
+        setTabSelectedIndex(Math.min(ALL_TABS.length - 1, tabSelectedIndex + 1));
+      } else {
+        setSlashSelectedIndex(Math.min(slashCommands.length, slashSelectedIndex + 1));
+      }
+    } else if (key.leftArrow || input === 'h') {
+      setActiveSection('tabVisibility');
+    } else if (key.rightArrow || input === 'l') {
+      setActiveSection('slashCommands');
     } else if (key.return || input === ' ') {
-      const tab = ALL_TABS[selectedIndex];
-      const newVisibility = {
-        ...settings.tabVisibility,
-        [tab]: !settings.tabVisibility[tab],
-      };
-      
-      // Ensure at least one tab is visible (optional, but good for UX)
-      // Actually, if settings is hidden, how do they get back? 
-      // User can always use shortcuts 1-5 or ctrl-s.
-      
-      onUpdateSettings({ tabVisibility: newVisibility }, true);
+      if (activeSection === 'tabVisibility') {
+        const tab = ALL_TABS[tabSelectedIndex];
+        const newVisibility = {
+          ...settings.tabVisibility,
+          [tab]: !settings.tabVisibility[tab],
+        };
+        onUpdateSettings({ ...settings, tabVisibility: newVisibility }, true);
+      } else {
+        if (slashSelectedIndex === slashCommands.length) {
+          // Add new
+          setEditingIndex(-1);
+          setEditingValue('/');
+        } else {
+          // Edit existing
+          setEditingIndex(slashSelectedIndex);
+          setEditingValue('/' + slashCommands[slashSelectedIndex]);
+        }
+      }
+    } else if (input === 'd' && activeSection === 'slashCommands' && slashSelectedIndex < slashCommands.length) {
+      const newSlashCommands = [...slashCommands];
+      newSlashCommands.splice(slashSelectedIndex, 1);
+      onUpdateSettings({ ...settings, slashCommands: newSlashCommands }, true);
     }
   });
 
+  const handleFinishEditing = () => {
+    if (isEditingValueValid) {
+      const cmdWithoutSlash = editingValue.slice(1);
+      let newSlashCommands = [...slashCommands];
+      
+      if (editingIndex === -1) {
+        // Adding new
+        if (!newSlashCommands.includes(cmdWithoutSlash)) {
+          newSlashCommands.push(cmdWithoutSlash);
+        }
+      } else if (editingIndex !== null) {
+        // Updating existing
+        newSlashCommands[editingIndex] = cmdWithoutSlash;
+      }
+      
+      newSlashCommands.sort();
+      onUpdateSettings({ ...settings, slashCommands: newSlashCommands }, true);
+      setEditingIndex(null);
+      setEditingValue('');
+      
+      // Update selected index to match the new position of the command if it was moved due to sort
+      if (editingIndex === -1 || editingIndex !== null) {
+          const newIdx = newSlashCommands.indexOf(cmdWithoutSlash);
+          if (newIdx !== -1) setSlashSelectedIndex(newIdx);
+      }
+    }
+  };
+
   return (
     <Box flexDirection="column" paddingX={1} flexGrow={1}>
-      <Box marginBottom={1} borderStyle="round" borderColor="cyan" paddingX={1}>
-        <Text bold color="cyan"> Tab Visibility Settings </Text>
-      </Box>
-      
-      <Box flexDirection="column" marginBottom={1}>
-        <Text dimColor>Toggle visibility of tabs in the header and navigation.</Text>
-        <Text dimColor>Navigation shortcuts (1-5, Ctrl-S) will still work.</Text>
+      <Box flexDirection="row" marginBottom={1}>
+        <Box 
+          borderStyle="round" 
+          borderColor={activeSection === 'tabVisibility' ? 'cyan' : 'gray'} 
+          paddingX={1}
+          marginRight={2}
+        >
+          <Text bold color={activeSection === 'tabVisibility' ? 'cyan' : 'white'}> Tab Visibility </Text>
+        </Box>
+        <Box 
+          borderStyle="round" 
+          borderColor={activeSection === 'slashCommands' ? 'cyan' : 'gray'} 
+          paddingX={1}
+        >
+          <Text bold color={activeSection === 'slashCommands' ? 'cyan' : 'white'}> Slash Commands </Text>
+        </Box>
       </Box>
 
-      <Box flexDirection="column">
-        {ALL_TABS.map((tab, index) => {
-          const isSelected = index === selectedIndex;
-          const isVisible = settings.tabVisibility[tab];
-          
-          return (
-            <Box key={tab} paddingX={1} backgroundColor={isSelected ? '#334455' : undefined}>
-              <Text color={isSelected ? 'white' : 'gray'}>
-                {isSelected ? '▶ ' : '  '}
-              </Text>
-              <Box width={3}>
-                <Text color={isVisible ? 'green' : 'red'}>
-                  {isVisible ? '[x]' : '[ ]'}
+      {activeSection === 'tabVisibility' ? (
+        <Box flexDirection="column">
+          <Box flexDirection="column" marginBottom={1}>
+            <Text dimColor>Toggle visibility of tabs in the header and navigation.</Text>
+          </Box>
+          {ALL_TABS.map((tab, index) => {
+            const isSelected = index === tabSelectedIndex;
+            const isVisible = settings.tabVisibility[tab];
+            
+            return (
+              <Box key={tab} paddingX={1} backgroundColor={isSelected ? '#334455' : undefined}>
+                <Text color={isSelected ? 'white' : 'gray'}>
+                  {isSelected ? '▶ ' : '  '}
+                </Text>
+                <Box width={3}>
+                  <Text color={isVisible ? 'green' : 'red'}>
+                    {isVisible ? '[x]' : '[ ]'}
+                  </Text>
+                </Box>
+                <Text color={isSelected ? 'white' : 'white'}>
+                  {tabLabels[tab]}
                 </Text>
               </Box>
-              <Text color={isSelected ? 'white' : 'white'}>
-                {tabLabels[tab]}
+            );
+          })}
+        </Box>
+      ) : (
+        <Box flexDirection="column">
+          <Box flexDirection="column" marginBottom={1}>
+            <Text dimColor>Manage custom slash commands for the coding agent.</Text>
+          </Box>
+          
+          <Box flexDirection="column" marginBottom={1}>
+            {slashCommands.map((cmd, index) => {
+              const isSelected = index === slashSelectedIndex && editingIndex === null;
+              const isEditing = editingIndex === index;
+              
+              return (
+                <Box key={cmd} paddingX={1} backgroundColor={isSelected || isEditing ? '#334455' : undefined}>
+                  <Text color={isSelected || isEditing ? 'white' : 'gray'}>
+                    {isSelected || isEditing ? '▶ ' : '  '}
+                  </Text>
+                  {isEditing ? (
+                    <UncontrolledSingleLineInput 
+                      initialValue={editingValue}
+                      onChange={setEditingValue}
+                      onEnter={handleFinishEditing}
+                      onEscape={() => { setEditingIndex(null); setEditingValue(''); }}
+                      focus={true}
+                      color={isEditingValueValid ? 'white' : 'red'}
+                    />
+                  ) : (
+                    <Box>
+                      <Text color={isSelected ? 'white' : 'white'}>/{cmd}</Text>
+                      {isSelected && <Text color="gray"> (Press Enter to edit, 'd' to delete)</Text>}
+                    </Box>
+                  )}
+                </Box>
+              );
+            })}
+            
+            <Box 
+                paddingX={1} 
+                backgroundColor={(slashSelectedIndex === slashCommands.length && editingIndex === null) || editingIndex === -1 ? '#334455' : undefined}
+            >
+              <Text color={(slashSelectedIndex === slashCommands.length && editingIndex === null) || editingIndex === -1 ? 'white' : 'gray'}>
+                {(slashSelectedIndex === slashCommands.length && editingIndex === null) || editingIndex === -1 ? '▶ ' : '  '}
               </Text>
+              {editingIndex === -1 ? (
+                <UncontrolledSingleLineInput 
+                  initialValue={editingValue}
+                  onChange={setEditingValue}
+                  onEnter={handleFinishEditing}
+                  onEscape={() => { setEditingIndex(null); setEditingValue(''); }}
+                  focus={true}
+                  color={isEditingValueValid ? 'cyan' : 'red'}
+                />
+              ) : (
+                <Text color="cyan">[Add New Command]</Text>
+              )}
             </Box>
-          );
-        })}
-      </Box>
+          </Box>
+
+          {editingIndex !== null && !isEditingValueValid && editingValue.length > 1 && (
+             <Box paddingX={1}>
+                <Text color="red">Invalid format! Must start with / and contain only alphanumeric and : - _</Text>
+             </Box>
+          )}
+        </Box>
+      )}
 
       <Box marginTop={2} borderStyle="single" borderColor="gray" paddingX={1} flexDirection="column">
         <Text color="gray">Shortcuts:</Text>
-        <Text color="gray">  [↑/↓] or [j/k] to navigate</Text>
-        <Text color="gray">  [Enter] or [Space] to toggle</Text>
+        <Text color="gray">  [↑/↓] Navigate | [←/→] Switch Section</Text>
+        <Text color="gray">  [Enter/Space] Toggle/Action | [Esc] Cancel edit</Text>
+        {activeSection === 'slashCommands' && editingIndex === null && <Text color="gray">  [d] Delete selected command</Text>}
       </Box>
     </Box>
   );

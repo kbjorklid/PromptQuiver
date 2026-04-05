@@ -3,4 +3,5 @@ export type View = 'list' | 'editor';
 
 export interface Settings {
   tabVisibility: Record<Tab, boolean>;
+  slashCommands?: string[];
 }

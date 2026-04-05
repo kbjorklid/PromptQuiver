@@ -2,15 +2,16 @@ import { useState, useEffect, useRef } from 'react';
 import { fuzzySearchFiles } from '../utils/fileSearch';
 import type { Prompt } from '../storage/paths';
 
-export type MentionType = 'file' | 'snippet-expand' | 'snippet-var';
+export type MentionType = 'file' | 'snippet-expand' | 'snippet-var' | 'slash-command';
 
 export interface UseMentionAutocompleteProps {
   snippets: Prompt[];
+  slashCommands?: string[];
   onApply: (text: string, start: number, end: number) => void;
   allowSnippets?: boolean;
 }
 
-export function useMentionAutocomplete({ snippets, onApply, allowSnippets = true }: UseMentionAutocompleteProps) {
+export function useMentionAutocomplete({ snippets, slashCommands = [], onApply, allowSnippets = true }: UseMentionAutocompleteProps) {
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
   const [mentionType, setMentionType] = useState<MentionType | null>(null);
   const [mentionStart, setMentionStart] = useState<number | null>(null);
@@ -39,6 +40,10 @@ export function useMentionAutocomplete({ snippets, onApply, allowSnippets = true
           .filter(s => s.name?.toLowerCase().includes(mentionQuery.toLowerCase()))
           .map(s => s.name!)
           .sort();
+      } else if (mentionType === 'slash-command') {
+        results = slashCommands
+          .filter(cmd => cmd.toLowerCase().includes(mentionQuery.toLowerCase()))
+          .sort();
       }
       
       setSearchResults(results);
@@ -50,13 +55,14 @@ export function useMentionAutocomplete({ snippets, onApply, allowSnippets = true
       }
     };
     fetchResults();
-  }, [mentionQuery, mentionType, snippets]);
+  }, [mentionQuery, mentionType, snippets, slashCommands]);
 
   const checkMention = (val: string, cursor: number) => {
     const beforeCursor = val.slice(0, cursor);
     const fileMatch = beforeCursor.match(/(?:^|\s)@([^\s]*)$/);
     const snippetVarMatch = allowSnippets ? beforeCursor.match(/(?:^|\s)\$\$([^\s]*)$/) : null;
     const snippetExpandMatch = allowSnippets ? beforeCursor.match(/(?:^|\s)\$([^\s]*)$/) : null;
+    const slashMatch = beforeCursor.match(/(?:^|\s)\/([^\s]*)$/);
 
     if (fileMatch && fileMatch[1] !== undefined) {
       setMentionType('file');
@@ -72,6 +78,11 @@ export function useMentionAutocomplete({ snippets, onApply, allowSnippets = true
       setMentionType('snippet-expand');
       setMentionQuery(snippetExpandMatch[1]);
       setMentionStart(cursor - snippetExpandMatch[1].length - 1);
+      setMentionEnd(cursor);
+    } else if (slashMatch && slashMatch[1] !== undefined) {
+      setMentionType('slash-command');
+      setMentionQuery(slashMatch[1]);
+      setMentionStart(cursor - slashMatch[1].length - 1);
       setMentionEnd(cursor);
     } else {
       setMentionType(null);
@@ -98,6 +109,8 @@ export function useMentionAutocomplete({ snippets, onApply, allowSnippets = true
             onApply("@" + result + " ", mentionStart, mentionEnd);
           } else if (mentionType === 'snippet-var') {
             onApply("$$" + result + " ", mentionStart, mentionEnd);
+          } else if (mentionType === 'slash-command') {
+            onApply("/" + result + " ", mentionStart, mentionEnd);
           } else if (mentionType === 'snippet-expand') {
             const snippet = snippets.find(s => s.name === result);
             if (snippet) {

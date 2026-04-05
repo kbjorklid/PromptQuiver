@@ -56,7 +56,8 @@ For convenience, you can alias the command in your shell:
 
 ### Navigation
 - `Up`/`Down` or `j`/`k`: Move selection.
-- `Tab` or `h`/`l`: Switch between **Prompts / Notes / Canned / Snippets / Archive** tabs.
+- `1`-`9`: Jump to the corresponding visible tab.
+- `Tab` or `h`/`l`: Switch between **Prompts / Notes / Canned / Snippets / Archive / Settings** tabs.
 - `b`: Toggle branch filter (show only items for the current git branch).
 - `Esc`: Clear search or exit current view.
 

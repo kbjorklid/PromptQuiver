@@ -98,6 +98,7 @@ export const App = ({
       archive: true,
       settings: true,
     },
+    slashCommands: [],
   };
   const tabVisibility = (data.settings || defaultSettings).tabVisibility;
   const orderedTabs = allTabs.filter(tab => tabVisibility[tab]);
@@ -217,10 +218,40 @@ export const App = ({
       return;
     }
 
-    // Tab shortcuts
-    const tabNumber = parseInt(input);
-    if (!isNaN(tabNumber) && tabNumber > 0 && tabNumber <= orderedTabs.length) {
-      setActiveTab(orderedTabs[tabNumber - 1]);
+    // Tab shortcuts - ALWAYS allow
+    if (/^[1-9]$/.test(input)) {
+      const tabIndex = parseInt(input) - 1;
+      if (tabIndex < orderedTabs.length) {
+        setActiveTab(orderedTabs[tabIndex]);
+      }
+      return;
+    }
+
+    // Command Map for character inputs that should ALWAYS work
+    const globalCharCommands: Record<string, () => void> = {
+      'q': exit,
+      'S': () => setActiveTab('settings'),
+    };
+
+    if (globalCharCommands[input]) {
+      globalCharCommands[input]();
+      return;
+    }
+
+    if (key.ctrl && input === 's') {
+      setActiveTab('settings');
+      return;
+    }
+
+    // Global navigation keys - ALWAYS allow
+    if (key.tab) {
+      key.shift ? handlePrevTab() : handleNextTab();
+      return;
+    }
+
+    // If in settings, don't handle other keys here (SettingsView will handle them)
+    if (activeTab === 'settings') {
+      return;
     }
 
     // Special keys
@@ -230,13 +261,10 @@ export const App = ({
     if (key.leftArrow) return handlePrevTab();
     if (key.return) return handleEdit();
     if (key.escape && searchQuery) return setSearchQuery('');
-    if (key.tab) return key.shift ? handlePrevTab() : handleNextTab();
     if (key.ctrl && input === 'y') return redo();
-    if (key.ctrl && input === 's') return setActiveTab('settings');
 
     // Command Map for character inputs
     const charCommands: Record<string, () => void> = {
-      'q': exit,
       'k': () => updateSelectedIndex(Math.max(0, selectedIndex - 1)),
       'j': () => updateSelectedIndex(Math.min(currentList.length - 1, selectedIndex + 1)),
       'l': handleNextTab,
@@ -247,13 +275,12 @@ export const App = ({
       'd': handleArchive,
       'r': handleRestore,
       's': handleStage,
-      'S': () => setActiveTab('settings'),
       'y': handleCopy,
       'e': handleEdit,
-      'a': () => activeTab !== 'archive' && activeTab !== 'settings' && addPrompt('after'),
-      'A': () => activeTab !== 'archive' && activeTab !== 'settings' && addPrompt('end'),
-      'i': () => activeTab !== 'archive' && activeTab !== 'settings' && addPrompt('before'),
-      'I': () => activeTab !== 'archive' && activeTab !== 'settings' && addPrompt('start'),
+      'a': () => activeTab !== 'archive' && addPrompt('after'),
+      'A': () => activeTab !== 'archive' && addPrompt('end'),
+      'i': () => activeTab !== 'archive' && addPrompt('before'),
+      'I': () => activeTab !== 'archive' && addPrompt('start'),
       'b': toggleBranchFilter,
     };
 
@@ -287,6 +314,7 @@ export const App = ({
         onCancel={cancelEdit}
         snippets={data.snippets}
         canned={data.canned}
+        slashCommands={data.settings?.slashCommands || []}
       />
     );
   }

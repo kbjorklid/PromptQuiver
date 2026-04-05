@@ -10,6 +10,7 @@ export interface UncontrolledSingleLineInputProps {
   onDownArrow?: () => void;
   focus?: boolean;
   placeholder?: string;
+  color?: string;
 }
 
 export function UncontrolledSingleLineInput({
@@ -20,7 +21,8 @@ export function UncontrolledSingleLineInput({
   onEscape,
   onDownArrow,
   focus = true,
-  placeholder = ''
+  placeholder = '',
+  color
 }: UncontrolledSingleLineInputProps) {
   const [value, setValue] = useState(initialValue);
   const valueRef = useRef(initialValue);
@@ -122,7 +124,7 @@ export function UncontrolledSingleLineInput({
 
   return (
     <Box>
-      <Text>{renderValue()}</Text>
+      <Text color={color}>{renderValue()}</Text>
     </Box>
   );
 }

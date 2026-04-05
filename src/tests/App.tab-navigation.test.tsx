@@ -53,4 +53,48 @@ describe('App Tab Navigation', () => {
     await new Promise(resolve => setTimeout(resolve, 100));
     expect(lastFrame()).toContain('Main Prompt');
   });
+
+  test('navigation with number keys with multiple hidden tabs', async () => {
+    const multiHiddenData: PromptStorageData = {
+      main: [{ id: '1', text: 'Main Prompt', type: 'prompt', created_at: '', updated_at: '' }],
+      notes: [{ id: '2', text: 'Note Content', type: 'note', created_at: '', updated_at: '' }],
+      canned: [{ id: 'c1', text: 'Canned Prompt', type: 'prompt', created_at: '', updated_at: '' }],
+      snippets: [{ id: 's1', text: 'Snippet Content', type: 'prompt', created_at: '', updated_at: '', name: 'test' }],
+      archive: [],
+      settings: {
+        tabVisibility: {
+          main: true,
+          notes: false,
+          canned: false,
+          snippets: true,
+          archive: false,
+          settings: true,
+        }
+      }
+    };
+
+    const loadPromptsFn = mock(async () => multiHiddenData);
+    const { lastFrame, stdin } = render(
+      <App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} />
+    );
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Visible tabs: Prompt (1), Snippets (2), Settings (3)
+    
+    // Press '2' -> should go to Snippets
+    stdin.write('2');
+    await new Promise(resolve => setTimeout(resolve, 100));
+    expect(lastFrame()).toContain('test'); // Snippet name
+
+    // Press '3' -> should go to Settings
+    stdin.write('3');
+    await new Promise(resolve => setTimeout(resolve, 100));
+    expect(lastFrame()).toContain('Tab Visibility'); // Settings view indicator
+
+    // Press '1' -> back to Prompt
+    stdin.write('1');
+    await new Promise(resolve => setTimeout(resolve, 100));
+    expect(lastFrame()).toContain('Main Prompt');
+  });
 });

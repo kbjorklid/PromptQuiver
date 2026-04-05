@@ -35,7 +35,8 @@ export const INITIAL_PROMPT_STATE: PromptState = {
         snippets: true,
         archive: true,
         settings: true,
-      }
+      },
+      slashCommands: [],
     }
   },
   past: [],

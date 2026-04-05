@@ -42,7 +42,7 @@ describe('App Settings', () => {
     stdin.write('\u0013'); // Ctrl-S
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    expect(stripAnsi(lastFrame()!)).toContain('Tab Visibility Settings');
+    expect(stripAnsi(lastFrame()!)).toContain('Tab Visibility');
   });
 
   test('toggling tab visibility hides it from header', async () => {

@@ -14,6 +14,7 @@ export interface EditorViewProps {
   terminalSize: { rows: number; columns: number };
   snippets?: Prompt[];
   canned?: Prompt[];
+  slashCommands?: string[];
 }
 
 export function EditorView({ 
@@ -24,7 +25,8 @@ export function EditorView({
   onCancel, 
   terminalSize,
   snippets = [],
-  canned = []
+  canned = [],
+  slashCommands = []
 }: EditorViewProps) {
   const textRef = useRef(initialText);
   const [name, setName] = useState(initialName);
@@ -44,6 +46,7 @@ export function EditorView({
     closeAutocomplete
   } = useMentionAutocomplete({
     snippets,
+    slashCommands,
     onApply: (textToInsert, start, end) => {
       inputRef.current?.insertText(textToInsert, start, end);
     },
@@ -151,6 +154,16 @@ export function EditorView({
   }
   const windowedResults = searchResults.slice(startIdx, startIdx + 5);
 
+  const getMentionTypeName = (type: MentionType | null) => {
+    switch (type) {
+      case 'file': return 'files';
+      case 'snippet-expand':
+      case 'snippet-var': return 'snippets';
+      case 'slash-command': return 'slash commands';
+      default: return 'items';
+    }
+  };
+
   return (
     <Box flexDirection="column" padding={1} width="100%" height="100%">
       <Box marginBottom={1} flexDirection="column">
@@ -201,7 +214,7 @@ export function EditorView({
       {mentionQuery === null && (
         <Box paddingX={1} marginBottom={1}>
           <Text color="gray">
-            <Text bold color="cyan">@</Text> File{isSnippet ? '' : <Text> | <Text bold color="cyan">$</Text> Snippet (expand) | <Text bold color="cyan">$$</Text> Snippet (var)</Text>}
+            <Text bold color="cyan">@</Text> File{isSnippet ? '' : <Text> | <Text bold color="cyan">$</Text> Snippet (expand) | <Text bold color="cyan">$$</Text> Snippet (var)</Text>} | <Text bold color="cyan">/</Text> Slash Command
           </Text>
         </Box>
       )}
@@ -210,7 +223,7 @@ export function EditorView({
         {mentionQuery !== null ? (
           <Box flexDirection="column">
             {searchResults.length === 0 ? (
-              <Text color="gray">No {mentionType === 'file' ? 'files' : 'snippets'} found matching "{mentionQuery}"</Text>
+              <Text color="gray">No {getMentionTypeName(mentionType)} found matching "{mentionQuery}"</Text>
             ) : (
               windowedResults.map((result, i) => {
                 const actualIndex = startIdx + i;

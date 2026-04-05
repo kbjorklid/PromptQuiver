@@ -16,6 +16,7 @@ const DEFAULT_SETTINGS: Settings = {
     archive: true,
     settings: true,
   },
+  slashCommands: [],
 };
 
 const DEFAULT_DATA: PromptStorageData = {
@@ -47,7 +48,8 @@ const ensureType = (list: any[], defaultType: 'prompt' | 'note'): Prompt[] => {
 const ensureSettings = (settings: any): Settings => {
   if (!settings || typeof settings !== 'object') return DEFAULT_SETTINGS;
   const tabVisibility = { ...DEFAULT_SETTINGS.tabVisibility, ...(settings.tabVisibility || {}) };
-  return { tabVisibility };
+  const slashCommands = Array.isArray(settings.slashCommands) ? settings.slashCommands : [];
+  return { tabVisibility, slashCommands };
 };
 
 export async function loadPrompts(cwd: string): Promise<PromptStorageData> {
