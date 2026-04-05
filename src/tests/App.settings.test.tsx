@@ -95,10 +95,10 @@ describe('App Settings', () => {
     stdin.write('S');
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    // Should show settings shortcuts (e.g., [←/→/h/l] Section)
+    // Should show settings shortcuts (e.g., [Tab/←/→/h/l] Tab)
     const frame = stripAnsi(lastFrame()!);
-    expect(frame).toContain('[←/→/h/l]');
-    expect(frame).toContain('Section');
+    expect(frame).toContain('[Tab/←/→/h/l]');
+    expect(frame).toContain('Tab');
     expect(frame).toContain('[Enter/Space]');
     expect(frame).toContain('Action');
     
@@ -136,5 +136,34 @@ describe('App Settings', () => {
 
     // Notes should be back
     expect(stripAnsi(lastFrame()!)).toContain('Notes');
+  });
+
+  test('left/right arrows switch tabs while in settings', async () => {
+    const loadPromptsFn = async () => initialData;
+    const { lastFrame, stdin } = render(
+      <App cwd={mockCwd} loadPromptsFn={loadPromptsFn as any} />
+    );
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Go to settings
+    stdin.write('S');
+    await new Promise(resolve => setTimeout(resolve, 100));
+    expect(stripAnsi(lastFrame()!)).toContain('Settings');
+
+    // Press left arrow
+    stdin.write('\u001b[D'); // Left Arrow
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Should be on Archive (the tab before Settings)
+    expect(stripAnsi(lastFrame()!)).toContain('5. Archive');
+    expect(stripAnsi(lastFrame()!)).not.toContain('Tab Visibility');
+
+    // Press right arrow
+    stdin.write('\u001b[C'); // Right Arrow
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Should be back on Settings
+    expect(stripAnsi(lastFrame()!)).toContain('Tab Visibility');
   });
 });

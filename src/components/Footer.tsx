@@ -62,9 +62,8 @@ export const Footer: React.FC<FooterProps> = ({
     if (activeTab === 'settings') {
       return (
         <>
-          <Box><Text bold>[Tab]</Text><Text color="gray"> Tab</Text></Box>
+          <Box><Text bold>[Tab/←/→/h/l]</Text><Text color="gray"> Tab</Text></Box>
           <Box><Text bold>[↑/↓/j/k]</Text><Text color="gray"> Nav</Text></Box>
-          <Box><Text bold>[←/→/h/l]</Text><Text color="gray"> Section</Text></Box>
           <Box><Text bold>[Enter/Space]</Text><Text color="gray"> Action</Text></Box>
           <Box><Text bold>[Esc]</Text><Text color="gray"> Cancel</Text></Box>
           <Box><Text bold>[d]</Text><Text color="gray"> Delete</Text></Box>

@@ -255,6 +255,8 @@ export const App = ({
 
     // If in settings, don't handle other keys here (SettingsView will handle them)
     if (activeTab === 'settings') {
+      if (key.rightArrow || input === 'l') return handleNextTab();
+      if (key.leftArrow || input === 'h') return handlePrevTab();
       return;
     }
 

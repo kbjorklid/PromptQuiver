@@ -17,12 +17,15 @@ export const calculateViewport = ({
   terminalRows: number;
   initialViewportSize?: number;
 }): ViewportResult => {
-  // Estimate: Header (4) + Footer (4) + Search (1) + Padding/Extra (2) = 11 lines overhead.
-  // Each item takes 2 or 3 lines (average 3.0 including separators).
-  const defaultViewportSize = Math.max(3, Math.floor((terminalRows - 11) / 3));
-  const viewportSize = initialViewportSize || defaultViewportSize;
-  const half = Math.floor(viewportSize / 2);
+  // Overhead: Header (4) + Footer (5) + Search (2) + Padding/Extra (3) = 14 lines
+  const reservedLines = 14;
+  const availableLines = Math.max(3, terminalRows - reservedLines);
   
+  // Each item takes 2 lines for text (name or up to 2 lines of text) + 1 line for separator
+  const itemHeight = 3;
+  const viewportSize = initialViewportSize || Math.max(1, Math.floor(availableLines / itemHeight));
+  
+  const half = Math.floor(viewportSize / 2);
   let start = Math.max(0, selectedIndex - half);
   let end = Math.min(totalItems, start + viewportSize);
   
