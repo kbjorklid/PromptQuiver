@@ -28,4 +28,14 @@ describe('App Copy Shortcut', () => {
     
     expect(lastFrame()).toContain('Prompt 1');
   });
+
+  test('Copy shortcut (c) does not change state', async () => {
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} viewportSize={5} />);
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    stdin.write('c');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    expect(lastFrame()).toContain('Prompt 1');
+  });
 });

@@ -32,7 +32,7 @@ const defaultSettings: Settings = {
 };
 
 describe('App Error Paths', () => {
-  test('shows toast when clipboard.writeSync fails during Yank (y)', async () => {
+  test('shows toast when clipboard.writeSync fails during Copy (c/y)', async () => {
     const mockData: PromptStorageData = {
       main: [{ id: '1', text: 'Prompt 1', type: 'prompt', created_at: '', updated_at: '' }],
   canned: [],
@@ -50,8 +50,8 @@ describe('App Error Paths', () => {
     // Wait for load
     await new Promise(resolve => setTimeout(resolve, 150));
 
-    // Press 'y' to yank
-    stdin.write('y');
+    // Press 'c' to copy
+    stdin.write('c');
     
     // Wait for state update
     await new Promise(resolve => setTimeout(resolve, 100));

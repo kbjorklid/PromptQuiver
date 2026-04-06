@@ -160,6 +160,7 @@ export const useAppKeyboard = ({
       'r': handleRestore,
       's': handleStage,
       'y': handleCopy,
+      'c': handleCopy,
       'p': handlePaste,
       'a': () => activeTab !== 'archive' && addPrompt('after'),
       'A': () => activeTab !== 'archive' && addPrompt('end'),

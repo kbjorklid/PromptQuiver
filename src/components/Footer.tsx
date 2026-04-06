@@ -66,7 +66,7 @@ export const Footer: React.FC<FooterProps> = ({
           <Box><Text bold>[m]</Text><Text color="gray"> Move</Text></Box>
         )}
         {activeTab !== 'notes' && hasItems && (
-          <Box><Text bold>[y]</Text><Text color="gray"> Yank</Text></Box>
+          <Box><Text bold>[c]</Text><Text color="gray"> Copy</Text></Box>
         )}
         <Box><Text bold>[/]</Text><Text color="gray"> Filter</Text></Box>
         {(activeTab === 'main' || activeTab === 'notes') && (

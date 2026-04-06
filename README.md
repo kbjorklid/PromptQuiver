@@ -69,7 +69,7 @@ For convenience, you can alias the command in your shell:
 
 ### Management
 - `Enter` or `e`: Open Editor for the selected item.
-- `y`: Yank (Copy) text to clipboard.
+- `c` (or `y`): Copy text to clipboard.
 - `a` / `A`: Add new item after current / at end of list.
 - `i` / `I`: Add new item before current / at beginning of list.
 - `d`: Move to Archive (from Prompts/Notes) or Delete permanently (from Archive).

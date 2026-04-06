@@ -19,6 +19,16 @@ const mockLoadPrompts = async () => JSON.parse(JSON.stringify(mockData));
 describe('App UI (Iteration 5)', () => {
   const mockCwd = '/test/path';
 
+  test('Shows toast when copying to clipboard (c)', async () => {
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    stdin.write('c');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    expect(lastFrame()).toContain('Copied to clipboard');
+  });
+
   test('Shows toast when copying to clipboard (y)', async () => {
     const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));

@@ -40,12 +40,12 @@ const mockLoadPrompts = () => Promise.resolve(mockData);
 const mockSavePrompts = mock(() => Promise.resolve());
 
 describe('App Last Copied Icon', () => {
-  test('shows clipboard icon when a prompt is yanked (y)', async () => {
+  test('shows clipboard icon when a prompt is copied (c/y)', async () => {
     const { lastFrame, stdin } = render(<App cwd="/test" loadPromptsFn={mockLoadPrompts} savePromptsFn={mockSavePrompts} viewportSize={5} />);
     await new Promise(resolve => setTimeout(resolve, 50));
 
-    // Press 'y' to copy first prompt
-    stdin.write('y');
+    // Press 'c' to copy first prompt
+    stdin.write('c');
     await new Promise(resolve => setTimeout(resolve, 50));
 
     expect(lastFrame()).toContain('📋');
