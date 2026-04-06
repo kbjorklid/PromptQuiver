@@ -28,6 +28,9 @@
 
 ## Development Conventions
 
+### Changelog
+- **Update Mandate:** Always update `CHANGELOG.md` with every new feature, bug fix, or significant refactoring. Follow the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.
+
 ### Coding Style
 - **TypeScript:** The project is strictly typed. Always use TypeScript and provide interfaces/types for new data structures.
 - **Functional Components:** Use React functional components and hooks (`useState`, `useEffect`, `useCallback`, `useRef`).
