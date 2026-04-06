@@ -21,14 +21,13 @@ mock.module('../storage/paths', () => {
 describe("Storage", () => {
   const mockCwd = path.join(process.cwd(), "test-project");
   const expectedPath = getStoragePath(mockCwd);
-  const commonPath = getCommonStoragePath();
 
   afterEach(async () => {
     try {
       await fs.unlink(expectedPath);
     } catch {}
     try {
-      await fs.unlink(tempCommonPath);
+      await fs.unlink(getCommonStoragePath());
     } catch {}
   });
 
@@ -38,6 +37,7 @@ describe("Storage", () => {
   });
 
   test("savePrompts creates a YAML file for project and common", async () => {
+    const commonPath = getCommonStoragePath();
     const data = {
       main: [
         {
@@ -90,6 +90,7 @@ describe("Storage", () => {
   });
 
   test("savePrompts preserves other categories in common.yml", async () => {
+    const commonPath = getCommonStoragePath();
     await ensureStorageDir();
     const otherData = { 'other-category': [{ name: 'test' }] };
     await fs.writeFile(commonPath, yaml.dump(otherData), 'utf-8');

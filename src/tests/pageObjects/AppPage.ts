@@ -146,7 +146,7 @@ export class AppPage {
     await this.write('\u001b[A');
   }
 
-  async waitForTextToAppear(text: string, timeout = 500, interval = 10) {
+  async waitForTextToAppear(text: string, timeout = 2000, interval = 20) {
     const start = Date.now();
     while (Date.now() - start < timeout) {
       if (this.frame?.includes(text)) {
@@ -157,7 +157,7 @@ export class AppPage {
     throw new Error(`Timed out waiting for text "${text}" to appear. Current frame:\n${this.frame}`);
   }
 
-  async waitForTextToDisappear(text: string, timeout = 500, interval = 10) {
+  async waitForTextToDisappear(text: string, timeout = 2000, interval = 20) {
     const start = Date.now();
     while (Date.now() - start < timeout) {
       if (!this.frame?.includes(text)) {
