@@ -13,7 +13,7 @@ export class AppPage {
     await new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  async write(text: string, waitMs = 50) {
+  async write(text: string, waitMs = 100) {
     this.renderResult.stdin.write(text);
     await this.wait(waitMs);
   }

@@ -118,6 +118,7 @@ describe('App CRUD Operations', () => {
     
     // Select index 0, press 'e'
     await app.editPrompt();
+    await app.wait(200);
     
     await app.waitForTextToAppear('Editor');
     app.expectInEditor();
