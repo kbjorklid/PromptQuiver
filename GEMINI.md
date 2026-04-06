@@ -22,6 +22,10 @@
 - **Run Tests:** `bun test src/tests`
 - **Type Check:** `tsc --noEmit` (inferred from `tsconfig.json`)
 
+## Shell Command Environment
+- **PowerShell:** The shell environment is PowerShell.
+- **Statement Separator:** DO NOT use `&&` to chain commands. Use `;` instead (e.g., `git add .; git commit -m "msg"`).
+
 ## Development Conventions
 
 ### Coding Style

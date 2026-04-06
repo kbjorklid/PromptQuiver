@@ -4,14 +4,26 @@ import os from "os";
 import fs from "fs/promises";
 
 export const mockClipboard = {
-  writeSync: () => {},
+  writeSync: (text: string) => {},
   readSync: () => "",
 };
 
 // Mock clipboardy globally for tests to avoid failures in non-TTY environments (Linux CI)
 mock.module("clipboardy", () => ({
-  ...mockClipboard,
-  default: mockClipboard,
+  writeSync: (text: string) => {
+    mockClipboard.writeSync(text);
+  },
+  readSync: () => {
+    return mockClipboard.readSync();
+  },
+  default: {
+    writeSync: (text: string) => {
+      mockClipboard.writeSync(text);
+    },
+    readSync: () => {
+      return mockClipboard.readSync();
+    },
+  },
 }));
 
 // Create a unique temp directory for this test process (test file)

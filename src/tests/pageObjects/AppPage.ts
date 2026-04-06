@@ -82,6 +82,14 @@ export class AppPage {
     await this.write('r');
   }
 
+  async pastePrompt() {
+    await this.write('p');
+  }
+
+  async pastePromptCtrlV() {
+    await this.write('\u0016'); // Ctrl-V
+  }
+
   async save() {
     await this.write('\u0013');
   }

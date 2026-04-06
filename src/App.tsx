@@ -100,6 +100,7 @@ export const App = ({
     openGlobalSearch,
     cancelGlobalSearch,
     copyToClipboard,
+    pastePrompt,
   } = usePrompts({ cwd, loadPromptsFn, savePromptsFn, debounceMs });
 
   const allTabs: Tab[] = ['main', 'canned', 'notes', 'snippets', 'archive', 'settings'];
@@ -241,6 +242,7 @@ export const App = ({
     handleEndMove,
     handleStage,
     handleCopy,
+    handlePaste: pastePrompt,
     addPrompt,
     toggleBranchFilter,
     undo,

@@ -25,6 +25,7 @@ interface AppKeyboardProps {
   handleEndMove: () => void;
   handleStage: () => void;
   handleCopy: () => void;
+  handlePaste: () => void;
   addPrompt: (position: 'before' | 'after' | 'start' | 'end') => void;
   toggleBranchFilter: () => void;
   undo: () => void;
@@ -56,8 +57,10 @@ export const useAppKeyboard = ({
   handleEndMove,
   handleStage,
   handleCopy,
+  handlePaste,
   addPrompt,
   toggleBranchFilter,
+
   undo,
   redo,
   moveItemInList,
@@ -147,6 +150,8 @@ export const useAppKeyboard = ({
     if (key.return) return handleEdit();
     if (key.escape && searchQuery) return setSearchQuery('');
 
+    if (key.ctrl && input === 'v') return handlePaste();
+
     const actionMap: Record<string, () => void> = {
       'e': handleEdit,
       '/': () => setIsSearching(true),
@@ -155,6 +160,7 @@ export const useAppKeyboard = ({
       'r': handleRestore,
       's': handleStage,
       'y': handleCopy,
+      'p': handlePaste,
       'a': () => activeTab !== 'archive' && addPrompt('after'),
       'A': () => activeTab !== 'archive' && addPrompt('end'),
       'i': () => activeTab !== 'archive' && addPrompt('before'),

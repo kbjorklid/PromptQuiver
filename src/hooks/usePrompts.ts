@@ -46,7 +46,7 @@ export function usePrompts({
     onSaveError,
   });
 
-  const { toast, showToast, copyToClipboard } = useAppFeedback();
+  const { toast, showToast, copyToClipboard, getFromClipboard } = useAppFeedback();
 
   const {
     activeTab, setActiveTab, currentList, selectedIndex, updateSelectedIndex,
@@ -68,6 +68,30 @@ export function usePrompts({
   const cancelGlobalSearch = useCallback(() => {
     setView('list');
   }, [setView]);
+
+  const pastePrompt = useCallback(() => {
+    if (activeTab === 'archive' || activeTab === 'settings' || activeTab === 'canned' || activeTab === 'snippets') return;
+    
+    const text = getFromClipboard();
+    if (!text) return;
+
+    const now = new Date().toISOString();
+    const branch = refreshCurrentBranch();
+    const type: 'prompt' | 'note' = activeTab === 'notes' ? 'note' : 'prompt';
+    const newPrompt: Prompt = {
+      id: uuidv4(),
+      text,
+      type,
+      branch,
+      created_at: now,
+      updated_at: now,
+    };
+
+    const index = currentList.length === 0 ? 0 : selectedIndex + 1;
+    insertPromptInList(activeTab, index, newPrompt, true);
+    updateSelectedIndex(index);
+    showToast(`Pasted to ${activeTab === 'notes' ? 'Notes' : 'Prompts'}`);
+  }, [activeTab, getFromClipboard, refreshCurrentBranch, currentList.length, selectedIndex, insertPromptInList, updateSelectedIndex, showToast]);
 
   const moveItemInList = useCallback((fromIndex: number, toIndex: number) => {
     if (toIndex < 0 || toIndex >= currentList.length) return;
@@ -274,6 +298,7 @@ export function usePrompts({
     isGlobalSearchLoading,
     openGlobalSearch,
     cancelGlobalSearch,
+    pastePrompt,
   };
 }
 

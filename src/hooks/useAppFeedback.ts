@@ -29,9 +29,19 @@ export function useAppFeedback() {
     }
   }, [showToast]);
 
+  const getFromClipboard = useCallback(() => {
+    try {
+      return clipboardy.readSync();
+    } catch (e) {
+      showToast('Failed to read from clipboard');
+      return null;
+    }
+  }, [showToast]);
+
   return {
     toast,
     showToast,
     copyToClipboard,
+    getFromClipboard,
   };
 }

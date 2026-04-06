@@ -75,6 +75,9 @@ export const Footer: React.FC<FooterProps> = ({
         {activeTab !== 'archive' && (
           <Box><Text bold>[a/A/i/I]</Text><Text color="gray"> Add</Text></Box>
         )}
+        {(activeTab === 'main' || activeTab === 'notes') && (
+          <Box><Text bold>[p]</Text><Text color="gray"> Paste</Text></Box>
+        )}
         {activeTab === 'archive' ? (
           hasItems && (
             <>
