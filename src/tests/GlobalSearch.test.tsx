@@ -54,14 +54,17 @@ describe('Global Search', () => {
     
     // Toggle to notes
     await app.nextTab();
+    await new Promise(resolve => setTimeout(resolve, 500)); // Delay for debounce (300ms) + CI overhead
     await app.waitForTextToAppear('External Note 1');
     app.expectContent('[other]');
     
     // Toggle back to prompts
     await app.nextTab();
+    await new Promise(resolve => setTimeout(resolve, 500)); // Delay for debounce (300ms) + CI overhead
     await app.waitForTextToAppear('External Prompt 1');
     
     // Select and edit
+    await new Promise(resolve => setTimeout(resolve, 200)); // Ensure UI settled
     await app.confirm(); // Enter on first result
     await app.waitForTextToAppear('Editor');
     app.expectContent('External Prompt 1');
@@ -81,6 +84,7 @@ describe('Global Search', () => {
     await app.waitForTextToAppear('GLOBAL SEARCH');
     
     await app.type('Archived');
+    await new Promise(resolve => setTimeout(resolve, 500)); // Delay for debounce
     await app.waitForTextToAppear('External Archived Prompt');
     app.expectContent('[other]');
   });

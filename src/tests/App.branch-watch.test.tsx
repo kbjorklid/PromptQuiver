@@ -58,20 +58,20 @@ describe('App Branch Auto-detection', () => {
         savePromptsFn={vi.fn()} 
         debounceMs={0} 
         viewportSize={5} 
-        pollInterval={100} // 100ms poll interval
+        pollInterval={250} // 250ms poll interval for stability
       />
     );
 
     // Wait for initial load
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     expect(stripAnsi(lastFrame() || '')).toContain('branch: main');
 
     // Change branch
     currentBranch = 'feature-x';
     
-    // Wait for next poll (pollInterval is 100ms)
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Wait for next poll
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     expect(stripAnsi(lastFrame() || '')).toContain('branch: feature-x');
   });
@@ -87,16 +87,16 @@ describe('App Branch Auto-detection', () => {
         savePromptsFn={vi.fn()} 
         debounceMs={0} 
         viewportSize={5} 
-        pollInterval={100} 
+        pollInterval={250} 
       />
     );
 
     // Wait for load
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     // Enable branch filter
     stdin.write('b');
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise(resolve => setTimeout(resolve, 200));
     
     expect(stripAnsi(lastFrame() || '')).toContain('Prompt 1');
     expect(stripAnsi(lastFrame() || '')).not.toContain('Prompt 2');
@@ -105,7 +105,7 @@ describe('App Branch Auto-detection', () => {
     currentBranch = 'feature-x';
     
     // Wait for poll
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     // Should now show Prompt 2 and hide Prompt 1
     expect(stripAnsi(lastFrame() || '')).not.toContain('Prompt 1');
