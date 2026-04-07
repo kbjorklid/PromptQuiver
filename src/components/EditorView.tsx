@@ -206,9 +206,12 @@ export function EditorView({
       </Box>
 
       {!readOnly && mentionQuery === null && (
-        <Box paddingX={1} marginBottom={1}>
+        <Box paddingX={1} marginBottom={1} flexDirection="column">
           <Text color="gray">
             <Text bold color="cyan">@</Text> File{isSnippet ? '' : <Text> | <Text bold color="cyan">$</Text> Snippet (expand) | <Text bold color="cyan">$$</Text> Snippet (var)</Text>} | <Text bold color="cyan">/</Text> Slash Command
+          </Text>
+          <Text color="gray">
+            <Text bold color="cyan">--</Text> Comment (ignored on copy)
           </Text>
         </Box>
       )}

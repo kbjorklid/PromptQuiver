@@ -6,6 +6,7 @@ import { SelectableRow } from './ui/SelectableRow';
 import { Indicator } from './ui/Indicator';
 import { Divider } from './ui/Divider';
 import { Badge } from './ui/Badge';
+import { getCommentTitle } from '../utils/comments';
 
 interface PromptListProps {
   currentList: Prompt[];
@@ -48,18 +49,22 @@ export const PromptList: React.FC<PromptListProps> = ({
     <Box flexDirection="column" flexGrow={1}>
       {items.map((prompt, index) => {
         const actualIndex = start + index;
+        const commentTitle = getCommentTitle(prompt.text);
+        
         const displayLines = prompt.name 
           ? [prompt.name]
-          : prompt.text
-              .split('\n')
-              .map((line) => line.trim())
-              .filter((line) => line.length > 0)
-              .slice(0, 2);
+          : commentTitle
+            ? [commentTitle]
+            : prompt.text
+                .split('\n')
+                .map((line) => line.trim())
+                .filter((line) => line.length > 0)
+                .slice(0, 2);
         
         const isSelected = actualIndex === selectedIndex;
         const isLastCopied = prompt.id === lastCopiedId;
         const isStaged = prompt.staged;
-        const itemColor = prompt.type === 'note' ? 'cyan' : (prompt.name ? 'magenta' : 'yellow');
+        const itemColor = prompt.type === 'note' ? 'cyan' : (prompt.name || commentTitle ? 'magenta' : 'yellow');
         const displayIndex = (actualIndex + 1).toString().padStart(currentList.length.toString().length, ' ');
         
         return (

@@ -12,6 +12,7 @@ import { loadPrompts, savePrompts } from './storage';
 import { usePrompts } from './hooks/usePrompts';
 import type { Tab, Settings } from './hooks/types';
 import { expandSnippets } from './utils/snippetExpansion';
+import { stripComments } from './utils/comments';
 import { useAppKeyboard } from './hooks/useAppKeyboard';
 import { useModal } from './hooks/useModal';
 import { ConfirmDialog } from './components/ConfirmDialog';
@@ -146,7 +147,8 @@ export const App = ({
     if (prompt) {
       // In handleCopy, if we are on 'snippets' tab, we don't expand snippets
       const expandedText = activeTab === 'snippets' ? prompt.text : expandSnippets(prompt.text, data.snippets);
-      if (copyToClipboard(expandedText, 'Copied to clipboard')) {
+      const textToCopy = stripComments(expandedText);
+      if (copyToClipboard(textToCopy, 'Copied to clipboard')) {
         setLastCopiedId(prompt.id);
       }
     }
@@ -159,7 +161,8 @@ export const App = ({
       if (activeTab === 'canned') {
         stagePrompt(); // Clears others via reducer
         const expandedText = expandSnippets(prompt.text, data.snippets);
-        if (copyToClipboard(expandedText, 'Copied to clipboard (other staged items archived)')) {
+        const textToCopy = stripComments(expandedText);
+        if (copyToClipboard(textToCopy, 'Copied to clipboard (other staged items archived)')) {
           setLastCopiedId(prompt.id); // Show 📋
         }
         return;
@@ -170,7 +173,8 @@ export const App = ({
       if (!wasStaged) {
         // Here activeTab is NOT 'snippets' because of the early return above
         const expandedText = expandSnippets(prompt.text, data.snippets);
-        if (copyToClipboard(expandedText, 'Staged and copied to clipboard')) {
+        const textToCopy = stripComments(expandedText);
+        if (copyToClipboard(textToCopy, 'Staged and copied to clipboard')) {
           setLastCopiedId(null);
         } else {
           showToast('Staged (clipboard error)');
@@ -293,7 +297,8 @@ export const App = ({
           saveEditedPrompt(text, name, shouldStage);
           if (shouldStage) {
             const expandedText = activeTab === 'snippets' ? text : expandSnippets(text, data.snippets);
-            if (copyToClipboard(expandedText)) {
+            const textToCopy = stripComments(expandedText);
+            if (copyToClipboard(textToCopy)) {
               setLastCopiedId(null);
             }
           }

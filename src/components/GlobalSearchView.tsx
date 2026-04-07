@@ -6,6 +6,7 @@ import { Indicator } from './ui/Indicator';
 import { Divider } from './ui/Divider';
 import { useViewport } from '../hooks/useViewport';
 import type { GlobalSearchResult } from '../storage';
+import { getCommentTitle } from '../utils/comments';
 
 interface GlobalSearchViewProps {
   query: string;
@@ -95,10 +96,11 @@ export const GlobalSearchView: React.FC<GlobalSearchViewProps> = ({
           {items.map((result, index) => {
             const actualIndex = start + index;
             const isSelected = actualIndex === selectedIndex;
-            const itemColor = result.type === 'note' ? 'cyan' : (result.name ? 'magenta' : 'yellow');
+            const commentTitle = result.text ? getCommentTitle(result.text) : null;
+            const itemColor = result.type === 'note' ? 'cyan' : (result.name || commentTitle ? 'magenta' : 'yellow');
             
-            const firstLine = result.text.split('\n')[0].trim();
-            const displayName = result.name || (firstLine.length > 50 ? firstLine.substring(0, 47) + '...' : firstLine);
+            const firstLine = result.text ? result.text.split('\n')[0]?.trim() || '' : '';
+            const displayName = result.name || commentTitle || (firstLine.length > 50 ? firstLine.substring(0, 47) + '...' : firstLine);
 
             return (
               <Box key={result.id} flexDirection="column">

@@ -1,6 +1,6 @@
 import { expect } from "bun:test";
 import { render } from 'ink-testing-library';
-import { Tab } from '../../hooks/types';
+import type { Tab } from '../../hooks/types';
 
 export class AppPage {
   private renderResult: ReturnType<typeof render>;

@@ -86,7 +86,7 @@ describe('App Paste Operations', () => {
   });
 
   test('pasting when list is empty', async () => {
-    const emptyLoad = async () => ({ main: [], notes: [], canned: [], snippets: [], archive: [] });
+    const emptyLoad = async () => ({ main: [], notes: [], canned: [], snippets: [], archive: [], settings: { tabVisibility: { main: true, canned: true, notes: true, snippets: true, archive: true, settings: true }, slashCommands: [], enableClaudeCommands: false } });
     const originalReadSync = mockClipboard.readSync;
     mockClipboard.readSync = () => 'First Content';
     
