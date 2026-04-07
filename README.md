@@ -32,25 +32,43 @@ This allows you to prepare exactly which prompt you want to use next, maintain a
 
 - [Bun](https://bun.sh/) (v1.0 or higher)
 
-### Installation
+### Installation (macOS/Linux)
+
+1. **Install Bun** (if you haven't already):
+   ```bash
+   curl -fsSL https://bun.com/install | bash
+   ```
+
+2. **Install Prompt Quiver globally**:
+   ```bash
+   bun install -g kbjorklid/promptquiver
+   ```
+
+3. **Add Bun to your PATH**:
+   To make `quiver` available everywhere, ensure `~/.bun/bin` is in your PATH. Append this to your `~/.zshrc` (or `~/.bashrc`):
+   ```bash
+   export PATH="$HOME/.bun/bin:$PATH"
+   ```
+   Then restart your terminal or run `source ~/.zshrc`.
+
+4. **Run the app**:
+   ```bash
+   quiver
+   ```
+
+### Installation (From Source)
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/prompt-quiver.git
+git clone https://github.com/kbjorklid/PromptQuiver.git
 cd prompt-quiver
 
 # Install dependencies
 bun install
-```
 
-### Running the App
-
-```bash
+# Run the app
 bun start
 ```
-
-For convenience, you can alias the command in your shell:
-`alias quiver='bun --cwd /path/to/prompt-quiver index.tsx'`
 
 ## ⌨️ Keyboard Shortcuts
 
