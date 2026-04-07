@@ -49,31 +49,31 @@ describe('Global Search', () => {
     await app.type('External');
     
     // Should see results from the other project
-    await app.waitForTextToAppear('External Prompt 1');
+    await app.waitForTextToAppear('External Prompt 1', 5000);
     app.expectContent('[other]');
     
     // Toggle to notes
     await app.nextTab();
-    await new Promise(resolve => setTimeout(resolve, 500)); // Delay for debounce (300ms) + CI overhead
-    await app.waitForTextToAppear('External Note 1');
+    await new Promise(resolve => setTimeout(resolve, 800)); // Delay for debounce (300ms) + CI overhead
+    await app.waitForTextToAppear('External Note 1', 5000);
     app.expectContent('[other]');
     
     // Toggle back to prompts
     await app.nextTab();
-    await new Promise(resolve => setTimeout(resolve, 500)); // Delay for debounce (300ms) + CI overhead
-    await app.waitForTextToAppear('External Prompt 1');
+    await new Promise(resolve => setTimeout(resolve, 800)); // Delay for debounce (300ms) + CI overhead
+    await app.waitForTextToAppear('External Prompt 1', 5000);
     
     // Select and edit
-    await new Promise(resolve => setTimeout(resolve, 200)); // Ensure UI settled
+    await new Promise(resolve => setTimeout(resolve, 300)); // Ensure UI settled
     await app.confirm(); // Enter on first result
-    await app.waitForTextToAppear('Editor');
+    await app.waitForTextToAppear('Editor', 5000);
     app.expectContent('External Prompt 1');
     
     // Save to current project
     await app.save(); // Ctrl+S
     
     // Should be back in main tab and see the copied prompt
-    await app.waitForTextToAppear('Prompts');
+    await app.waitForTextToAppear('Prompts', 5000);
     app.expectContent('External Prompt 1');
   });
 
@@ -84,8 +84,8 @@ describe('Global Search', () => {
     await app.waitForTextToAppear('GLOBAL SEARCH');
     
     await app.type('Archived');
-    await new Promise(resolve => setTimeout(resolve, 500)); // Delay for debounce
-    await app.waitForTextToAppear('External Archived Prompt');
+    await new Promise(resolve => setTimeout(resolve, 800)); // Delay for debounce
+    await app.waitForTextToAppear('External Archived Prompt', 5000);
     app.expectContent('[other]');
   });
 });

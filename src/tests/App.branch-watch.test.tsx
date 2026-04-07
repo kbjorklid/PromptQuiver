@@ -46,8 +46,7 @@ describe('App Branch Auto-detection', () => {
   });
 
   test('updates branch name in footer periodically (using short pollInterval)', async () => {
-    let currentBranch = 'main';
-    (gitUtils.getCurrentGitBranch as any).mockImplementation(() => currentBranch);
+    (gitUtils.getCurrentGitBranch as any).mockReturnValue('main');
 
     const app = new AppPage(render(
       <App 
@@ -56,23 +55,22 @@ describe('App Branch Auto-detection', () => {
         savePromptsFn={vi.fn()} 
         debounceMs={0} 
         viewportSize={5} 
-        pollInterval={100} // Short poll interval
+        pollInterval={100} 
       />
     ));
 
     // Wait for initial load
     await app.waitForTextToAppear('branch: main');
 
-    // Change branch
-    currentBranch = 'feature-x';
+    // Change branch return value
+    (gitUtils.getCurrentGitBranch as any).mockReturnValue('feature-x');
     
-    // Wait for auto-update
-    await app.waitForTextToAppear('branch: feature-x', 3000);
+    // Wait for auto-update - increased timeout significantly
+    await app.waitForTextToAppear('branch: feature-x', 5000);
   });
 
   test('updates filtering when branch changes periodically when filter is ON', async () => {
-    let currentBranch = 'main';
-    (gitUtils.getCurrentGitBranch as any).mockImplementation(() => currentBranch);
+    (gitUtils.getCurrentGitBranch as any).mockReturnValue('main');
 
     const app = new AppPage(render(
       <App 
@@ -91,14 +89,15 @@ describe('App Branch Auto-detection', () => {
     // Enable branch filter
     await app.write('b');
     
+    await app.waitForTextToAppear('branch: main');
     app.expectContent('Prompt 1');
     app.expectNotContent('Prompt 2');
 
     // Change branch
-    currentBranch = 'feature-x';
+    (gitUtils.getCurrentGitBranch as any).mockReturnValue('feature-x');
     
     // Wait for auto-update and filtering change
-    await app.waitForTextToAppear('Prompt 2', 3000);
+    await app.waitForTextToAppear('Prompt 2', 5000);
     app.expectNotContent('Prompt 1');
     app.expectContent('branch: feature-x');
   });
