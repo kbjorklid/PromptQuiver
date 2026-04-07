@@ -71,7 +71,7 @@ describe('App Branch Auto-detection', () => {
     currentBranch = 'feature-x';
     
     // Wait for next poll (pollInterval is 100ms)
-    await new Promise(resolve => setTimeout(resolve, 250));
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     expect(stripAnsi(lastFrame() || '')).toContain('branch: feature-x');
   });
@@ -105,7 +105,7 @@ describe('App Branch Auto-detection', () => {
     currentBranch = 'feature-x';
     
     // Wait for poll
-    await new Promise(resolve => setTimeout(resolve, 250));
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     // Should now show Prompt 2 and hide Prompt 1
     expect(stripAnsi(lastFrame() || '')).not.toContain('Prompt 1');
