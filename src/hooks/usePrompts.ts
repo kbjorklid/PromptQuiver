@@ -15,6 +15,7 @@ export interface UsePromptsProps {
   loadPromptsFn?: typeof defaultLoadPrompts;
   savePromptsFn?: typeof defaultSavePrompts;
   debounceMs?: number;
+  pollInterval?: number;
 }
 
 export function usePrompts({
@@ -22,8 +23,9 @@ export function usePrompts({
   loadPromptsFn = defaultLoadPrompts,
   savePromptsFn = defaultSavePrompts,
   debounceMs = 500,
+  pollInterval = 10000,
 }: UsePromptsProps) {
-  const { branchFilterEnabled, currentBranch, toggleBranchFilter, refreshCurrentBranch } = useBranchFilter(cwd);
+  const { branchFilterEnabled, currentBranch, toggleBranchFilter, refreshCurrentBranch } = useBranchFilter(cwd, pollInterval);
   
   const onSaveError = useCallback((err: any) => {
     console.error('Save error:', err);

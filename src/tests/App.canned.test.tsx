@@ -27,6 +27,8 @@ mock.module('../storage/paths', () => {
   };
 });
 
+import { mockBranchState } from './setup';
+
 const mockData = {
   main: [
     { id: '1', text: 'Prompt 1', type: 'prompt', branch: 'feat/abc', created_at: '2023-01-01', updated_at: '2023-01-01' },
@@ -57,14 +59,14 @@ describe('App Canned Tab', () => {
   const mockCwd = `/test/path-${Math.random().toString(36).substring(7)}`;
 
   test('renders Canned tab in the header', async () => {
-    const { lastFrame } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
+    const { lastFrame } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} pollInterval={1000000} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     expect(lastFrame()).toContain('Canned');
   });
 
   test('switches to Canned tab with Tab key', async () => {
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} pollInterval={1000000} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Press Tab once to Canned
@@ -75,10 +77,10 @@ describe('App Canned Tab', () => {
   });
 
   test('Canned tab ignores branch filter', async () => {
-    // Mock git branch to return 'feat/abc'
-    const gitSpy = spyOn(gitUtils, 'getCurrentGitBranch').mockReturnValue('feat/abc');
+    // Set global mock branch
+    mockBranchState.currentBranch = 'feat/abc';
     
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts as any} viewportSize={5} pollInterval={1000000} />);
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // Toggle branch filter on (press 'b')
@@ -95,8 +97,6 @@ describe('App Canned Tab', () => {
     
     // 'Canned 1' should still be visible even if it has no branch
     expect(lastFrame()).toContain('Canned 1');
-    
-    gitSpy.mockRestore();
   });
 
   test('saves canned prompts to common.yml', async () => {
