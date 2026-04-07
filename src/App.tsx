@@ -44,13 +44,15 @@ export const App = ({
   loadPromptsFn = loadPrompts,
   savePromptsFn = savePrompts,
   viewportSize: initialViewportSize,
-  debounceMs
+  debounceMs,
+  pollInterval = 10000
 }: { 
   cwd: string;
   loadPromptsFn?: typeof loadPrompts;
   savePromptsFn?: typeof savePrompts;
   viewportSize?: number;
   debounceMs?: number;
+  pollInterval?: number;
 }) => {
   const { exit } = useApp();
   const terminalSize = useTerminalSize();
@@ -101,7 +103,13 @@ export const App = ({
     cancelGlobalSearch,
     copyToClipboard,
     pastePrompt,
-  } = usePrompts({ cwd, loadPromptsFn, savePromptsFn, debounceMs });
+  } = usePrompts({ 
+    cwd, 
+    loadPromptsFn, 
+    savePromptsFn, 
+    debounceMs,
+    pollInterval 
+  });
 
   const allTabs: Tab[] = ['main', 'canned', 'notes', 'snippets', 'archive', 'settings'];
   const defaultSettings: Settings = {

@@ -39,7 +39,7 @@ describe('Global Search', () => {
   });
 
   test('entering global search and searching for prompts', async () => {
-    const app = new AppPage(render(<App cwd={mockCwd} />));
+    const app = new AppPage(render(<App cwd={mockCwd} pollInterval={1000000} />));
     
     // Press 'G'
     await app.startGlobalSearch();
@@ -75,7 +75,7 @@ describe('Global Search', () => {
   });
 
   test('searching archive via global search', async () => {
-    const app = new AppPage(render(<App cwd={mockCwd} />));
+    const app = new AppPage(render(<App cwd={mockCwd} pollInterval={1000000} />));
     
     await app.startGlobalSearch();
     await app.waitForTextToAppear('GLOBAL SEARCH');

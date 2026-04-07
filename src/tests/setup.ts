@@ -1,12 +1,58 @@
-import { mock } from "bun:test";
+import { mock, afterEach } from "bun:test";
 import path from "path";
 import os from "os";
 import fs from "fs/promises";
+import { useCallback, useState, useEffect } from 'react';
 
 export const mockClipboard = {
   writeSync: (text: string) => {},
   readSync: () => "",
 };
+
+// Global branch mock state
+export const mockBranchState = {
+  currentBranch: "main" as string | undefined,
+  branchFilterEnabled: false,
+};
+
+afterEach(() => {
+  mockBranchState.currentBranch = "main";
+  mockBranchState.branchFilterEnabled = false;
+  mockClipboard.writeSync = (text: string) => {};
+  mockClipboard.readSync = () => "";
+});
+
+// Mock the hook globally
+mock.module("../hooks/useBranchFilter", () => ({
+  useBranchFilter: (cwd: string, pollInterval: number = 10000) => {
+    const [enabled, setEnabled] = useState(mockBranchState.branchFilterEnabled);
+    const [branch, setBranch] = useState(mockBranchState.currentBranch);
+    
+    const refresh = useCallback(() => {
+      setBranch(mockBranchState.currentBranch);
+      return mockBranchState.currentBranch;
+    }, [cwd]); // Match [cwd]
+    
+    const toggle = useCallback(() => {
+      setEnabled(prev => !prev);
+    }, [refresh]); // Match [refreshCurrentBranch]
+
+    useEffect(() => {
+      // initial refresh
+    }, [refresh]);
+
+    useEffect(() => {
+      // polling
+    }, [refresh, pollInterval]);
+
+    return {
+      branchFilterEnabled: enabled,
+      currentBranch: branch,
+      toggleBranchFilter: toggle,
+      refreshCurrentBranch: refresh,
+    };
+  },
+}));
 
 // Mock clipboardy globally for tests to avoid failures in non-TTY environments (Linux CI)
 mock.module("clipboardy", () => ({

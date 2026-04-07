@@ -2,13 +2,8 @@ import React from 'react';
 import { render } from 'ink-testing-library';
 import { App } from '../App';
 import { expect, test, describe, vi, beforeEach, afterEach } from 'bun:test';
-import * as child_process from 'child_process';
 import type { PromptStorageData } from '../storage';
-
-// Mock the git utility via module mocking
-vi.mock('child_process', () => ({
-  execSync: vi.fn(),
-}));
+import { mockBranchState } from './setup';
 
 const stripAnsi = (str: string) => str.replace(/\u001b\[[0-9;]*m/g, '');
 
@@ -18,6 +13,8 @@ describe('App Branch Tracking', () => {
   let mockLoadPrompts: any;
 
   beforeEach(() => {
+    mockBranchState.currentBranch = 'main';
+    mockBranchState.branchFilterEnabled = false;
     mockData = {
       main: [
         { id: '1', text: 'Prompt 1', type: 'prompt', branch: 'main', created_at: '2023-01-01', updated_at: '2023-01-01' },
@@ -48,10 +45,10 @@ describe('App Branch Tracking', () => {
   });
 
   test('adds current branch to new prompt', async () => {
-    (child_process.execSync as any).mockReturnValue('feature-new\n');
+    mockBranchState.currentBranch = 'feature-new';
     const saveSpy = vi.fn().mockResolvedValue(undefined);
 
-    const { stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} savePromptsFn={saveSpy} debounceMs={0} viewportSize={5} />);
+    const { stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} savePromptsFn={saveSpy} debounceMs={0} viewportSize={5} pollInterval={1000000} />);
 
     // Wait for load
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -76,9 +73,9 @@ describe('App Branch Tracking', () => {
   });
 
   test('toggles branch filter with "b" key', async () => {
-    (child_process.execSync as any).mockReturnValue('feature-x\n');
+    mockBranchState.currentBranch = 'feature-x';
     
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} savePromptsFn={vi.fn()} debounceMs={0} viewportSize={5} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} savePromptsFn={vi.fn()} debounceMs={0} viewportSize={5} pollInterval={1000000} />);
 
     // Wait for load
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -108,9 +105,9 @@ describe('App Branch Tracking', () => {
   });
 
   test('shows all items if no current branch is detected, even if filter is enabled', async () => {
-    (child_process.execSync as any).mockImplementation(() => { throw new Error('Not a git repo'); });
+    mockBranchState.currentBranch = undefined;
     
-    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} savePromptsFn={vi.fn()} debounceMs={0} viewportSize={5} />);
+    const { lastFrame, stdin } = render(<App cwd={mockCwd} loadPromptsFn={mockLoadPrompts} savePromptsFn={vi.fn()} debounceMs={0} viewportSize={5} pollInterval={1000000} />);
 
     // Wait for load
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -120,8 +117,9 @@ describe('App Branch Tracking', () => {
     await new Promise(resolve => setTimeout(resolve, 50));
 
     // Both prompts should still be visible because currentBranch is undefined
-    expect(stripAnsi(lastFrame() || '')).toContain('Prompt 1');
-    expect(stripAnsi(lastFrame() || '')).toContain('Prompt 2');
-    expect(stripAnsi(lastFrame() || '')).not.toContain('Branch:');
+    const frame = stripAnsi(lastFrame() || '');
+    expect(frame).toContain('Prompt 1');
+    expect(frame).toContain('Prompt 2');
+    expect(frame).not.toContain('branch:');
   });
 });

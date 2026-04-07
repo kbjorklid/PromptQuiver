@@ -1,43 +1,27 @@
-import { expect, test, describe, afterEach } from "bun:test";
+import { expect, test, describe, afterEach, beforeEach } from "bun:test";
 import fs from "fs/promises";
 import path from "path";
 import yaml from 'js-yaml';
 import { getStoragePath, getCommonStoragePath, STORAGE_DIR } from "../storage/paths";
 import { loadPrompts, savePrompts, ensureStorageDir } from "../storage/index";
-import { mock } from "bun:test";
-import os from 'os';
-
-const tempCommonPath = path.join(os.tmpdir(), `common-storage-test-${Math.random().toString(36).substring(7)}.yml`);
-
-import * as originalPaths from '../storage/paths';
-
-mock.module('../storage/paths', () => {
-  return {
-    ...originalPaths,
-    getCommonStoragePath: () => tempCommonPath,
-  };
-});
 
 describe("Storage", () => {
-  const mockCwd = path.join(process.cwd(), "test-project");
-  const expectedPath = getStoragePath(mockCwd);
-
-  afterEach(async () => {
-    try {
-      await fs.unlink(expectedPath);
-    } catch {}
-    try {
-      await fs.unlink(getCommonStoragePath());
-    } catch {}
+  // Use a unique mockCwd for this file to avoid conflicts with other tests
+  const mockCwd = path.join(process.cwd(), `test-project-storage-${Math.random().toString(36).substring(7)}`);
+  
+  beforeEach(async () => {
+    await fs.mkdir(STORAGE_DIR, { recursive: true });
   });
 
   test("getStoragePath generates correct filename", () => {
     const filePath = getStoragePath(mockCwd);
-    expect(path.basename(filePath)).toMatch(/^prompts-test-project-[a-f0-9]{8}\.yml$/);
+    expect(path.basename(filePath)).toMatch(/^prompts-test-project-storage-.*-[a-f0-9]{8}\.yml$/);
+    expect(filePath).toContain(STORAGE_DIR);
   });
 
   test("savePrompts creates a YAML file for project and common", async () => {
     const commonPath = getCommonStoragePath();
+    const expectedPath = getStoragePath(mockCwd);
     const data = {
       main: [
         {
@@ -70,6 +54,7 @@ describe("Storage", () => {
           settings: true,
         },
         slashCommands: [],
+        enableClaudeCommands: false,
       },
     };
 
@@ -110,6 +95,8 @@ describe("Storage", () => {
           archive: true,
           settings: true,
         },
+        slashCommands: [],
+        enableClaudeCommands: false,
       },
     };
 
@@ -139,6 +126,8 @@ describe("Storage", () => {
           archive: true,
           settings: true,
         },
+        slashCommands: [],
+        enableClaudeCommands: false,
       },
     };
 

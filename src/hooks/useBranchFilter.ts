@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { getCurrentGitBranch } from '../utils/git';
 
-export function useBranchFilter(cwd: string) {
+export function useBranchFilter(cwd: string, pollInterval: number = 10000) {
   const [branchFilterEnabled, setBranchFilterEnabled] = useState(false);
   const [currentBranch, setCurrentBranch] = useState<string | undefined>(undefined);
 
@@ -26,10 +26,9 @@ export function useBranchFilter(cwd: string) {
   }, [refreshCurrentBranch]);
 
   useEffect(() => {
-    if (!branchFilterEnabled) return;
-    const interval = setInterval(refreshCurrentBranch, 10000);
+    const interval = setInterval(refreshCurrentBranch, pollInterval);
     return () => clearInterval(interval);
-  }, [branchFilterEnabled, refreshCurrentBranch]);
+  }, [refreshCurrentBranch, pollInterval]);
 
   return {
     branchFilterEnabled,
